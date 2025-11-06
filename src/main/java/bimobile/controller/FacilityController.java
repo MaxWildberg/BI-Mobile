@@ -4,23 +4,18 @@ import bimobile.model.Facility;
 import bimobile.service.FacilityService;
 import bimobile.dao.FacilityDAO;
 import org.springframework.stereotype.Controller;
-import org.springframework.context.annotation.Conditional;
-
 import java.util.List;
+
 @Controller
 public class FacilityController {
 
     private FacilityService facilityService;
     private FacilityDAO facilityDAO;
-/*
-    public FacilityController() {
-        this.facilityService = new FacilityService();
-        this.facilityDAO = new FacilityDAO();
+
+    public FacilityController(FacilityService facilityService, FacilityDAO facilityDAO) {
+        this.facilityService = facilityService;
+        this.facilityDAO = facilityDAO;
     }
-*/
-	public FacilityController(FacilityService facilityService) {
-		this.facilityService = facilityService;
-	}
 
     public String standortAnlegen(String address, String mail, int telephoneNr) {
         if (address == null || address.trim().isEmpty()) {
@@ -52,12 +47,10 @@ public class FacilityController {
             Facility facility = new Facility(address.trim(), mail.trim(), telephoneNr);
             facilityService.addFacility(facility);
             return "Erfolg: Standort '" + address + "' wurde erfolgreich angelegt";
-
         } catch (Exception e) {
             return "Fehler: Standort konnte nicht gespeichert werden - " + e.getMessage();
         }
     }
-
 
     public String standortBearbeiten(Long id, String address, String mail, int telephoneNr) {
         if (id == null || id <= 0) {
@@ -98,11 +91,8 @@ public class FacilityController {
             facility.setAddress(address.trim());
             facility.setMail(mail.trim());
             facility.setTelephoneNr(telephoneNr);
-
             facilityDAO.updateFacility(facility);
-
-            return "Erfolg: Standort wurde aktualisiert (Adresse kann noch nicht geändert werden)";
-
+            return "Erfolg: Standort wurde aktualisiert";
         } catch (Exception e) {
             return "Fehler: Standort konnte nicht aktualisiert werden - " + e.getMessage();
         }
@@ -118,71 +108,20 @@ public class FacilityController {
             return "Fehler: Standort mit ID " + id + " wurde nicht gefunden";
         }
 
-        return "Hinweis: Deaktivierung noch nicht vollständig implementiert. " ;
-    }
-
-    public String alleStandorteAnzeigen() {
         try {
-            List<Facility> facilities = facilityService.getAllFacilities();
-
-            if (facilities.isEmpty()) {
-                return "Keine Standorte vorhanden";
-            }
-
-            StringBuilder result = new StringBuilder("=== ALLE STANDORTE ===\n\n");
-
-            for (Facility f : facilities) {
-                result.append(String.format(
-                        "ID: %d | Adresse: %s | E-Mail: %s | Tel: %d\n",
-                        f.getId(),
-                        f.getAddress(),
-                        f.getMail(),
-                        f.getTelephoneNr()
-                ));
-            }
-
-            return result.toString();
-
+            facilityDAO.deleteFacility(id);
+            return "Erfolg: Standort wurde gelöscht";
         } catch (Exception e) {
-            return "Fehler beim Abrufen der Standorte: " + e.getMessage();
+            return "Fehler: Standort konnte nicht gelöscht werden - " + e.getMessage();
         }
     }
 
-    public String standortDetails(Long id) {
-        if (id == null || id <= 0) {
-            return "Fehler: Ungültige ID";
-        }
-
+    public List<Facility> getAllFacilities() {
         try {
-            Facility facility = facilityDAO.getFacilityById(id);
-
-            if (facility == null) {
-                return "Fehler: Standort mit ID " + id + " nicht gefunden";
-            }
-
-            return String.format(
-                    "=== STANDORT-DETAILS ===\n" +
-                            "ID: %d\n" +
-                            "Adresse: %s\n" +
-                            "E-Mail: %s\n" +
-                            "Telefon: %d\n",
-                    facility.getId(),
-                    facility.getAddress(),
-                    facility.getMail(),
-                    facility.getTelephoneNr()
-            );
-
+            return facilityService.getAllFacilities();
         } catch (Exception e) {
-            return "Fehler: " + e.getMessage();
+            System.err.println("Fehler beim Abrufen der Standorte: " + e.getMessage());
+            return List.of();
         }
     }
-	public List<Facility> getAllFacilities() {
-		try {
-			return facilityService.getAllFacilities();
-		} catch (Exception e) {
-			System.err.println("Fehler beim Abrufen der Standorte: " + e.getMessage());
-			return List.of(); // gibt eine leere Liste zurück statt null
-		}
-	}
-
 }
