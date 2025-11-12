@@ -19,8 +19,8 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -29,145 +29,190 @@ import java.util.List;
 @PermitAll
 public class StandortUebersichtView extends VerticalLayout {
 
-    private final FacilityController controller;
-    private final Grid<Facility> grid = new Grid<>(Facility.class, false);
+	private final FacilityController controller;
+	private final Grid<Facility> grid = new Grid<>(Facility.class, false);
 
-    @Autowired
-    public StandortUebersichtView(FacilityController controller) {
-        this.controller = controller;
+	@Autowired
+	public StandortUebersichtView(FacilityController controller) {
+		this.controller = controller;
 
-        setPadding(true);
-        setSizeFull();
-        getStyle().set("background", "#f9fafb");
-        getStyle().set("min-height", "100vh");
-
-        H2 title = new H2("Standortübersicht");
-
-        Button neu = new Button("Neuen Standort anlegen", new Icon(VaadinIcon.PLUS));
-        neu.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        neu.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("standort-anlegen")));
-
-        HorizontalLayout header = new HorizontalLayout(title, neu);
-        header.setWidthFull();
-        header.setAlignItems(Alignment.CENTER);
-        header.setJustifyContentMode(JustifyContentMode.BETWEEN);
+		//Layout-Grundstruktur
+		setPadding(true);
+		setSizeFull();
+		getStyle().set("background", "#f9fafb");
+		getStyle().set("min-height", "100vh");
 
 
-        grid.addColumn(Facility::getId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(Facility::getAddress).setHeader("Adresse").setAutoWidth(true);
-        grid.addColumn(Facility::getMail).setHeader("E-Mail").setAutoWidth(true);
-        grid.addColumn(Facility::getTelephoneNr).setHeader("Telefon").setAutoWidth(true);
+		H2 title = new H2("Standortübersicht");
 
-        grid.addComponentColumn(facility -> {
-            Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
-            bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-            bearbeiten.addClickListener(e -> openEditDialog(facility));
+		// Button, der den Anlegen-Dialog öffnet (statt neue View)
+		Button neu = new Button("Neuen Standort anlegen", new Icon(VaadinIcon.PLUS));
+		neu.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		neu.addClickListener(e -> openCreateDialog());
 
-            Button löschen = new Button(new Icon(VaadinIcon.TRASH));
-            löschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
-            löschen.addClickListener(e -> openDeleteDialog(facility));
+		HorizontalLayout header = new HorizontalLayout(title, neu);
+		header.setWidthFull();
+		header.setAlignItems(Alignment.CENTER);
+		header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-            return new HorizontalLayout(bearbeiten, löschen);
-        }).setHeader("Aktionen");
+		//Standorte Grid
+		grid.addColumn(Facility::getId).setHeader("ID").setAutoWidth(true);
+		grid.addColumn(Facility::getAddress).setHeader("Adresse").setAutoWidth(true);
+		grid.addColumn(Facility::getMail).setHeader("E-Mail").setAutoWidth(true);
+		grid.addColumn(Facility::getTelephoneNr).setHeader("Telefon").setAutoWidth(true);
 
-        updateGrid();
+		//Bearbeiten / Löschen
+		grid.addComponentColumn(facility -> {
+			Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
+			bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+			bearbeiten.addClickListener(e -> openEditDialog(facility));
 
-        add(header, grid);
-        setFlexGrow(1, grid);
-    }
+			Button loeschen = new Button(new Icon(VaadinIcon.TRASH));
+			loeschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
+			loeschen.addClickListener(e -> openDeleteDialog(facility));
 
-    private void updateGrid() {
-        List<Facility> facilities = controller.getAllFacilities();
-        grid.setItems(facilities);
-    }
+			return new HorizontalLayout(bearbeiten, loeschen);
+		}).setHeader("Aktionen");
 
+		updateGrid();
 
-    private void openEditDialog(Facility facility) {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("500px");
+		add(header, grid);
+		setFlexGrow(1, grid);
+	}
 
-        H3 dialogTitle = new H3("Standort bearbeiten");
+	// Holt alle Standorte aus dem Controller und aktualisiert das Grid
+	private void updateGrid() {
+		List<Facility> facilities = controller.getAllFacilities();
+		grid.setItems(facilities);
+	}
 
-        TextField addressField = new TextField("Adresse");
-        addressField.setValue(facility.getAddress());
+	//Standort anlegen als Dialog
+	private void openCreateDialog() {
+		Dialog dialog = new Dialog();
+		dialog.setWidth("500px");
+		dialog.setModal(true);
+		dialog.setDraggable(true);
 
-        EmailField emailField = new EmailField("E-Mail");
-        emailField.setValue(facility.getMail());
+		H3 dialogTitle = new H3("Neuen Standort anlegen");
 
-        TextField phoneField = new TextField("Telefonnummer");
-        phoneField.setValue(String.valueOf(facility.getTelephoneNr()));
+		TextField address = new TextField("Adresse");
+		EmailField email = new EmailField("E-Mail");
+		TextField phone = new TextField("Telefonnummer");
 
-        Button saveButton = new Button("Speichern", e -> {
-            try {
-                int tel = Integer.parseInt(phoneField.getValue());
-                String result = controller.standortBearbeiten(
-                        facility.getId(),
-                        addressField.getValue(),
-                        emailField.getValue(),
-                        tel
-                );
+		//Speichern-Button
+		Button save = new Button("Speichern", e -> {
+			try {
+				if (address.isEmpty() || email.isEmpty() || phone.isEmpty()) {
+					Notification.show("Bitte alle Felder ausfüllen!");
+					return;
+				}
 
-                if (result.startsWith("Erfolg")) {
-                    Notification notification = Notification.show(result);
-                    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                    updateGrid();
-                    dialog.close();
-                } else {
-                    Notification notification = Notification.show(result);
-                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                }
-            } catch (NumberFormatException ex) {
-                Notification.show("Telefonnummer muss eine Zahl sein");
-            }
-        });
-        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+				int tel = Integer.parseInt(phone.getValue().trim());
+				String msg = controller.standortAnlegen(address.getValue(), email.getValue(), tel);
 
-        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+				Notification.show(msg);
 
-        FormLayout form = new FormLayout(addressField, emailField, phoneField);
-        HorizontalLayout actions = new HorizontalLayout(saveButton, cancelButton);
-        actions.setJustifyContentMode(JustifyContentMode.END);
+				if (msg.startsWith("Erfolg")) {
+					updateGrid();
+					dialog.close();
+				}
+			} catch (NumberFormatException ex) {
+				Notification.show("Telefonnummer muss eine gültige Zahl sein!");
+			}
+		});
+		save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        VerticalLayout dialogLayout = new VerticalLayout(dialogTitle, form, actions);
-        dialog.add(dialogLayout);
-        dialog.open();
-    }
+		Button cancel = new Button("Abbrechen", e -> dialog.close());
+		cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
+		FormLayout form = new FormLayout(address, email, phone);
+		HorizontalLayout actions = new HorizontalLayout(save, cancel);
+		actions.setJustifyContentMode(JustifyContentMode.END);
 
-    private void openDeleteDialog(Facility facility) {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("400px");
+		VerticalLayout layout = new VerticalLayout(dialogTitle, form, actions);
+		dialog.add(layout);
+		dialog.open();
+	}
 
-        H3 dialogTitle = new H3("Standort löschen?");
+	//Bearbeiten eines Standorts
+	private void openEditDialog(Facility facility) {
+		Dialog dialog = new Dialog();
+		dialog.setWidth("500px");
 
-        VerticalLayout content = new VerticalLayout();
-        content.add("Möchten Sie den Standort wirklich löschen?");
-        content.add("Adresse: " + facility.getAddress());
+		H3 dialogTitle = new H3("Standort bearbeiten");
 
-        Button confirmButton = new Button("Löschen", e -> {
-            String result = controller.standortDeaktivieren(facility.getId());
+		TextField addressField = new TextField("Adresse", facility.getAddress(), "");
+		EmailField emailField = new EmailField("E-Mail"); //später einfügen
+		TextField phoneField = new TextField("Telefonnummer", String.valueOf(facility.getTelephoneNr()), "");
 
-            Notification notification = Notification.show(result);
-            if (result.startsWith("Erfolg")) {
-                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-            } else {
-                notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
-            }
+		Button saveButton = new Button("Speichern", e -> {
+			try {
+				int tel = Integer.parseInt(phoneField.getValue());
+				String result = controller.standortBearbeiten(
+						facility.getId(),
+						addressField.getValue(),
+						emailField.getValue(),
+						tel
+				);
 
-            updateGrid();
-            dialog.close();
-        });
-        confirmButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
+				if (result.startsWith("Erfolg")) {
+					Notification.show(result).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+					updateGrid();
+					dialog.close();
+				} else {
+					Notification.show(result).addThemeVariants(NotificationVariant.LUMO_ERROR);
+				}
+			} catch (NumberFormatException ex) {
+				Notification.show("Telefonnummer muss eine Zahl sein!");
+			}
+		});
+		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+		Button cancelButton = new Button("Abbrechen", e -> dialog.close());
+		cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
-        HorizontalLayout actions = new HorizontalLayout(confirmButton, cancelButton);
-        actions.setJustifyContentMode(JustifyContentMode.END);
+		FormLayout form = new FormLayout(addressField, emailField, phoneField);
+		HorizontalLayout actions = new HorizontalLayout(saveButton, cancelButton);
+		actions.setJustifyContentMode(JustifyContentMode.END);
 
-        VerticalLayout dialogLayout = new VerticalLayout(dialogTitle, content, actions);
-        dialog.add(dialogLayout);
-        dialog.open();
-    }
+		VerticalLayout dialogLayout = new VerticalLayout(dialogTitle, form, actions);
+		dialog.add(dialogLayout);
+		dialog.open();
+	}
+
+	//Löschen eines Standorts
+	private void openDeleteDialog(Facility facility) {
+		Dialog dialog = new Dialog();
+		dialog.setWidth("400px");
+
+		H3 dialogTitle = new H3("Standort löschen?");
+		VerticalLayout content = new VerticalLayout();
+		content.add("Möchten Sie den Standort wirklich löschen?");
+		content.add("Adresse: " + facility.getAddress());
+
+		Button confirmButton = new Button("Löschen", e -> {
+			String result = controller.standortDeaktivieren(facility.getId());
+
+			Notification notification = Notification.show(result);
+			if (result.startsWith("Erfolg")) {
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			} else {
+				notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
+			}
+
+			updateGrid();
+			dialog.close();
+		});
+		confirmButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
+
+		Button cancelButton = new Button("Abbrechen", e -> dialog.close());
+		cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+		HorizontalLayout actions = new HorizontalLayout(confirmButton, cancelButton);
+		actions.setJustifyContentMode(JustifyContentMode.END);
+
+		VerticalLayout dialogLayout = new VerticalLayout(dialogTitle, content, actions);
+		dialog.add(dialogLayout);
+		dialog.open();
+	}
 }

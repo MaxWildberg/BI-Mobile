@@ -23,7 +23,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         setJustifyContentMode(JustifyContentMode.CENTER);
 
         login.setAction("login");
-        login.setForgotPasswordButtonVisible(true);  // Optional: "Passwort vergessen" ausblenden
+        login.setForgotPasswordButtonVisible(true);
 
         add(new H1("Autovermietung"), login);
     }

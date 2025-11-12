@@ -20,47 +20,68 @@ import jakarta.annotation.security.PermitAll;
 @PermitAll
 public class StandortAnlegenView extends VerticalLayout {
 
-	private final FacilityController controller;
+    private final FacilityController controller;
 
-	@Autowired
-	public StandortAnlegenView(FacilityController controller) {
-		this.controller = controller;
-		buildUI();
-	}
+    @Autowired
+    public StandortAnlegenView(FacilityController controller) {
+        this.controller = controller;
+        buildUI();
+    }
 
-	private void buildUI() {
-		setPadding(true);
-		setSpacing(true);
+    private void buildUI() {
+        setPadding(true);
+        setSpacing(true);
 
-		H2 title = new H2("Neuen Standort anlegen");
+        H2 title = new H2("Neuen Standort anlegen");
 
-		TextField address = new TextField("Adresse");
-		EmailField email = new EmailField("E-Mail");
-		TextField phone = new TextField("Telefonnummer");
+        TextField address = new TextField("Adresse");
+        EmailField email = new EmailField("E-Mail");
+        TextField phone = new TextField("Telefonnummer");
 
-		Button save = new Button("Speichern", e -> {
-			try {
-				int tel = Integer.parseInt(phone.getValue());
-				String msg = controller.standortAnlegen(address.getValue(), email.getValue(), tel);
-				Notification.show(msg);
-				clear(address, email, phone);
-			} catch (NumberFormatException ex) {
-				Notification.show("Telefonnummer muss eine Zahl sein");
-			}
-		});
-		save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        Button save = new Button("Speichern", e -> {
+            try {
+                // Validierung: Prüfe ob Felder leer sind
+                if (address.getValue() == null || address.getValue().trim().isEmpty()) {
+                    Notification.show("Bitte Adresse eingeben");
+                    return;
+                }
 
-		Button cancel = new Button("Abbrechen",
-				e -> getUI().ifPresent(ui -> ui.navigate("standorte")));
-		cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+                if (email.getValue() == null || email.getValue().trim().isEmpty()) {
+                    Notification.show("Bitte E-Mail eingeben");
+                    return;
+                }
 
-		FormLayout form = new FormLayout(address, email, phone);
-		HorizontalLayout actions = new HorizontalLayout(save, cancel);
+                if (phone.getValue() == null || phone.getValue().trim().isEmpty()) {
+                    Notification.show("Bitte Telefonnummer eingeben");
+                    return;
+                }
 
-		add(title, form, actions);
-	}
+                int tel = Integer.parseInt(phone.getValue().trim());
+                String msg = controller.standortAnlegen(address.getValue(), email.getValue(), tel);
 
-	private void clear(TextField a, EmailField e, TextField p) {
-		a.clear(); e.clear(); p.clear();
-	}
+                Notification.show(msg);
+
+                // Nur bei Erfolg leeren
+                if (msg.startsWith("Erfolg")) {
+                    clear(address, email, phone);
+                }
+            } catch (NumberFormatException ex) {
+                Notification.show("Telefonnummer muss eine gültige Zahl sein");
+            }
+        });
+        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        Button cancel = new Button("Abbrechen",
+                e -> getUI().ifPresent(ui -> ui.navigate("standorte")));
+        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+        FormLayout form = new FormLayout(address, email, phone);
+        HorizontalLayout actions = new HorizontalLayout(save, cancel);
+
+        add(title, form, actions);
+    }
+
+    private void clear(TextField a, EmailField e, TextField p) {
+        a.clear(); e.clear(); p.clear();
+    }
 }

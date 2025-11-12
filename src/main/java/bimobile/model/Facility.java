@@ -10,7 +10,7 @@ import java.util.List;
 public class Facility {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto ID
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -19,11 +19,8 @@ public class Facility {
     @Column(nullable = false)
     private String mail;
 
-    @Column(nullable = false)
+    @Column(name = "telephone_nr", nullable = false)
     private int telephoneNr;
-
-    //@Column(nullable = false);
-    //private Manager manager;
 
     @OneToMany(mappedBy = "facility", cascade = CascadeType.ALL)
     private List<Employee> employees = new ArrayList<>();
@@ -57,7 +54,9 @@ public class Facility {
         this.mail = mail;
     }
 
-    public void setAddress(String address) { this.address = address; }
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     public int getTelephoneNr() {
         return telephoneNr;

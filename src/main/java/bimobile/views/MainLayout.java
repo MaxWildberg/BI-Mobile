@@ -13,7 +13,7 @@ import jakarta.annotation.security.PermitAll;
 public class MainLayout extends AppLayout {
 
 	public MainLayout() {
-		// Topbar (einfach)
+		//TopBar
 		H3 brand = new H3("BI-Mobile · Verwaltung");
 		brand.getStyle().set("margin", "0");
 		HorizontalLayout top = new HorizontalLayout(brand);
@@ -21,23 +21,21 @@ public class MainLayout extends AppLayout {
 		top.setPadding(true);
 		addToNavbar(top);
 
-		// Linke Sidebar (Drawer)
+		// Linke Navigationsleiste
 		VerticalLayout nav = new VerticalLayout();
-		nav.getStyle().set("background", "white");
-		nav.getStyle().set("box-shadow", "2px 0 6px rgba(0,0,0,0.05)");
-		nav.getStyle().set("padding", "1rem 0");
-		nav.getStyle().set("border-radius", "0 10px 10px 0");
-
+		nav.setWidth("240px");
 		nav.setPadding(false);
 		nav.setSpacing(false);
-		nav.setWidth("240px");
 		nav.getStyle().set("background", "#f9fafb");
 		nav.getStyle().set("border-right", "1px solid #e5e7eb");
+		nav.getStyle().set("box-shadow", "2px 0 6px rgba(0,0,0,0.05)");
 
+		//Navigationseinträge
 		RouterLink dashboard = new RouterLink("Dashboard", DashboardView.class);
 		RouterLink uebersicht = new RouterLink("Standorte", StandortUebersichtView.class);
 		RouterLink anlegen = new RouterLink("Neuen Standort anlegen", StandortAnlegenView.class);
 
+		//Gemeinsames Styling der Links
 		for (var link : new RouterLink[]{dashboard, uebersicht, anlegen}) {
 			link.getElement().getStyle().set("padding", "10px 16px");
 			link.getElement().getStyle().set("border-radius", "8px");
