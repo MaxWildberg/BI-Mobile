@@ -1,6 +1,6 @@
 package bimobile.views.CustomerAdministration;
 
-import bimobile.controller.CustomerController;
+import bimobile.controller.CustomerManager;
 import bimobile.model.Customer;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -19,38 +19,41 @@ import com.vaadin.flow.data.binder.Binder;
 
 public class EditCreateCustomerDialog extends Dialog {
 
-    private final CustomerController controller;
+    private final CustomerManager controller;
     private final Runnable onSaveSuccess;
     private Customer customer;
     private boolean editMode;
 
     private final Binder<Customer> binder = new Binder<>(Customer.class);
 
-    private final DatePicker geburtsdatum = new DatePicker("Geburtsdatum");
-    private final TextField vorname = new TextField("Vorname");
-    private final TextField nachname = new TextField("Nachname");
+    private final DatePicker birthdate = new DatePicker("Geburtsdatum");
+    private final TextField firstName = new TextField("Vorname");
+    private final TextField lastName = new TextField("Nachname");
 
-    private final TextField strasse = new TextField("Straße und Hausnummer");
-    private final TextField stadt = new TextField("Wohnort");
-    private final TextField plz = new TextField("Postleitzahl");
+    private final TextField street = new TextField("Straße und Hausnummer");
+    private final TextField city = new TextField("Wohnort");
+    private final TextField zip = new TextField("Postleitzahl");
+    private final TextField country = new TextField("Land");
 
-    private final TextField ausweisnummer = new TextField("Ausweisnummer");
-    private final TextField fuehrerscheinnummer = new TextField("Führerscheinnummer");
+    private final TextField idCardNum = new TextField("Ausweisnummer");
+    private final TextField driversLicense = new TextField("Führerscheinnummer");
 
     private final EmailField email = new EmailField("E-Mail");
-    private final TextField telefonnummer = new TextField("Telefonnummer");
+    private final TextField telephone = new TextField("Telefonnummer");
 
     private final Button saveButton = new Button("Kunde registrieren");
     private final Button cancelButton = new Button("Abbrechen");
 
-    public EditCreateCustomerDialog(Customer customer, boolean editMode, CustomerController controller, Runnable onSaveSuccess) {
-        this.customer = customer;
+    public EditCreateCustomerDialog(Customer customer, boolean editMode, CustomerManager controller, Runnable onSaveSuccess) {
+        this.customer = customer != null ? customer : new Customer();
         this.editMode = editMode;
         this.controller = controller;
         this.onSaveSuccess = onSaveSuccess;
 
         buildUI();
         configureBinder();
+
+        binder.readBean(customer);
     }
 
     // ------------------------------------------------------------
@@ -66,19 +69,19 @@ public class EditCreateCustomerDialog extends Dialog {
 
         // --- Persönliche Daten ---
         add(sectionHeader("Persönliche Daten", VaadinIcon.USER));
-        add(new FormLayout(vorname, nachname, geburtsdatum));
+        add(new FormLayout(firstName, lastName, birthdate));
 
         // --- Adresse ---
         add(sectionHeader("Adresse", VaadinIcon.HOME));
-        add(new FormLayout(strasse, stadt, plz));
+        add(new FormLayout(street, city, zip, country));
 
         // --- Dokumente ---
         add(sectionHeader("Ausweisdokumente", VaadinIcon.CREDIT_CARD));
-        add(new FormLayout(ausweisnummer, fuehrerscheinnummer));
+        add(new FormLayout(idCardNum, driversLicense));
 
         // --- Kontakt ---
         add(sectionHeader("Kontaktdaten", VaadinIcon.ENVELOPE));
-        add(new FormLayout(email, telefonnummer));
+        add(new FormLayout(email, telephone));
 
         // --- Footer Buttons ---
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -108,39 +111,47 @@ public class EditCreateCustomerDialog extends Dialog {
     // ------------------------------------------------------------
     private void configureBinder() {
 
-        binder.forField(vorname)
-                .asRequired("Bitte Vornamen eingeben")
-                .bind(Customer::getName, null);
+        binder.forField(birthdate)
+                .asRequired("Bitte Geburtsdatum eingeben")
+                .bind(Customer::getBirthday, Customer::setBirthday);
 
-        binder.forField(nachname)
+        binder.forField(firstName)
+                .asRequired("Bitte Vornamen eingeben")
+                .bind(Customer::getName, Customer::setName);
+
+        binder.forField(lastName)
                 .asRequired("Bitte Nachnamen eingeben")
                 .bind(Customer::getLastname, Customer::setLastname);
 
-        binder.forField(strasse)
+        binder.forField(street)
                 .asRequired("Bitte Straße eingeben")
                 .bind(Customer::getAddress, Customer::setAddress);
 
-        binder.forField(stadt)
+        binder.forField(city)
                 .asRequired("Bitte Wohnort eingeben")
                 .bind(Customer::getResidence, Customer::setResidence);
 
-        binder.forField(plz)
+        binder.forField(zip)
                 .asRequired("Bitte Postleitzahl eingeben")
                 .bind(Customer::getZip, Customer::setZip);
 
-        binder.forField(ausweisnummer)
-                .asRequired("Bitte Ausweisnummer eingeben")
-                .bind(Customer::getIdCardNumber, null);
+        binder.forField(country)
+                .asRequired("Bitte Land eingeben")
+                .bind(Customer::getCountry, Customer::setCountry);
 
-        binder.forField(fuehrerscheinnummer)
+        binder.forField(idCardNum)
+                .asRequired("Bitte Ausweisnummer eingeben")
+                .bind(Customer::getIdCardNumber, Customer::setIdCardNumber);
+
+        binder.forField(driversLicense)
                 .asRequired("Bitte Führerscheinnummer eingeben")
-                .bind(Customer::getDriverslicenseID, null);
+                .bind(Customer::getDriverslicenseID, Customer::setDriverslicenseID);
 
         binder.forField(email)
                 .asRequired("Bitte E-Mail eingeben")
                 .bind(Customer::getEmail, Customer::setEmail);
 
-        binder.forField(telefonnummer)
+        binder.forField(telephone)
                 .asRequired("Bitte Telefonnummer eingeben")
                 .bind(Customer::getTelephone, Customer::setTelephone);
     }

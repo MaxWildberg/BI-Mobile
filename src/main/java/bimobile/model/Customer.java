@@ -15,7 +15,7 @@ public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto ID
-    private Long id;
+    private Long customerId;
 
     @Column(nullable = false)
     private String name;
@@ -69,8 +69,8 @@ public class Customer {
         this.idCardNumber = idCardNumber;
     }
 
-    public Long getId() {
-        return id;
+    public Long getCustomerId() {
+        return customerId;
     }
 
     public String getName() {
@@ -121,24 +121,29 @@ public class Customer {
         return Period.between(getBirthday(), LocalDate.now()).getYears();
     }
 
-    public List<Rent> getRents() {
-        return rents;
-    }
+//    public List<Rent> getRents() {
+//        return rents;
+//    }
+//
+//    public void addRent(Rent rent) {
+//        this.rents.add(rent);
+//        rent.setCustomer(this);
+//    }
+//
+//    public  String getRentCount() {
+//        return String.valueOf(rents.size());
+//    }
+//
+//    public String getTotalRevenue() {
+//        int totalRevenue = 0;
+//        for (Rent rent : rents){
+//            totalRevenue += rent.getRevenue();
+//        }
+//        return String.valueOf(totalRevenue);
+//    }
 
-    public void addRent(Rent rent) {
-        this.rents.add(rent);
-        rent.setCustomer(this);
-    }
-
-    public  String getRentCount() {
-        return String.valueOf(rents.size());
-    }
-    public String getTotalRevenue() {
-        int totalRevenue = 0;
-        for (Rent rent : rents){
-            totalRevenue =+ rent.getRevenue();
-        }
-        return String.valueOf(totalRevenue);
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setLastname(String lastname) {
@@ -167,5 +172,21 @@ public class Customer {
 
     public void setTelephone(String telephone) {
         this.telephone = telephone;
+    }
+
+    public void setDriverslicenseID(String driverslicenseID) {
+        this.driverslicenseID = driverslicenseID;
+    }
+
+    public void setIdCardNumber(String idCardNumber) {
+        this.idCardNumber = idCardNumber;
+    }
+
+    public void setBirthday(LocalDate birthday) {
+        this.birthday = birthday;
+    }
+
+    public List<Rent> getRents() {
+        return rents;
     }
 }

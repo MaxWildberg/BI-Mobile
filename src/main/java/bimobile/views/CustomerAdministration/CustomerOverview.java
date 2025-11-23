@@ -1,12 +1,14 @@
 package bimobile.views.CustomerAdministration;
 
-import bimobile.controller.CustomerController;
+import bimobile.controller.CustomerManager;
 import bimobile.model.Customer;
 import bimobile.views.MainLayout;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
@@ -26,10 +28,10 @@ import java.util.List;
 @PermitAll
 public class CustomerOverview extends VerticalLayout {
 
-    private final CustomerController controller;
-    private final Grid<Customer> grid = new Grid<>(Customer.class);
+    private final CustomerManager controller;
+    private final Grid<Customer> grid = new Grid<>();
 
-    public CustomerOverview(CustomerController controller){
+    public CustomerOverview(CustomerManager controller){
         this.controller = controller;
 
         //Layout-Grundstruktur
@@ -43,7 +45,7 @@ public class CustomerOverview extends VerticalLayout {
         Button registerCustomerButton = new Button("Neuen Kunden anlegen", new Icon(VaadinIcon.PLUS));
         registerCustomerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         registerCustomerButton.addClickListener(e -> {
-            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(null, true, controller, this::updateGrid);
+            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(null, false, controller, this::updateGrid);
             dialog.open();
         });
 
@@ -53,7 +55,7 @@ public class CustomerOverview extends VerticalLayout {
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         // Grid zur Übersicht aller Kunden
-        grid.addColumn(Customer::getId).setHeader("ID").setAutoWidth(true);
+        grid.addColumn(Customer::getCustomerId).setHeader("ID").setAutoWidth(true);
         grid.addColumn(Customer::getLastname).setHeader("Nachname").setAutoWidth(true);
         grid.addColumn(Customer::getName).setHeader("Name").setAutoWidth(true);
         grid.addColumn(Customer::getEmail).setHeader("E-Mail").setAutoWidth(true);
@@ -72,11 +74,18 @@ public class CustomerOverview extends VerticalLayout {
             loeschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
             loeschen.addClickListener(e -> openDeleteDialog(customer));
 
-            return new HorizontalLayout(bearbeiten, loeschen);
+            Button details = new Button(new Icon(VaadinIcon.INFO));
+            details.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_TERTIARY);
+            details.addClickListener(e -> {
+                UI.getCurrent().navigate("kunden/details/" + customer.getCustomerId());
+            });
+
+            return new HorizontalLayout(bearbeiten, loeschen, details);
         }).setHeader("Aktionen");
 
         updateGrid();
 
+        grid.addThemeVariants(GridVariant.LUMO_COLUMN_BORDERS);
         add(header, grid);
         setFlexGrow(1, grid);
 
@@ -97,10 +106,10 @@ public class CustomerOverview extends VerticalLayout {
         H3 dialogTitle = new H3("Kunde löschen?");
         VerticalLayout content = new VerticalLayout();
         content.add("Möchten Sie den Kunden wirklich löschen?");
-        content.add(customer.getName() + customer.getLastname() + ", Geburtsdatum: " + customer.getBirthday());
+        content.add(customer.getName() + " " + customer.getLastname() + ", Geburtsdatum: " + customer.getBirthday());
 
         Button confirmButton = new Button("Löschen", e -> {
-            String result = controller.deaktivateCustomer(customer.getId());
+            String result = controller.deleteCustomer(customer.getCustomerId());
 
             Notification notification = Notification.show(result);
             if (result.startsWith("Erfolg")) {

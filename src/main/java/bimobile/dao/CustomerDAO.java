@@ -25,7 +25,7 @@ public class CustomerDAO {
 
     public Customer getCustomerById(Long id) {
         try {
-            return em.createQuery("SELECT f FROM Customer f WHERE f.id = :id", Customer.class)
+            return em.createQuery("SELECT c FROM Customer c WHERE c.id = :id", Customer.class)
                     .setParameter("id", id)
                     .getSingleResult();
         } catch (NoResultException e) {
@@ -39,10 +39,12 @@ public class CustomerDAO {
     }
 
     @jakarta.transaction.Transactional
-    public void deleteCustomer(Long id) {
+    public boolean deleteCustomer(Long id) {
         Customer customer = em.find(Customer.class, id);
         if (customer != null) {
             em.remove(customer);
+            return true;
         }
+        return false;
     }
 }

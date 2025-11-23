@@ -4,17 +4,18 @@ import bimobile.dao.CustomerDAO;
 import bimobile.model.Customer;
 import bimobile.service.CustomerService;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Controller
-public class CustomerController {
+@Service
+public class CustomerManager {
 
-    private CustomerService customerService;
     private CustomerDAO customerDAO;
+    //private CustomerService customerService;
+    //private CustomerDAO customerDAO;
 
-    public CustomerController(CustomerService customerService, CustomerDAO customerDAO) {
-        this.customerService = customerService;
+    public CustomerManager(CustomerDAO customerDAO) {
         this.customerDAO = customerDAO;
     }
 
@@ -22,7 +23,7 @@ public class CustomerController {
     public String registerCustomer(Customer customer) {
         try {
             // Customer customer = new Customer(name.trim(), lastname.trim(), birthday, zip.trim(), address.trim(), residence.trim(), email.trim(), telephone.trim(), driverslicenseID.trim(), idCardNumber.trim());
-            customerService.addCustomer(customer);
+            customerDAO.addCustomer(customer);
             return "Erfolg: Kunde '" + customer.getName() + " " + customer.getLastname() + "' wurde erfolgreich angelegt";
         } catch (Exception exception) {
             return "Fehler: Kunde konnte nicht gespeichert werden - " + exception.getMessage();
@@ -34,7 +35,7 @@ public class CustomerController {
     public String updateCustomer(Customer customer) {
         try {
             //Customer customer = new Customer(name.trim(), lastname.trim(), birthday, zip.trim(), address.trim(), residence.trim(), email.trim(), telephone.trim(), driverslicenseID.trim(), idCardNumber.trim());
-            customerService.updateCustomer(customer);
+            customerDAO.updateCustomer(customer);
             return "Erfolg: Kunde wurde aktualisiert";
         } catch (Exception e) {
             return "Fehler: Kunde konnte nicht aktualisiert werden - " + e.getMessage();
@@ -43,14 +44,14 @@ public class CustomerController {
 
     public List<Customer> getAllCustomers() {
         try {
-            return customerService.getAllCustomers();
+            return customerDAO.getAllCustomers();
         } catch (Exception e) {
             System.err.println("Fehler beim Abrufen der Kunden: " + e.getMessage());
             return List.of();
         }
     }
 
-    public String deaktivateCustomer(Long id) {
+    public String deleteCustomer(Long id) {
         if (id == null || id <= 0) {
             return "Fehler: Ungültige Kunden-ID";
         }
@@ -73,12 +74,11 @@ public class CustomerController {
             return null;
         } else {
             try {
-                customerDAO.getCustomerById(id);
+                return customerDAO.getCustomerById(id);
             } catch (Exception e) {
                 return null;
             }
         }
-        return null;
     }
 
 
