@@ -2,7 +2,7 @@ package bimobile.views.CustomerAdministration;
 
 import bimobile.controller.CustomerManager;
 import bimobile.model.Customer;
-import bimobile.model.Rent;
+import bimobile.model.Rental;
 import bimobile.views.MainLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -247,7 +247,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         if (customer.getRents() == null || customer.getRents().isEmpty()) {
             d.add(new Paragraph("Dieser Kunde hat noch kein Fahrzeug gemietet."));
         } else {
-            Grid<Rent> grid = new Grid<>(Rent.class, true);
+            Grid<Rental> grid = new Grid<>(Rental.class, true);
             grid.setItems(customer.getRents()); // populate the grid
             grid.addThemeVariants(GridVariant.LUMO_COLUMN_BORDERS);
             d.add(grid);

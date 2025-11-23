@@ -51,7 +51,7 @@ public class Customer {
     private String idCardNumber;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
-    private List<Rent> rents = new ArrayList<>();
+    private List<Rental> rents = new ArrayList<>();
 
     public Customer(){}
 
@@ -121,26 +121,25 @@ public class Customer {
         return Period.between(getBirthday(), LocalDate.now()).getYears();
     }
 
-//    public List<Rent> getRents() {
-//        return rents;
-//    }
-//
-//    public void addRent(Rent rent) {
-//        this.rents.add(rent);
-//        rent.setCustomer(this);
-//    }
-//
-//    public  String getRentCount() {
-//        return String.valueOf(rents.size());
-//    }
-//
-//    public String getTotalRevenue() {
-//        int totalRevenue = 0;
-//        for (Rent rent : rents){
-//            totalRevenue += rent.getRevenue();
-//        }
-//        return String.valueOf(totalRevenue);
-//    }
+    public List<Rental> getRents() {
+        return rents;
+    }
+
+    public void addRent(Rental rental) {
+        this.rents.add(rental);
+    }
+
+    public  String getRentCount() {
+        return String.valueOf(rents.size());
+    }
+
+    public String getTotalRevenue() {
+        int totalRevenue = 0;
+        for (Rental rent : rents){
+            totalRevenue += rent.getTotalPrice();
+        }
+        return String.valueOf(totalRevenue);
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -184,9 +183,5 @@ public class Customer {
 
     public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
-    }
-
-    public List<Rent> getRents() {
-        return rents;
     }
 }
