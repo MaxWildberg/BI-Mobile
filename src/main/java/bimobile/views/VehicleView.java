@@ -33,11 +33,11 @@ public class VehicleView extends VerticalLayout {
     private final Grid<Vehicle> grid = new Grid<>(Vehicle.class, false);
 
     // Formularfelder
-    private final TextField licensePlate = new TextField("License plate");
-    private final TextField brand = new TextField("Brand");
-    private final TextField model = new TextField("Model");
-    private final TextField priceClass = new TextField("Price class");
-    private final TextField mileage = new TextField("Mileage");
+    private final TextField licensePlate = new TextField("Kennzeichen");
+    private final TextField brand = new TextField("Marke");
+    private final TextField model = new TextField("Modell");
+    private final TextField priceClass = new TextField("Preisklasse");
+    private final TextField mileage = new TextField("Kilometerstand");
 
     private Vehicle selectedVehicle;
 
@@ -45,7 +45,7 @@ public class VehicleView extends VerticalLayout {
         this.vehicleService = vehicleService;
 
         // Überschrift
-        add("Vehicle Management");
+        add("Fahrzeugverwaltung");
 
         configureGrid();
         configureForm();
@@ -60,12 +60,14 @@ public class VehicleView extends VerticalLayout {
      * Konfiguration der Fahrzeug-Tabelle.
      */
     private void configureGrid() {
-        grid.addColumn(Vehicle::getLicensePlate).setHeader("License plate");
-        grid.addColumn(Vehicle::getBrand).setHeader("Brand");
-        grid.addColumn(Vehicle::getModel).setHeader("Model");
-        grid.addColumn(Vehicle::getPriceClass).setHeader("Price class");
-        grid.addColumn(Vehicle::getMileage).setHeader("Mileage");
-        grid.addColumn(v -> v.getStatus().name()).setHeader("Status");
+        grid.addColumn(Vehicle::getLicensePlate).setHeader("Kennzeichen");
+        grid.addColumn(Vehicle::getBrand).setHeader("Marke");
+        grid.addColumn(Vehicle::getModel).setHeader("Modell");
+        grid.addColumn(Vehicle::getPriceClass).setHeader("Preisklasse");
+        grid.addColumn(Vehicle::getMileage).setHeader("Kilometerstand");
+        grid.addColumn(v ->
+                v.getStatus() != null ? v.getStatus().getDisplayName() : ""
+        ).setHeader("Status");
 
         // Wenn eine Zeile angeklickt wird, werden die Daten ins Formular geladen
         grid.asSingleSelect().addValueChangeListener(event -> {
@@ -78,10 +80,10 @@ public class VehicleView extends VerticalLayout {
      * Formular mit Buttons für Speichern und einfache Statuswechsel.
      */
     private HorizontalLayout createFormLayout() {
-        Button saveButton = new Button("Save", event -> saveVehicle());
-        Button setAvailable = new Button("Set AVAILABLE", e -> changeStatus(VehicleStatus.AVAILABLE));
-        Button setRented = new Button("Set RENTED", e -> changeStatus(VehicleStatus.RENTED));
-        Button setInMaintenance = new Button("Set IN_MAINTENANCE", e -> changeStatus(VehicleStatus.IN_MAINTENANCE));
+        Button saveButton = new Button("Speichern", event -> saveVehicle());
+        Button setAvailable = new Button("Verfügbar", e -> changeStatus(VehicleStatus.AVAILABLE));
+        Button setRented = new Button("Verliehen", e -> changeStatus(VehicleStatus.RENTED));
+        Button setInMaintenance = new Button("In Wartung", e -> changeStatus(VehicleStatus.IN_MAINTENANCE));
 
         HorizontalLayout buttons = new HorizontalLayout(saveButton, setAvailable, setRented, setInMaintenance);
 
@@ -95,9 +97,9 @@ public class VehicleView extends VerticalLayout {
      * Setzt Basis-Eigenschaften des Formulars (z.B. Pflichtfelder).
      */
     private void configureForm() {
-        licensePlate.setRequired(true);
-        brand.setRequired(true);
-        model.setRequired(true);
+        licensePlate.setRequiredIndicatorVisible(true);
+        brand.setRequiredIndicatorVisible(true);
+        model.setRequiredIndicatorVisible(true);
     }
 
     /**
@@ -142,8 +144,12 @@ public class VehicleView extends VerticalLayout {
                         priceClass.getValue()
                 );
                 vehicle.setMileage(parseMileage());
+
+                // Standard-Status: verfügbar
+                vehicle.setStatus(VehicleStatus.AVAILABLE);
+
                 vehicleService.createVehicle(vehicle);
-                Notification.show("Vehicle created");
+                Notification.show("Fahrzeug erstellt");
             } else {
                 // Bestehendes Fahrzeug aktualisieren
                 selectedVehicle.setLicensePlate(licensePlate.getValue());
@@ -153,7 +159,7 @@ public class VehicleView extends VerticalLayout {
                 selectedVehicle.setMileage(parseMileage());
 
                 vehicleService.updateVehicle(selectedVehicle);
-                Notification.show("Vehicle updated");
+                Notification.show("Fahrzeug aktualisiert");
             }
 
             selectedVehicle = null;
@@ -171,13 +177,13 @@ public class VehicleView extends VerticalLayout {
      */
     private void changeStatus(VehicleStatus newStatus) {
         if (selectedVehicle == null) {
-            Notification.show("Please select a vehicle first.");
+            Notification.show("Bitte wähle ein Fahrzeug aus.");
             return;
         }
 
         try {
             vehicleService.changeStatus(selectedVehicle.getId(), newStatus);
-            Notification.show("Status changed to " + newStatus);
+            Notification.show("Status wurde geändert zu: " + newStatus);
             refreshGrid();
         } catch (Exception ex) {
             Notification.show("Error: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);

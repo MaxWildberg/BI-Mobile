@@ -34,13 +34,13 @@ public class VehicleService {
     public Vehicle createVehicle(Vehicle vehicle) {
         vehicleRepository.findByLicensePlate(vehicle.getLicensePlate())
                 .ifPresent(existing -> {
-                    throw new IllegalArgumentException("License plate already exists: " + existing.getLicensePlate());
+                    throw new IllegalArgumentException("Kennzeichen existiert bereits: " + existing.getLicensePlate());
                 });
 
         // Lebenslauf: "Fahrzeug angelegt"
         VehicleHistoryEntry entry = new VehicleHistoryEntry(
                 vehicle,
-                "Vehicle created with license plate " + vehicle.getLicensePlate()
+                "Fahrzeug mit folgendem Kennzeichen wurde erstellt: " + vehicle.getLicensePlate()
         );
         vehicle.addHistoryEntry(entry);
 
@@ -52,7 +52,7 @@ public class VehicleService {
      */
     public Vehicle updateVehicle(Vehicle vehicle) {
         Vehicle existing = vehicleRepository.findById(vehicle.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Fahrzeug nicht gefunden"));
 
         existing.setBrand(vehicle.getBrand());
         existing.setModel(vehicle.getModel());
@@ -60,7 +60,7 @@ public class VehicleService {
         existing.setMileage(vehicle.getMileage());
 
         existing.addHistoryEntry(
-                new VehicleHistoryEntry(existing, "Vehicle data updated")
+                new VehicleHistoryEntry(existing, "Fahrzeug Daten aktualisiert")
         );
 
         return vehicleRepository.save(existing);
@@ -73,16 +73,16 @@ public class VehicleService {
      */
     public Vehicle changeStatus(Long vehicleId, VehicleStatus newStatus) {
         Vehicle vehicle = vehicleRepository.findById(vehicleId)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Fahrzeug nicht gefunden"));
 
         // Beispiel-Regel: Ausleihe nur, wenn aktuell AVAILABLE
         if (newStatus == VehicleStatus.RENTED && vehicle.getStatus() != VehicleStatus.AVAILABLE) {
-            throw new IllegalStateException("Vehicle is not available for renting.");
+            throw new IllegalStateException("Fahrzeug ist zum verleihen nicht verfügbar.");
         }
 
         // Beispiel-Regel: Zurück auf AVAILABLE nur, wenn keine akute Wartung/HU fällig
         if (newStatus == VehicleStatus.AVAILABLE && hasDueMaintenance(vehicle)) {
-            throw new IllegalStateException("Vehicle cannot be set to AVAILABLE because maintenance is due.");
+            throw new IllegalStateException("Fahrzeug kann nicht auf Verfügbar gesetzt werden, da Wartung/HU fällig.");
         }
 
         VehicleStatus oldStatus = vehicle.getStatus();
@@ -91,7 +91,7 @@ public class VehicleService {
         vehicle.addHistoryEntry(
                 new VehicleHistoryEntry(
                         vehicle,
-                        "Status changed from " + oldStatus + " to " + newStatus
+                        "Status geändert von " + oldStatus + " zu " + newStatus
                 )
         );
 
@@ -104,7 +104,7 @@ public class VehicleService {
      */
     public Vehicle planMaintenance(Long vehicleId, LocalDate date, String type, String note) {
         Vehicle vehicle = vehicleRepository.findById(vehicleId)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Fahrzeug nicht gefunden"));
 
         MaintenanceAppointment appointment = new MaintenanceAppointment(vehicle, date, type, note);
         vehicle.addMaintenanceAppointment(appointment);
@@ -112,7 +112,7 @@ public class VehicleService {
         vehicle.addHistoryEntry(
                 new VehicleHistoryEntry(
                         vehicle,
-                        "Maintenance planned: " + type + " on " + date
+                        "Wartung geplant: " + type + " am " + date
                 )
         );
 
