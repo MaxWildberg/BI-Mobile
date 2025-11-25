@@ -6,43 +6,75 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Repräsentiert ein Fahrzeug im System.
+ * Entity für ein Fahrzeug.
  */
 @Entity
+@Table(
+        name = "vehicle",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_vehicle_license_plate", columnNames = "license_plate")
+        }
+)
 public class Vehicle {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Nummernschild (muss eindeutig sein)
-    @Column(nullable = false, unique = true)
+    /**
+     * Eindeutiges Kennzeichen.
+     */
+    @Column(name = "license_plate", nullable = false, length = 20)
     private String licensePlate;
 
+    /**
+     * Marke (z.B. VW, Mercedes).
+     */
+    @Column(nullable = false)
     private String brand;
+
+    /**
+     * Modellbezeichnung (z.B. Golf, A-Klasse).
+     */
+    @Column(nullable = false)
     private String model;
 
-    // Preisklasse A/B/C/D 
+    /**
+     * Preisklasse (z.B. A, B, C).
+     */
     private String priceClass;
 
+    /**
+     * Kilometerstand.
+     */
     private int mileage;
 
-    private LocalDate purchaseDate;
-
+    /**
+     * Aktueller Status des Fahrzeugs.
+     */
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private VehicleStatus status = VehicleStatus.AVAILABLE;
 
-    // Ein Fahrzeug kann mehrere Wartungstermine haben
+    /**
+     * Datum der nächsten HU/Inspektion.
+     * Wird für die Regel "Status Verfügbar nur, wenn HU nicht fällig" verwendet.
+     */
+    private LocalDate inspectionDueDate;
+
+    /**
+     * True, wenn aktuell eine Wartung läuft/geplant ist.
+     */
+    private boolean maintenanceActive;
+
+    /**
+     * Historie-Einträge (Lebenslauf).
+     */
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MaintenanceAppointment> maintenanceAppointments = new ArrayList<>();
+    private List<VehicleHistoryEntry> history = new ArrayList<>();
 
-    // Ein Fahrzeug kann viele History-Einträge haben (Lebenslauf)
-    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VehicleHistoryEntry> historyEntries = new ArrayList<>();
-
-    // --- Konstruktoren ---
-
-    public Vehicle() {
+    protected Vehicle() {
+        // für JPA
     }
 
     public Vehicle(String licensePlate, String brand, String model, String priceClass) {
@@ -53,35 +85,22 @@ public class Vehicle {
         this.status = VehicleStatus.AVAILABLE;
     }
 
-    // --- Methoden ---
-
     /**
-     * Aktualisiert den Status des Fahrzeugs.
-     * Die eigentliche Fachlogik (z.B. ob der Statuswechsel erlaubt ist)
-     * wird im Service geprüft, hier wird nur gesetzt.
+     * Prüft, ob HU/Inspektion fällig oder überfällig ist.
      */
-    public void setStatus(VehicleStatus status) {
-        this.status = status;
+    public boolean isInspectionOverdue() {
+        return inspectionDueDate != null && !inspectionDueDate.isAfter(LocalDate.now());
     }
 
     /**
-     * Fügt dem Fahrzeug einen Wartungstermin hinzu.
-     * Die Beziehung wird von beiden Seiten korrekt gesetzt.
-     */
-    public void addMaintenanceAppointment(MaintenanceAppointment appointment) {
-        appointment.setVehicle(this);
-        this.maintenanceAppointments.add(appointment);
-    }
-
-    /**
-     * Fügt einen neuen History-Eintrag (Lebenslauf) hinzu.
+     * Eintrag zum Lebenslauf hinzufügen.
      */
     public void addHistoryEntry(VehicleHistoryEntry entry) {
+        history.add(entry);
         entry.setVehicle(this);
-        this.historyEntries.add(entry);
     }
 
-    // --- Getter & Setter ---
+    // Getter/Setter
 
     public Long getId() {
         return id;
@@ -127,23 +146,35 @@ public class Vehicle {
         this.mileage = mileage;
     }
 
-    public LocalDate getPurchaseDate() {
-        return purchaseDate;
-    }
-
-    public void setPurchaseDate(LocalDate purchaseDate) {
-        this.purchaseDate = purchaseDate;
-    }
-
     public VehicleStatus getStatus() {
         return status;
     }
 
-    public List<MaintenanceAppointment> getMaintenanceAppointments() {
-        return maintenanceAppointments;
+    public void setStatus(VehicleStatus status) {
+        this.status = status;
     }
 
-    public List<VehicleHistoryEntry> getHistoryEntries() {
-        return historyEntries;
+    public LocalDate getInspectionDueDate() {
+        return inspectionDueDate;
+    }
+
+    public void setInspectionDueDate(LocalDate inspectionDueDate) {
+        this.inspectionDueDate = inspectionDueDate;
+    }
+
+    public boolean isMaintenanceActive() {
+        return maintenanceActive;
+    }
+
+    public void setMaintenanceActive(boolean maintenanceActive) {
+        this.maintenanceActive = maintenanceActive;
+    }
+
+    public List<VehicleHistoryEntry> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<VehicleHistoryEntry> history) {
+        this.history = history;
     }
 }
