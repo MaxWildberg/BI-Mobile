@@ -52,7 +52,7 @@ public class VehicleHistoryEntry {
         this.description = description;
     }
 
-    // Getter/Setter (gekürzt, aber vollständig lassen im Projekt)
+    // Getter/Setter
 
     public Long getId() {
         return id;

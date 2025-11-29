@@ -94,13 +94,13 @@ public class VehicleServiceImpl implements VehicleService {
             throw new IllegalStateException("Der Status eines ausgemusterten oder verkauften Fahrzeugs kann nicht mehr geändert werden.");
         }
 
-        // Regel: Verfügbar nur, wenn keine HU fällig und keine Wartung aktiv
-        if (newStatus == VehicleStatus.AVAILABLE) {
+        // Regel: Verfügbar und verleihbar nur, wenn keine HU fällig und keine Wartung aktiv
+        if (newStatus == VehicleStatus.AVAILABLE || newStatus == VehicleStatus.RENTED) {
             if (vehicle.isInspectionOverdue()) {
-                throw new IllegalStateException("Fahrzeug kann nicht auf 'Verfügbar' gesetzt werden, da die HU fällig ist.");
+                throw new IllegalStateException("Fahrzeug kann nicht auf '" + newStatus.getDisplayName() + "' gesetzt werden, da die HU fällig ist.");
             }
             if (vehicle.isMaintenanceActive()) {
-                throw new IllegalStateException("Fahrzeug kann nicht auf 'Verfügbar' gesetzt werden, da eine Wartung aktiv ist.");
+                throw new IllegalStateException("Fahrzeug kann nicht auf '" + newStatus.getDisplayName() + "' gesetzt werden, da eine Wartung aktiv ist.");
             }
         }
 

@@ -6,10 +6,10 @@ import bimobile.service.VehicleService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -18,10 +18,10 @@ import jakarta.annotation.security.PermitAll;
 import java.util.List;
 
 /**
- * Einfache Fahrzeugverwaltungs-View.
- * - Tabelle mit allen Fahrzeugen
- * - Formular zum Anlegen/Bearbeiten
- * - Buttons zum Statuswechsel
+ * Fahrzeugverwaltung:
+ * - Zeigt alle Fahrzeuge in einer Tabelle
+ * - Ermöglicht Anlegen und Bearbeiten von Fahrzeugen
+ * - Bietet Buttons zum Ändern des Fahrzeugstatus
  */
 @Route(value = "vehicles", layout = MainLayout.class)
 @PageTitle("Fahrzeugverwaltung")
@@ -30,14 +30,15 @@ public class VehicleView extends VerticalLayout {
 
     private final VehicleService vehicleService;
 
+    // Tabelle
     private final Grid<Vehicle> grid = new Grid<>(Vehicle.class, false);
 
     // Formularfelder
-    private final TextField licensePlate = new TextField("Kennzeichen");
-    private final TextField brand        = new TextField("Marke");
-    private final TextField model        = new TextField("Modell");
-    private final TextField priceClass   = new TextField("Preisklasse");
-    private final NumberField mileage    = new NumberField("Kilometerstand");
+    private final TextField licensePlateField = new TextField("Kennzeichen");
+    private final TextField brandField        = new TextField("Marke");
+    private final TextField modelField        = new TextField("Modell");
+    private final TextField priceClassField   = new TextField("Preisklasse");
+    private final TextField mileageField      = new TextField("Kilometerstand");
 
     private Vehicle selectedVehicle;
 
@@ -48,33 +49,40 @@ public class VehicleView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        add("Fahrzeugverwaltung");
+        add(new H2("Fahrzeugverwaltung"));
 
         configureGrid();
         configureForm();
 
-        HorizontalLayout content = new HorizontalLayout(grid, createFormLayout());
-        content.setSizeFull();
-        content.setFlexGrow(2, grid);
-        content.setFlexGrow(1, createFormLayout());
+        // Layout: oben Tabelle, darunter Formular + Buttons
+        VerticalLayout formWithButtons = new VerticalLayout(createFormLayout());
+        formWithButtons.setPadding(false);
+        formWithButtons.setSpacing(true);
+        formWithButtons.setWidthFull();
 
-        add(content);
+        add(grid, formWithButtons);
+        expand(grid); // Tabelle bekommt den meisten Platz
 
         refreshGrid();
+
+        initValidationListeners();
     }
 
-    private void configureGrid() {
-        grid.addColumn(Vehicle::getLicensePlate).setHeader("Kennzeichen").setAutoWidth(true);
-        grid.addColumn(Vehicle::getBrand).setHeader("Marke").setAutoWidth(true);
-        grid.addColumn(Vehicle::getModel).setHeader("Modell").setAutoWidth(true);
-        grid.addColumn(Vehicle::getPriceClass).setHeader("Preisklasse").setAutoWidth(true);
-        grid.addColumn(v -> v.getMileage() + " km").setHeader("Kilometerstand").setAutoWidth(true);
-        grid.addColumn(v -> v.getStatus() != null ? v.getStatus().getDisplayName() : "")
-                .setHeader("Status")
-                .setAutoWidth(true);
+    // ----------------------------------------------------
+    // Grid / Tabelle
+    // ----------------------------------------------------
 
+    private void configureGrid() {
         grid.setWidthFull();
-        grid.setHeight("500px");
+        grid.setHeight("400px");
+
+        grid.addColumn(Vehicle::getLicensePlate).setHeader("Kennzeichen");
+        grid.addColumn(Vehicle::getBrand).setHeader("Marke");
+        grid.addColumn(Vehicle::getModel).setHeader("Modell");
+        grid.addColumn(Vehicle::getPriceClass).setHeader("Preisklasse");
+        grid.addColumn(Vehicle::getMileage).setHeader("Kilometerstand");
+        grid.addColumn(v -> v.getStatus() != null ? v.getStatus().getDisplayName() : "")
+                .setHeader("Status");
 
         grid.asSingleSelect().addValueChangeListener(event -> {
             selectedVehicle = event.getValue();
@@ -82,102 +90,240 @@ public class VehicleView extends VerticalLayout {
         });
     }
 
-    private void configureForm() {
-        licensePlate.setRequiredIndicatorVisible(true);
-        brand.setRequiredIndicatorVisible(true);
-        model.setRequiredIndicatorVisible(true);
-    }
-
-    private VerticalLayout createFormLayout() {
-        FormLayout form = new FormLayout();
-        mileage.setStep(1000);
-
-        form.add(licensePlate, brand, model, priceClass, mileage);
-
-        Button saveButton       = new Button("Speichern", e -> saveVehicle());
-        Button availableButton  = new Button("Verfügbar", e -> changeStatus(VehicleStatus.AVAILABLE));
-        Button rentedButton     = new Button("Verliehen", e -> changeStatus(VehicleStatus.RENTED));
-        Button maintenanceButton= new Button("In Wartung", e -> changeStatus(VehicleStatus.IN_MAINTENANCE));
-
-        HorizontalLayout buttons = new HorizontalLayout(saveButton, availableButton, rentedButton, maintenanceButton);
-
-        VerticalLayout layout = new VerticalLayout(form, buttons);
-        layout.setWidth("400px");
-        return layout;
-    }
-
     private void refreshGrid() {
         List<Vehicle> vehicles = vehicleService.findAllVehicles();
         grid.setItems(vehicles);
     }
 
+    // ----------------------------------------------------
+    // Formular
+    // ----------------------------------------------------
+
+    private void configureForm() {
+        // Nur optische Pflichtmarkierung, keine „roten“ Fehlermeldungen von Vaadin
+        licensePlateField.setLabel("Kennzeichen");
+        licensePlateField.setRequiredIndicatorVisible(true);
+
+        brandField.setLabel("Marke");
+        brandField.setRequiredIndicatorVisible(true);
+
+        modelField.setLabel("Modell");
+        modelField.setRequiredIndicatorVisible(true);
+
+        priceClassField.setLabel("Preisklasse");
+        mileageField.setLabel("Kilometerstand");
+
+        licensePlateField.addValueChangeListener(e -> licensePlateField.setInvalid(false));
+        brandField.addValueChangeListener(e -> brandField.setInvalid(false));
+        modelField.addValueChangeListener(e -> modelField.setInvalid(false));
+
+        // Breite
+        licensePlateField.setWidthFull();
+        brandField.setWidthFull();
+        modelField.setWidthFull();
+        priceClassField.setWidthFull();
+        mileageField.setWidthFull();
+
+        clearValidation();
+    }
+
+    /**
+     * Setzt alle Validierungsfehler (rote Markierung) zurück.
+     */
+    private void clearValidation() {
+        licensePlateField.setInvalid(false);
+        licensePlateField.setErrorMessage(null);
+
+        brandField.setInvalid(false);
+        brandField.setErrorMessage(null);
+
+        modelField.setInvalid(false);
+        modelField.setErrorMessage(null);
+
+        priceClassField.setInvalid(false);
+        priceClassField.setErrorMessage(null);
+
+        mileageField.setInvalid(false);
+        mileageField.setErrorMessage(null);
+    }
+
+    private void clearFormFields() {
+        licensePlateField.clear();
+        brandField.clear();
+        modelField.clear();
+        priceClassField.clear();
+        mileageField.clear();
+    }
+
+
+    private HorizontalLayout createFormLayout() {
+        FormLayout formLayout = new FormLayout();
+        formLayout.setWidth("600px");
+
+        formLayout.add(
+                licensePlateField,
+                brandField,
+                modelField,
+                priceClassField,
+                mileageField
+        );
+
+        // Buttons
+        Button saveButton = new Button("Speichern", event -> saveVehicle());
+        Button setAvailableButton = new Button("Verfügbar",
+                e -> changeStatus(VehicleStatus.AVAILABLE));
+        Button setRentedButton = new Button("Verliehen",
+                e -> changeStatus(VehicleStatus.RENTED));
+        Button setMaintenanceButton = new Button("In Wartung",
+                e -> changeStatus(VehicleStatus.IN_MAINTENANCE));
+
+        HorizontalLayout buttonBar =
+                new HorizontalLayout(saveButton, setAvailableButton, setRentedButton, setMaintenanceButton);
+        buttonBar.setSpacing(true);
+
+        HorizontalLayout wrapper = new HorizontalLayout(formLayout, buttonBar);
+        wrapper.setWidthFull();
+        wrapper.setAlignItems(Alignment.START);
+
+        return wrapper;
+    }
+
+    // ----------------------------------------------------
+    // Formular <-> Entity
+    // ----------------------------------------------------
+
     private void populateForm(Vehicle vehicle) {
         if (vehicle == null) {
-            licensePlate.clear();
-            brand.clear();
-            model.clear();
-            priceClass.clear();
-            mileage.clear();
+            clearFormFields();
+            clearValidation();
             return;
         }
 
-        licensePlate.setValue(vehicle.getLicensePlate());
-        brand.setValue(vehicle.getBrand());
-        model.setValue(vehicle.getModel());
-        priceClass.setValue(vehicle.getPriceClass() != null ? vehicle.getPriceClass() : "");
-        mileage.setValue((double) vehicle.getMileage());
+        licensePlateField.setValue(
+                vehicle.getLicensePlate() != null ? vehicle.getLicensePlate() : "");
+        brandField.setValue(
+                vehicle.getBrand() != null ? vehicle.getBrand() : "");
+        modelField.setValue(
+                vehicle.getModel() != null ? vehicle.getModel() : "");
+        priceClassField.setValue(
+                vehicle.getPriceClass() != null ? vehicle.getPriceClass() : "");
+        mileageField.setValue(String.valueOf(vehicle.getMileage()));
+
+        clearValidation();
     }
 
     private void saveVehicle() {
         try {
-            if (licensePlate.isEmpty() || brand.isEmpty() || model.isEmpty()) {
-                Notification.show("Bitte füllen Sie alle Pflichtfelder aus (Kennzeichen, Marke, Modell).");
+            // 1) Alte Fehlzustände zurücksetzen
+            clearValidation();
+
+            // 2) Pflichtfelder prüfen
+            boolean valid = true;
+
+            if (licensePlateField.isEmpty()) {
+                licensePlateField.setInvalid(true);
+                licensePlateField.setErrorMessage("Kennzeichen ist ein Pflichtfeld.");
+                valid = false;
+            }
+            if (brandField.isEmpty()) {
+                brandField.setInvalid(true);
+                brandField.setErrorMessage("Marke ist ein Pflichtfeld.");
+                valid = false;
+            }
+            if (modelField.isEmpty()) {
+                modelField.setInvalid(true);
+                modelField.setErrorMessage("Modell ist ein Pflichtfeld.");
+                valid = false;
+            }
+
+
+            // Wenn etwas fehlt: Meldung anzeigen und abbrechen
+            if (!valid) {
+                Notification.show(
+                        "Bitte füllen Sie alle Pflichtfelder aus (Kennzeichen, Marke, Modell).",
+                        4000,
+                        Notification.Position.MIDDLE
+                );
                 return;
             }
 
-            int mileageValue = mileage.isEmpty() ? 0 : mileage.getValue().intValue();
+            // 3) Kilometerstand konvertieren
+            int mileage = parseMileage(); // gibt 0 zurück, wenn leer oder ungültig
 
+            // 4) Neues Fahrzeug oder bestehendes aktualisieren
             if (selectedVehicle == null) {
+                // Neues Fahrzeug
                 Vehicle vehicle = new Vehicle(
-                        licensePlate.getValue(),
-                        brand.getValue(),
-                        model.getValue(),
-                        priceClass.getValue()
+                        licensePlateField.getValue(),
+                        brandField.getValue(),
+                        modelField.getValue(),
+                        priceClassField.getValue()
                 );
-                vehicle.setMileage(mileageValue);
+                vehicle.setMileage(mileage);
+
                 vehicleService.createVehicle(vehicle);
                 Notification.show("Fahrzeug wurde angelegt.");
             } else {
-                selectedVehicle.setLicensePlate(licensePlate.getValue());
-                selectedVehicle.setBrand(brand.getValue());
-                selectedVehicle.setModel(model.getValue());
-                selectedVehicle.setPriceClass(priceClass.getValue());
-                selectedVehicle.setMileage(mileageValue);
+                // Bestehendes Fahrzeug aktualisieren
+                selectedVehicle.setLicensePlate(licensePlateField.getValue());
+                selectedVehicle.setBrand(brandField.getValue());
+                selectedVehicle.setModel(modelField.getValue());
+                selectedVehicle.setPriceClass(priceClassField.getValue());
+                selectedVehicle.setMileage(mileage);
+
                 vehicleService.updateVehicle(selectedVehicle);
                 Notification.show("Fahrzeug wurde aktualisiert.");
             }
 
+            // 5) Formular & Auswahl zurücksetzen und Tabelle aktualisieren
             selectedVehicle = null;
-            populateForm(null);
+            grid.deselectAll();
+            clearFormFields();
+            clearValidation();
             refreshGrid();
 
         } catch (Exception ex) {
-            Notification.show("Fehler: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            Notification.show("Fehler: " + ex.getMessage(),
+                    5000, Notification.Position.MIDDLE);
         }
     }
 
     private void changeStatus(VehicleStatus newStatus) {
         if (selectedVehicle == null) {
-            Notification.show("Bitte wählen Sie zuerst ein Fahrzeug aus.");
+            Notification.show("Bitte wählen Sie zuerst ein Fahrzeug in der Tabelle aus.");
             return;
         }
 
         try {
-            vehicleService.changeStatus(selectedVehicle.getId(), newStatus, null);
+            vehicleService.changeStatus(selectedVehicle.getId(), newStatus, "" );
             Notification.show("Status wurde geändert zu: " + newStatus.getDisplayName());
             refreshGrid();
         } catch (Exception ex) {
-            Notification.show("Fehler beim Statuswechsel: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            Notification.show("Fehler: " + ex.getMessage(),
+                    5000, Notification.Position.MIDDLE);
         }
+    }
+
+    private int parseMileage() {
+        if (mileageField.isEmpty()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(mileageField.getValue());
+        } catch (NumberFormatException e) {
+            Notification.show("Kilometerstand ist keine gültige Zahl. Es wird 0 gespeichert.");
+            return 0;
+        }
+    }
+
+    /**
+     * Entfernt die rote Fehlermarkierung, sobald der Benutzer beginnt etwas einzugeben.
+     */
+    private void initValidationListeners() {
+        licensePlateField.addValueChangeListener(e -> licensePlateField.setInvalid(false));
+        brandField.addValueChangeListener(e -> brandField.setInvalid(false));
+        modelField.addValueChangeListener(e -> modelField.setInvalid(false));
+        priceClassField.addValueChangeListener(e -> priceClassField.setInvalid(false));
+        mileageField.addValueChangeListener(e -> mileageField.setInvalid(false));
     }
 }
