@@ -1,7 +1,9 @@
 package bimobile.views.CustomerAdministration;
 
 import bimobile.controller.CustomerManager;
+import bimobile.model.BusinessCustomer;
 import bimobile.model.Customer;
+import bimobile.model.CustomerInterface;
 import bimobile.model.Rental;
 import bimobile.views.MainLayout;
 import com.vaadin.flow.component.UI;
@@ -30,20 +32,20 @@ import jakarta.annotation.security.PermitAll;
 @PermitAll
 public class CustomerDetailsView extends VerticalLayout implements BeforeEnterObserver {
 
-    private final CustomerManager controller;
-    private Customer customer;
+    private final CustomerManager manager;
+    private CustomerInterface customerInterface;
     private Long customerId;
     private Div content;
     private Tabs tabs;
 
     public CustomerDetailsView(CustomerManager controller) {
-        this.controller = controller;
+        this.manager = controller;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
 
-        if (customer == null) {
+        if (customerInterface == null) {
             add(new H2("Kunde konnte nicht gefunden werden"));
             return;
         }
@@ -60,14 +62,14 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         header.setSpacing(true);
 
         // Initialen als "Avatar"
-        Span avatar = new Span(getInitials(customer.getName(), customer.getLastname()));
+        Span avatar = new Span(getInitials(customerInterface.getName(), customerInterface.getLastname()));
         avatar.getStyle().set("padding", "12px 16px");
         avatar.getStyle().set("border-radius", "50%");
         avatar.getStyle().set("background", "#eee");
         avatar.getStyle().set("font-weight", "600");
 
-        H2 name = new H2(customer.getName() + " " + customer.getLastname());
-        Span id = new Span("Kunden-ID: " + customer.getCustomerId());
+        H2 name = new H2(customerInterface.getName() + " " + customerInterface.getLastname());
+        Span id = new Span("Kunden-ID: " + customerInterface.getCustomerId());
         id.getStyle().set("color", "gray");
 
         VerticalLayout nameBlock = new VerticalLayout(name, id);
@@ -85,14 +87,14 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         Button edit = new Button("Bearbeiten", new Icon(VaadinIcon.EDIT));
         edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         edit.addClickListener(event -> {
-            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, true, controller, this::reloadCustomerData);
+            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customerInterface, true, manager, this::reloadCustomerData);
             dialog.open();
         });
 
         Button delete = new Button("Löschen", new Icon(VaadinIcon.DEL));
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         delete.addClickListener(e -> {
-            openDeleteDialog(this.customer);
+            openDeleteDialog(this.customerInterface);
         });
 
         HorizontalLayout actions = new HorizontalLayout(export, edit, delete);
@@ -139,14 +141,14 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
 
         try {
             customerId = Long.valueOf(idStr);
-            customer = controller.getCustomerByID(customerId);
+            customerInterface = manager.getCustomerByID(customerId);
         } catch (NumberFormatException ex) {
             removeAll();
             add(new H2("Ungültige Kunden-ID"));
             return;
         }
 
-        if (customer == null) {
+        if (customerInterface == null) {
             removeAll();
             add(new H2("Kunde nicht gefunden (ID: " + customerId + ")"));
             return;
@@ -173,8 +175,9 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         leftCol.add(createCard("Persönliche Daten", createPersonalData()));
         leftCol.add(createCard("Adresse", createAddressData()));
         leftCol.add(createCard("Kontakt", createContactData()));
+        leftCol.add(createCard("Gewerbeanschrift", createEmployerData()));
 
-        // rightCol.add(createCard("Statistiken", createStatisticsData()));
+        rightCol.add(createCard("Statistiken", createStatisticsData()));
         rightCol.add(createCard("Dokumente", createDocumentsSummary()));
 
         twoCols.add(leftCol, rightCol);
@@ -198,44 +201,54 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     private Div createPersonalData() {
         Div d = new Div();
 
-        d.add(new Paragraph("Vorname: " + customer.getName()));
-        d.add(new Paragraph("Nachname: " + customer.getLastname()));
-        d.add(new Paragraph("Geburtsdatum: " + customer.getBirthday() + " (" + customer.getAge() + " Jahre)"));
+        d.add(new Paragraph("Vorname: " + customerInterface.getName()));
+        d.add(new Paragraph("Nachname: " + customerInterface.getLastname()));
+        d.add(new Paragraph("Geburtsdatum: " + customerInterface.getBirthday() + " (" + customerInterface.getAge() + " Jahre)"));
 
         return d;
     }
 
     private Div createAddressData() {
         Div d = new Div();
-        d.add(new Paragraph(customer.getAddress()));
-        d.add(new Paragraph(customer.getZip() + " " + customer.getResidence()));
-        d.add(new Paragraph(customer.getCountry()));
+        d.add(new Paragraph(customerInterface.getAddress()));
+        d.add(new Paragraph(customerInterface.getZip() + " " + customerInterface.getResidence()));
+        d.add(new Paragraph(customerInterface.getCountry()));
         return d;
     }
 
     private Div createContactData() {
         Div d = new Div();
 
-        d.add(new Paragraph("E-Mail: " + customer.getEmail()));
-        d.add(new Paragraph("Telefon: " + customer.getTelephone()));
+        d.add(new Paragraph("E-Mail: " + customerInterface.getEmail()));
+        d.add(new Paragraph("Telefon: " + customerInterface.getTelephone()));
 
         return d;
     }
 
-//    private Div createStatisticsData() {
-//        Div d = new Div();
-//
-//        d.add(new Paragraph("Anzahl Vermietungen: " + customer.getRentCount()));
-//        d.add(new Hr());
-//        d.add(new Paragraph("Gesamtumsatz: € " + String.format("%.2f", customer.getTotalRevenue())));
-//
-//        return d;
-//    }
+    private Div createEmployerData() {
+        Div d = new Div();
+
+        if (customerInterface instanceof BusinessCustomer businessCustomer) {
+            d.add(new Paragraph("Unternehmen: " + businessCustomer.getCompany()));
+            d.add(new Paragraph("Adresse des Unternehmens: " + businessCustomer.getCompanyAddress()));
+        }
+        return d;
+    }
+
+    private Div createStatisticsData() {
+        Div d = new Div();
+
+        d.add(new Paragraph("Anzahl Vermietungen: " + customerInterface.getRentCount()));
+        d.add(new Hr());
+        d.add(new Paragraph("Gesamtumsatz: € " + String.format("%.2f", customerInterface.getTotalRevenue())));
+
+        return d;
+    }
 
     private Div createDocumentsSummary() {
         Div d = new Div();
-        d.add(new Paragraph("Führerscheinnummer: " + customer.getDriverslicenseID()));
-        d.add(new Paragraph("Ausweisnummer: " + customer.getIdCardNumber()));
+        d.add(new Paragraph("Führerscheinnummer: " + customerInterface.getDriverslicenseID()));
+        d.add(new Paragraph("Ausweisnummer: " + customerInterface.getIdCardNumber()));
         return d;
     }
 
@@ -244,11 +257,11 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         Div d = new Div();
         d.add(new Paragraph("Miethistorie (Platzhalter)"));
 
-        if (customer.getRents() == null || customer.getRents().isEmpty()) {
+        if (customerInterface.getRents() == null || customerInterface.getRents().isEmpty()) {
             d.add(new Paragraph("Dieser Kunde hat noch kein Fahrzeug gemietet."));
         } else {
             Grid<Rental> grid = new Grid<>(Rental.class, true);
-            grid.setItems(customer.getRents()); // populate the grid
+            grid.setItems(customerInterface.getRents()); // populate the grid
             grid.addThemeVariants(GridVariant.LUMO_COLUMN_BORDERS);
             d.add(grid);
         }
@@ -271,7 +284,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     private void reloadCustomerData(){
         if (customerId == null) return;
 
-        this.customer = controller.getCustomerByID(customerId);
+        this.customerInterface = manager.getCustomerByID(customerId);
 
         content.removeAll();
 
@@ -288,7 +301,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         add(createTabs());
     }
 
-    private void openDeleteDialog(Customer customer) {
+    private void openDeleteDialog(CustomerInterface customer) {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");
 
@@ -298,7 +311,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         content.add(customer.getName() + " " + customer.getLastname() + ", Geburtsdatum: " + customer.getBirthday());
 
         Button confirmButton = new Button("Löschen", e -> {
-            String result = controller.deleteCustomer(customer.getCustomerId());
+            String result = manager.deleteCustomer(customer.getCustomerId());
 
             Notification notification = Notification.show(result);
             if (result.startsWith("Erfolg")) {

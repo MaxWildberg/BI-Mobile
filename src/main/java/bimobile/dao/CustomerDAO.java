@@ -1,6 +1,7 @@
 package bimobile.dao;
 
 import bimobile.model.Customer;
+import bimobile.model.CustomerInterface;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
@@ -15,7 +16,7 @@ public class CustomerDAO {
     private EntityManager em;
 
     @jakarta.transaction.Transactional
-    public void addCustomer(Customer customer) {
+    public void addCustomer(CustomerInterface customer) {
         em.persist(customer);
     }
 
@@ -34,7 +35,7 @@ public class CustomerDAO {
     }
 
     @jakarta.transaction.Transactional
-    public void updateCustomer(Customer customer) {
+    public void updateCustomer(CustomerInterface customer) {
         em.merge(customer);
     }
 

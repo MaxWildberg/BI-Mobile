@@ -2,12 +2,13 @@ package bimobile.service;
 
 import bimobile.dao.CustomerDAO;
 import bimobile.model.Customer;
-import bimobile.model.Facility;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
+// CustomerService ersetzt mit CustomerManager: View -> CustomerManager -> CustomerDAO anstatt View -> Controller -> Service -> DAO
+
+
 public class CustomerService {
 
     private final CustomerDAO customerDAO;
@@ -28,8 +29,12 @@ public class CustomerService {
         customerDAO.updateCustomer(customer);
     }
 
-    public Customer getCustomerByID(Long id){
+    public Customer getCustomerById(Long id){
         return customerDAO.getCustomerById(id);
+    }
+
+    public boolean deleteCustomer(Long id){
+        return customerDAO.deleteCustomer(id);
     }
 
     /*public Customer getExampleCustomer() {

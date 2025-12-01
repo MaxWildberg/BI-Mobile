@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "customers")
-public class Customer {
+public class Customer implements CustomerInterface {
 
 
     @Id
@@ -69,70 +69,87 @@ public class Customer {
         this.idCardNumber = idCardNumber;
     }
 
+    @Override
     public Long getCustomerId() {
         return customerId;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public String getLastname() {
         return lastname;
     }
 
+    @Override
     public LocalDate getBirthday() {
         return birthday;
     }
 
+    @Override
     public String getAddress() {
         return address;
     }
 
+    @Override
     public String getZip() {
         return zip;
     }
 
+    @Override
     public String getResidence() {
         return residence;
     }
 
+    @Override
     public String getCountry() {
         return country;
     }
 
+    @Override
     public String getEmail() {
         return email;
     }
 
+    @Override
     public String getTelephone() {
         return telephone;
     }
 
+    @Override
     public String getDriverslicenseID() {
         return driverslicenseID;
     }
 
+    @Override
     public String getIdCardNumber() {
         return idCardNumber;
     }
 
+    @Override
     public int getAge() {
         return Period.between(getBirthday(), LocalDate.now()).getYears();
     }
 
+    @Override
     public List<Rental> getRents() {
         return rents;
     }
 
+    @Override
     public void addRent(Rental rental) {
         this.rents.add(rental);
     }
 
-    public  String getRentCount() {
+    @Override
+    public String getRentCount() {
         return String.valueOf(rents.size());
     }
 
+    @Override
     public String getTotalRevenue() {
         int totalRevenue = 0;
         for (Rental rent : rents){
@@ -141,46 +158,57 @@ public class Customer {
         return String.valueOf(totalRevenue);
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public void setLastname(String lastname) {
         this.lastname = lastname;
     }
 
+    @Override
     public void setAddress(String address) {
         this.address = address;
     }
 
+    @Override
     public void setZip(String zip) {
         this.zip = zip;
     }
 
+    @Override
     public void setResidence(String residence) {
         this.residence = residence;
     }
 
+    @Override
     public void setCountry(String country) {
         this.country = country;
     }
 
+    @Override
     public void setEmail(String email) {
         this.email = email;
     }
 
+    @Override
     public void setTelephone(String telephone) {
         this.telephone = telephone;
     }
 
+    @Override
     public void setDriverslicenseID(String driverslicenseID) {
         this.driverslicenseID = driverslicenseID;
     }
 
+    @Override
     public void setIdCardNumber(String idCardNumber) {
         this.idCardNumber = idCardNumber;
     }
 
+    @Override
     public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
     }

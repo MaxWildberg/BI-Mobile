@@ -1,7 +1,9 @@
 package bimobile.views.CustomerAdministration;
 
 import bimobile.controller.CustomerManager;
+import bimobile.model.BusinessCustomer;
 import bimobile.model.Customer;
+import bimobile.model.CustomerInterface;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -19,12 +21,12 @@ import com.vaadin.flow.data.binder.Binder;
 
 public class EditCreateCustomerDialog extends Dialog {
 
-    private final CustomerManager controller;
+    private final CustomerManager manager;
     private final Runnable onSaveSuccess;
-    private Customer customer;
+    private CustomerInterface customer;
     private boolean editMode;
 
-    private final Binder<Customer> binder = new Binder<>(Customer.class);
+    private final Binder<CustomerInterface> binder = new Binder<>(CustomerInterface.class);
 
     private final DatePicker birthdate = new DatePicker("Geburtsdatum");
     private final TextField firstName = new TextField("Vorname");
@@ -41,13 +43,23 @@ public class EditCreateCustomerDialog extends Dialog {
     private final EmailField email = new EmailField("E-Mail");
     private final TextField telephone = new TextField("Telefonnummer");
 
+    private final TextField company = new TextField("Unternehmen");
+    private final TextField companyAddress = new TextField("Unternehmensanschrift");
+    private HorizontalLayout businessInfoHeader = sectionHeader("Geschäftsinfo", VaadinIcon.BUILDING);
+    private FormLayout businessInfoLayout = new FormLayout(company, companyAddress);
+
     private final Button saveButton = new Button("Kunde registrieren");
     private final Button cancelButton = new Button("Abbrechen");
 
-    public EditCreateCustomerDialog(Customer customer, boolean editMode, CustomerManager controller, Runnable onSaveSuccess) {
-        this.customer = customer != null ? customer : new Customer();
+    public EditCreateCustomerDialog(CustomerInterface customer, boolean editMode, CustomerManager manager, Runnable onSaveSuccess) {
+        if (customer instanceof Customer) {
+            this.customer = customer != null ? customer : new Customer();
+        } else {
+            this.customer = customer != null ? customer : new BusinessCustomer();
+        }
+
         this.editMode = editMode;
-        this.controller = controller;
+        this.manager = manager;
         this.onSaveSuccess = onSaveSuccess;
 
         buildUI();
@@ -83,6 +95,9 @@ public class EditCreateCustomerDialog extends Dialog {
         add(sectionHeader("Kontaktdaten", VaadinIcon.ENVELOPE));
         add(new FormLayout(email, telephone));
 
+        // --- Unternehmen ----
+        add(businessInfoHeader, businessInfoLayout);
+
         // --- Footer Buttons ---
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.setText(editMode ? "Speichern" : "Registrieren");
@@ -113,47 +128,71 @@ public class EditCreateCustomerDialog extends Dialog {
 
         binder.forField(birthdate)
                 .asRequired("Bitte Geburtsdatum eingeben")
-                .bind(Customer::getBirthday, Customer::setBirthday);
+                .bind(CustomerInterface::getBirthday, CustomerInterface::setBirthday);
 
         binder.forField(firstName)
                 .asRequired("Bitte Vornamen eingeben")
-                .bind(Customer::getName, Customer::setName);
+                .bind(CustomerInterface::getName, CustomerInterface::setName);
 
         binder.forField(lastName)
                 .asRequired("Bitte Nachnamen eingeben")
-                .bind(Customer::getLastname, Customer::setLastname);
+                .bind(CustomerInterface::getLastname, CustomerInterface::setLastname);
 
         binder.forField(street)
                 .asRequired("Bitte Straße eingeben")
-                .bind(Customer::getAddress, Customer::setAddress);
+                .bind(CustomerInterface::getAddress, CustomerInterface::setAddress);
 
         binder.forField(city)
                 .asRequired("Bitte Wohnort eingeben")
-                .bind(Customer::getResidence, Customer::setResidence);
+                .bind(CustomerInterface::getResidence, CustomerInterface::setResidence);
 
         binder.forField(zip)
                 .asRequired("Bitte Postleitzahl eingeben")
-                .bind(Customer::getZip, Customer::setZip);
+                .bind(CustomerInterface::getZip, CustomerInterface::setZip);
 
         binder.forField(country)
                 .asRequired("Bitte Land eingeben")
-                .bind(Customer::getCountry, Customer::setCountry);
+                .bind(CustomerInterface::getCountry, CustomerInterface::setCountry);
 
         binder.forField(idCardNum)
                 .asRequired("Bitte Ausweisnummer eingeben")
-                .bind(Customer::getIdCardNumber, Customer::setIdCardNumber);
+                .bind(CustomerInterface::getIdCardNumber, CustomerInterface::setIdCardNumber);
 
         binder.forField(driversLicense)
                 .asRequired("Bitte Führerscheinnummer eingeben")
-                .bind(Customer::getDriverslicenseID, Customer::setDriverslicenseID);
+                .bind(CustomerInterface::getDriverslicenseID, CustomerInterface::setDriverslicenseID);
 
         binder.forField(email)
                 .asRequired("Bitte E-Mail eingeben")
-                .bind(Customer::getEmail, Customer::setEmail);
+                .bind(CustomerInterface::getEmail, CustomerInterface::setEmail);
 
         binder.forField(telephone)
                 .asRequired("Bitte Telefonnummer eingeben")
-                .bind(Customer::getTelephone, Customer::setTelephone);
+                .bind(CustomerInterface::getTelephone, CustomerInterface::setTelephone);
+
+        if (customer instanceof BusinessCustomer) {
+
+            binder.forField(company)
+                    .asRequired("Bitte Unternehmen eingeben")
+                    .bind(
+                            c -> ((BusinessCustomer) c).getCompany(),
+                            (c, v) -> ((BusinessCustomer) c).setCompany(v)
+                    );
+
+            binder.forField(companyAddress)
+                    .bind(
+                            c -> ((BusinessCustomer) c).getCompanyAddress(),
+                            (c, v) -> ((BusinessCustomer) c).setCompanyAddress(v)
+                    );
+
+            businessInfoHeader.setVisible(true);
+            businessInfoLayout.setVisible(true);
+
+        } else {
+            businessInfoHeader.setVisible(false);
+            businessInfoLayout.setVisible(false);
+        }
+
     }
 
     // ------------------------------------------------------------
@@ -166,21 +205,9 @@ public class EditCreateCustomerDialog extends Dialog {
             String msg;
 
             if (editMode) {
-                msg = controller.updateCustomer(customer);
+                msg = manager.updateCustomer(customer);
             } else {
-                msg = controller.registerCustomer(customer);
-                /*msg = controller.registerCustomer(
-                        vorname.getValue(),
-                        nachname.getValue(),
-                        geburtsdatum.getValue(),
-                        strasse.getValue(),
-                        plz.getValue(),
-                        stadt.getValue(),
-                        fuehrerscheinnummer.getValue(),
-                        ausweisnummer.getValue(),
-                        email.getValue(),
-                        telefonnummer.getValue()
-                );*/
+                msg = manager.registerCustomer(customer);
             }
 
             Notification.show(msg);

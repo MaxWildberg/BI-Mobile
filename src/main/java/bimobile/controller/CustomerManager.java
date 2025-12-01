@@ -2,6 +2,7 @@ package bimobile.controller;
 
 import bimobile.dao.CustomerDAO;
 import bimobile.model.Customer;
+import bimobile.model.CustomerInterface;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public class CustomerManager {
     }
 
     // String name, String lastname, LocalDate birthday, String address, String zip,  String residence, String driverslicenseID, String idCardNumber, String email, String telephone
-    public String registerCustomer(Customer customer) {
+    public String registerCustomer(CustomerInterface customer) {
         try {
             // Customer customer = new Customer(name.trim(), lastname.trim(), birthday, zip.trim(), address.trim(), residence.trim(), email.trim(), telephone.trim(), driverslicenseID.trim(), idCardNumber.trim());
             customerDAO.addCustomer(customer);
@@ -30,7 +31,7 @@ public class CustomerManager {
 
     //String name, String lastname, LocalDate birthday, String address, String zip,  String residence, String driverslicenseID, String idCardNumber, String email, String telephone
 
-    public String updateCustomer(Customer customer) {
+    public String updateCustomer(CustomerInterface customer) {
         try {
             //Customer customer = new Customer(name.trim(), lastname.trim(), birthday, zip.trim(), address.trim(), residence.trim(), email.trim(), telephone.trim(), driverslicenseID.trim(), idCardNumber.trim());
             customerDAO.updateCustomer(customer);
