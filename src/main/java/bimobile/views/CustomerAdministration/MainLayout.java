@@ -1,5 +1,7 @@
-package bimobile.views;
+package bimobile.views.CustomerAdministration;
 
+import bimobile.views.DashboardView;
+import bimobile.views.StandortAnlegenView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -7,31 +9,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
 import jakarta.annotation.security.PermitAll;
 
+
 @PermitAll
-/**
- * Hauptlayout der BI-Mobile Verwaltungsoberfläche.
-
- * Dieses Layout definiert die globale Struktur der Anwendung, bestehend aus:
- * - einer Top-Bar mit Titel
- * - einer linken Navigationsleiste mit allen wichtigen Views.
-
- * Das Layout sorgt für ein einheitliches Styling und ein konsistentes Benutzererlebnis innerhalb der gesamten Anwendung.
-
- * Wird automatisch durch Vaadin verwendet, sobald Views das Layout in der @Route-Annotation angeben.
- *
- * @Author Ben Berlin
- */
 public class MainLayout extends AppLayout {
 
-    /**
-     * Initialisiert das Hauptlayout der Anwendung.
-     * Der Konstruktor:
-     * - baut Top-Bar und die Linke Navigationsleiste auf.
-     * - legt ein einheitliches visuelles Styling fest.
-     */
+    //TopBar
     public MainLayout() {
-        // TopBar
-        H3 brand = new H3("BI-Mobile · Verwaltung");
+        H3 brand = new H3("BI-Mobile · Kundenverwaltung");
         brand.getStyle().set("margin", "0");
         HorizontalLayout top = new HorizontalLayout(brand);
         top.setWidthFull();
@@ -47,18 +31,19 @@ public class MainLayout extends AppLayout {
         nav.getStyle().set("border-right", "1px solid #e5e7eb");
         nav.getStyle().set("box-shadow", "2px 0 6px rgba(0,0,0,0.05)");
 
-        // Navigationseinträge
-        RouterLink dashboard = new RouterLink("Dashboard", DashboardView.class);
-        RouterLink uebersicht = new RouterLink("Standorte", LocationsOverviewView.class);
+        //Navigationseinträge
+        RouterLink customerDashboard = new RouterLink("Dashboard", DashboardView.class);
+        RouterLink customerOverview = new RouterLink("Kundenübersicht", CustomerOverview.class);
+        RouterLink registerCustomer = new RouterLink("Neuen Kunden anlegen", EditCreateCustomerDialog.class);
 
-        // Gemeinsames Styling der Links
-        for (var link : new RouterLink[]{dashboard, uebersicht}) {
+        //Gemeinsames Styling der Links
+        for (var link : new RouterLink[]{customerDashboard, customerOverview, registerCustomer}) {
             link.getElement().getStyle().set("padding", "10px 16px");
             link.getElement().getStyle().set("border-radius", "8px");
             link.getElement().getStyle().set("margin", "4px 8px");
         }
 
-        nav.add(new H3("Navigation"), dashboard, uebersicht);
+        nav.add(new H3("Navigation"), customerDashboard, customerOverview, registerCustomer);
         addToDrawer(nav);
     }
 }

@@ -21,26 +21,26 @@ import jakarta.annotation.security.PermitAll;
  * @Author Ben Berlin
  */
 public class DashboardView extends VerticalLayout {
-	/**
-	 * Erzeugt das Dashboard und initialisiert die grundlegenden UI-Elemente.
+    /**
+     * Erzeugt das Dashboard und initialisiert die grundlegenden UI-Elemente.
 
-	 * Das Dashboard zeigt:
-	 * - den Titel der Anwendung,
-	 * - einen Button zu Navigation in die Standortübersicht.
-	 */
-	public DashboardView() {
-		setSpacing(true);
-		setPadding(true);
-		setAlignItems(Alignment.CENTER);
+     * Das Dashboard zeigt:
+     * - den Titel der Anwendung,
+     * - einen Button zu Navigation in die Standortübersicht.
+     */
+    public DashboardView() {
+        setSpacing(true);
+        setPadding(true);
+        setAlignItems(Alignment.CENTER);
 
-		H2 title = new H2("BI-Mobile Dashbord");
+        H2 title = new H2("BI-Mobile Dashbord");
 
-		//Buttons zur Navigation
-		Button standorteBTN = new Button("Standortübersicht öffnen",
-				e -> getUI().ifPresent(ui-> ui.navigate("standorte")));
-		standorteBTN.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        //Buttons zur Navigation
+        Button standorteBTN = new Button("Standortübersicht öffnen",
+                e -> getUI().ifPresent(ui-> ui.navigate("standorte")));
+        standorteBTN.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
 
-		add(title, standorteBTN);
-	}
+        add(title, standorteBTN);
+    }
 }

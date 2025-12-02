@@ -20,14 +20,14 @@ public class Facility {
     private String mail;
 
     @Column(name = "telephone_nr", nullable = false)
-    private String telephoneNr;
+    private int telephoneNr;
 
     @OneToMany(mappedBy = "facility", cascade = CascadeType.ALL)
     private List<Employee> employees = new ArrayList<>();
 
     public Facility() {}
 
-    public Facility(String address, String mail, String telephoneNr) {
+    public Facility(String address, String mail, int telephoneNr) {
         this.address = address;
         this.mail = mail;
         this.telephoneNr = telephoneNr;
@@ -58,11 +58,11 @@ public class Facility {
         this.address = address;
     }
 
-    public String getTelephoneNr() {
+    public int getTelephoneNr() {
         return telephoneNr;
     }
 
-    public void setTelephoneNr(String telephoneNr) {
+    public void setTelephoneNr(int telephoneNr) {
         this.telephoneNr = telephoneNr;
     }
 }
