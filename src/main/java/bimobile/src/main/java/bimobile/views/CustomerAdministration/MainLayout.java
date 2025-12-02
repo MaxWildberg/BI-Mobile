@@ -1,0 +1,49 @@
+package bimobile.views.CustomerAdministration;
+
+import bimobile.views.DashboardView;
+import bimobile.views.StandortAnlegenView;
+import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.RouterLink;
+import jakarta.annotation.security.PermitAll;
+
+
+@PermitAll
+public class MainLayout extends AppLayout {
+
+    //TopBar
+    public MainLayout() {
+        H3 brand = new H3("BI-Mobile · Kundenverwaltung");
+        brand.getStyle().set("margin", "0");
+        HorizontalLayout top = new HorizontalLayout(brand);
+        top.setWidthFull();
+        top.setPadding(true);
+        addToNavbar(top);
+
+        // Linke Navigationsleiste
+        VerticalLayout nav = new VerticalLayout();
+        nav.setWidth("240px");
+        nav.setPadding(false);
+        nav.setSpacing(false);
+        nav.getStyle().set("background", "#f9fafb");
+        nav.getStyle().set("border-right", "1px solid #e5e7eb");
+        nav.getStyle().set("box-shadow", "2px 0 6px rgba(0,0,0,0.05)");
+
+        //Navigationseinträge
+        RouterLink customerDashboard = new RouterLink("Dashboard", DashboardView.class);
+        RouterLink customerOverview = new RouterLink("Kundenübersicht", CustomerOverview.class);
+        RouterLink registerCustomer = new RouterLink("Neuen Kunden anlegen", EditCreateCustomerDialog.class);
+
+        //Gemeinsames Styling der Links
+        for (var link : new RouterLink[]{customerDashboard, customerOverview, registerCustomer}) {
+            link.getElement().getStyle().set("padding", "10px 16px");
+            link.getElement().getStyle().set("border-radius", "8px");
+            link.getElement().getStyle().set("margin", "4px 8px");
+        }
+
+        nav.add(new H3("Navigation"), customerDashboard, customerOverview, registerCustomer);
+        addToDrawer(nav);
+    }
+}
