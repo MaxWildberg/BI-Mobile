@@ -1,6 +1,8 @@
-package bimobile.model;
+package bimobile.model.CustomerModel;
 
 
+import bimobile.model.Invoice;
+import bimobile.model.Rental;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -10,8 +12,13 @@ import java.util.List;
 
 
 /**
- * Beschreibung:
  * Entity Klasse, welche einen Kunden mit grundsätzlichen Attributen darstellt.
+ *
+ * Grundklasse für weitere Kundenklassen, die darauf aufbauen.
+ *
+ * Ein Kunde hat eine Verknüpfung zu Ausleihe (Rental)
+ * Jedes Objekt kennt alle seine Ausleihen.
+ *
  *
  * @author Max Wildberg
  */
@@ -60,7 +67,27 @@ public class Customer implements CustomerInterface {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Rental> rents = new ArrayList<>();
 
-    public Customer(){}
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    private List<Invoice> invoices = new ArrayList<>();
+
+    /**
+     * Parameterloser Standardkonstruktor für JPA.
+     */
+    protected Customer(){}
+
+    /**
+     * Konstruktor zum Anlegen eines neuen Kunden
+     * @param name Name
+     * @param lastname Nachname
+     * @param birthday Geburtstag
+     * @param address Adresse
+     * @param zip Postleitzahl
+     * @param residence Wohnort
+     * @param email E-Mail Adresse
+     * @param telephone Telefonnummer
+     * @param driverslicenseID Führerscheinnummer
+     * @param idCardNumber Ausweisnummer
+     */
 
     public Customer(String name, String lastname, LocalDate birthday, String address, String zip, String residence, String country, String email, String telephone, String driverslicenseID, String idCardNumber) {
         this.name = name;
@@ -144,6 +171,16 @@ public class Customer implements CustomerInterface {
     @Override
     public List<Rental> getRents() {
         return rents;
+    }
+
+    @Override
+    public String getFullName(){
+        return getName() + " " + getLastname();
+    }
+
+    @Override
+    public List<Invoice> getInvoices() {
+        return invoices;
     }
 
     @Override

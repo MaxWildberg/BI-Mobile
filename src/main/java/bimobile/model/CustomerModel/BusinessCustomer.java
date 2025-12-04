@@ -1,4 +1,4 @@
-package bimobile.model;
+package bimobile.model.CustomerModel;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

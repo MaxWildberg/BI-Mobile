@@ -1,4 +1,7 @@
-package bimobile.model;
+package bimobile.model.CustomerModel;
+
+import bimobile.model.Invoice;
+import bimobile.model.Rental;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,6 +49,10 @@ public interface CustomerInterface {
     String getRentCount();
 
     String getTotalRevenue();
+
+    String getFullName();
+
+    List<Invoice> getInvoices();
 
     void setName(String name);
 
