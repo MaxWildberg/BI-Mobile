@@ -199,12 +199,12 @@ public class Customer implements CustomerInterface {
     }
 
     @Override
-    public String getTotalRevenue() {
-        int totalRevenue = 0;
+    public double getTotalRevenue() {
+        double totalRevenue = 0;
         for (Rental rent : rents){
             totalRevenue += rent.getTotalPrice();
         }
-        return String.valueOf(totalRevenue);
+        return totalRevenue;
     }
 
     @Override

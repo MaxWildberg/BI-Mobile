@@ -1,22 +1,13 @@
 package bimobile.dao;
 
-import bimobile.model.CustomerModel.Customer;
-import bimobile.model.CustomerModel.CustomerInterface;
+import bimobile.model.Customer;
+import bimobile.model.CustomerInterface;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
-/**
- * Beschreibung:
- * Direkter Datenbank Zugriff
- * Speichert, updated und liest Kunden anhand von SQL Kommandos.
- * Erhält Anweisung von CustomerManager bzw. gibt Objekte aus Datenbank daran weiter.
- *
- * @author Max Wildberg
- */
 
 @Repository
 public class CustomerDAO {

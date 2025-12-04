@@ -1,11 +1,10 @@
-package bimobile.views.CustomerAdministration;
+package bimobile.views;
 
 import bimobile.controller.CustomerManager;
 import bimobile.model.BusinessCustomer;
 import bimobile.model.CustomerInterface;
 import bimobile.model.Invoice;
 import bimobile.model.Rental;
-import bimobile.views.MainLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;

@@ -45,7 +45,7 @@ public interface CustomerInterface {
 
     String getRentCount();
 
-    String getTotalRevenue();
+    double getTotalRevenue();
 
     String getFullName();
 

@@ -1,4 +1,4 @@
-package bimobile.views.CustomerAdministration;
+package bimobile.views;
 
 import bimobile.controller.CustomerManager;
 import bimobile.model.BusinessCustomer;
