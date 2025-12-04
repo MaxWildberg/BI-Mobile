@@ -60,12 +60,26 @@ public class Vehicle {
      * Datum der nächsten HU/Inspektion.
      * Wird für die Regel "Status Verfügbar nur, wenn HU nicht fällig" verwendet.
      */
-    private LocalDate inspectionDueDate;
+    private LocalDate nextInspectionDate;
 
+	/**
+	 * Datum des nächsten Service-Termins.
+	 */
+	private LocalDate nextServiceDate;
     /**
      * True, wenn aktuell eine Wartung läuft/geplant ist.
      */
     private boolean maintenanceActive;
+
+	/**
+	 * Tagespreis, der für Mietberechnungen genutzt wird.
+	 */
+	private double dailyRate;
+
+	/**
+	 * Flag, ob das Fahrzeug grundsätzlich verfügbar ist.
+	 */
+	private boolean available = true;
 
     /**
      * Historie-Einträge (Lebenslauf).
@@ -89,7 +103,7 @@ public class Vehicle {
      * Prüft, ob HU/Inspektion fällig oder überfällig ist.
      */
     public boolean isInspectionOverdue() {
-        return inspectionDueDate != null && !inspectionDueDate.isAfter(LocalDate.now());
+	    return nextInspectionDate != null && !nextInspectionDate.isAfter(LocalDate.now());
     }
 
     /**
@@ -154,14 +168,36 @@ public class Vehicle {
         this.status = status;
     }
 
-    public LocalDate getInspectionDueDate() {
-        return inspectionDueDate;
-    }
+	public LocalDate getNextInspectionDate() {
+		return nextInspectionDate;
+	}
 
-    public void setInspectionDueDate(LocalDate inspectionDueDate) {
-        this.inspectionDueDate = inspectionDueDate;
-    }
+	public void setNextInspectionDate(LocalDate nextInspectionDate) {
+		this.nextInspectionDate = nextInspectionDate;
+	}
 
+	public LocalDate getNextServiceDate() {
+		return nextServiceDate;
+	}
+	public double getDailyRate() {
+		return dailyRate;
+	}
+
+	public void setDailyRate(double dailyRate) {
+		this.dailyRate = dailyRate;
+	}
+
+	public boolean isAvailable() {
+		return available;
+	}
+
+	public void setAvailable(boolean available) {
+		this.available = available;
+	}
+
+	public void setNextServiceDate(LocalDate nextServiceDate) {
+		this.nextServiceDate = nextServiceDate;
+	}
     public boolean isMaintenanceActive() {
         return maintenanceActive;
     }

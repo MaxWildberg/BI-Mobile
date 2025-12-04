@@ -165,7 +165,7 @@ public class RentalService {
      * @return Liste aller Ausleihen
      */
     @Transactional(readOnly = true)
-    public static List<Rental> findAll() {
+    public List<Rental> findAll() {
         return rentalRepository.findAll();
     }
 

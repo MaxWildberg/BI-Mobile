@@ -7,7 +7,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
 import jakarta.annotation.security.PermitAll;
 
-@PermitAll
 /**
  * Hauptlayout der BI-Mobile Verwaltungsoberfläche.
 
@@ -19,8 +18,9 @@ import jakarta.annotation.security.PermitAll;
 
  * Wird automatisch durch Vaadin verwendet, sobald Views das Layout in der @Route-Annotation angeben.
  *
- * @Author Ben Berlin
+ * @author Ben Berlin
  */
+@PermitAll
 public class MainLayout extends AppLayout {
 
 	/**
@@ -49,23 +49,24 @@ public class MainLayout extends AppLayout {
 
 		// Navigationseinträge
 		RouterLink dashboard = new RouterLink("Dashboard", DashboardView.class);
-		RouterLink uebersicht = new RouterLink("Standorte", LocationsOverviewView.class);
-        RouterLink employees = new RouterLink("Mitarbeiter", EmployeeView.class);
+		RouterLink facilities = new RouterLink("Standorte", LocationsOverviewView.class);
+		RouterLink vehicles = new RouterLink("Fahrzeuge", VehicleView.class);
+		RouterLink rentals = new RouterLink("Ausleihen", RentalsOverviewView.class);
+		RouterLink employees = new RouterLink("Mitarbeiter", EmployeeView.class);
 
+		styleLinks(dashboard, facilities, vehicles, rentals, employees);
 
-        // Gemeinsames Styling der Links
-		for (var link : new RouterLink[]{dashboard, uebersicht}) {
-		RouterLink fahrzeugverwaltung = new RouterLink("Fahrzeuge", VehicleView.class);
+		nav.add(new H3("Navigation"), dashboard, facilities, vehicles, rentals, employees);
+		addToDrawer(nav);
 
-		// Gemeinsames Styling der Links
-		for (var link : new RouterLink[]{dashboard, uebersicht, fahrzeugverwaltung}) {
+	}
+
+	// Gemeinsames Styling der Links
+	private void styleLinks(RouterLink... links) {
+		for (RouterLink link : links) {
 			link.getElement().getStyle().set("padding", "10px 16px");
 			link.getElement().getStyle().set("border-radius", "8px");
 			link.getElement().getStyle().set("margin", "4px 8px");
 		}
-
-		nav.add(new H3("Navigation"), dashboard, uebersicht,employees);
-		nav.add(new H3("Navigation"), dashboard, uebersicht, fahrzeugverwaltung);
-		addToDrawer(nav);
 	}
 }

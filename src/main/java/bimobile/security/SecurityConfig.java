@@ -31,27 +31,28 @@ public class SecurityConfig extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        // H2 Console erlauben
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/h2-console/**").permitAll()
-                .anyRequest().authenticated()
-        );
+	    // H2 Console erlauben
+	    http.authorizeHttpRequests(auth -> auth
+			    .requestMatchers("/h2-console/**").permitAll()
+			    .anyRequest().authenticated()
+	    );
 
-        // H2 benötigt Frames
-        http.headers(headers -> headers.frameOptions().disable());
+	    // H2 benötigt Frames
+	    http.headers(headers -> headers.frameOptions().disable());
 
-        // Vaadin Security aktivieren
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
-        );
+	    // Vaadin Security aktivieren
+	    http.authorizeHttpRequests(auth -> auth
+			    .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+	    );
 
-        http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+	    http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+	    http.userDetailsService(userDetailsService);
 
-        super.configure(http);
+	    super.configure(http);
 
-        // Login View definieren
-        setLoginView(http, LoginView.class);
-
+	    // Login View definieren
+	    setLoginView(http, LoginView.class);
+    }
     @Bean
     public UserDetailsService users() {
         var user = User.withUsername("user")
@@ -65,7 +66,6 @@ public class SecurityConfig extends VaadinWebSecurity {
                 .build();
 
         return new InMemoryUserDetailsManager(user, admin);
-        http.userDetailsService(userDetailsService);
     }
 
     @Bean

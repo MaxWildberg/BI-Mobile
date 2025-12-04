@@ -152,12 +152,11 @@ public class RentalsOverviewView extends VerticalLayout {
         customerBox.setItemLabelGenerator(Customer::getFullName);
 
         ComboBox<Vehicle> vehicleBox = new ComboBox<>("Fahrzeug");
-        vehicleBox.setItems(VehicleService.findAll());
+	    vehicleBox.setItems(vehicleService.findAllVehicles());
         vehicleBox.setItemLabelGenerator(v -> v.getLicensePlate() + " – " + v.getModel());
 
         ComboBox<Facility> facilityBox = new ComboBox<>("Standort");
-        facilityBox.setItems(facilityService.findAll());
-        // Falls Facility keine "Name"-Methode hat, Adresse verwenden:
+	    facilityBox.setItems(facilityService.getAllFacilities());
         facilityBox.setItemLabelGenerator(Facility::getAddress);
 
         DatePicker startDate = new DatePicker("Startdatum");
@@ -235,13 +234,13 @@ public class RentalsOverviewView extends VerticalLayout {
         customerBox.setReadOnly(true);
 
         ComboBox<Vehicle> vehicleBox = new ComboBox<>("Fahrzeug");
-        vehicleBox.setItems(vehicleService.findAll());
+	    vehicleBox.setItems(vehicleService.findAllVehicles());
         vehicleBox.setItemLabelGenerator(v -> v.getLicensePlate() + " – " + v.getModel());
         vehicleBox.setValue(rental.getVehicle());
         vehicleBox.setReadOnly(true);
 
         ComboBox<Facility> facilityBox = new ComboBox<>("Standort");
-        facilityBox.setItems(facilityService.findAll());
+	    facilityBox.setItems(facilityService.getAllFacilities());
         facilityBox.setItemLabelGenerator(Facility::getAddress);
         facilityBox.setValue(rental.getFacility());
 
