@@ -37,14 +37,10 @@ public class InvoiceService {
         double netto = rental.getDailyRate() *
                 (rental.getStartDate().until(rental.getEndDate()).getDays());
 
-        double kmExtra = Math.max(0, rental.getKilometersAfter() - rental.getKilometersBefore() - 100);
-        double kmFee = kmExtra * 0.20;
+        double tax = netto * 0.19;
+        double gross = netto + tax;
 
-        double nettoTotal = netto + kmFee;
-        double tax = nettoTotal * 0.19;
-        double gross = nettoTotal + tax;
-
-        invoice.setNetAmount(nettoTotal);
+        invoice.setNetAmount(netto);
         invoice.setTaxAmount(tax);
         invoice.setGrossAmount(gross);
         invoice.setVehicle(rental.getVehicle());
@@ -68,9 +64,10 @@ public class InvoiceService {
 
     public void confirmCarReturn(Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId).orElseThrow();
-        rental.setReturned(true);
+        rental.setStatus(RentalStatus.COMPLETED);
         rentalRepository.save(rental);
         createInvoiceForRental(rental);
     }
 
 }
+
