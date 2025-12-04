@@ -13,10 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
-import bimobile.views.LoginView;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -31,21 +27,15 @@ public class SecurityConfig extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-	    // H2 Console erlauben
+	    // H2 Console erlauben und übrige Anfragen absichern
 	    http.authorizeHttpRequests(auth -> auth
 			    .requestMatchers("/h2-console/**").permitAll()
 			    .anyRequest().authenticated()
 	    );
 
 	    // H2 benötigt Frames
-	    http.headers(headers -> headers.frameOptions().disable());
-
-	    // Vaadin Security aktivieren
-	    http.authorizeHttpRequests(auth -> auth
-			    .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
-	    );
-
 	    http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+	    http.csrf(csrf -> csrf.disable());
 	    http.userDetailsService(userDetailsService);
 
 	    super.configure(http);
