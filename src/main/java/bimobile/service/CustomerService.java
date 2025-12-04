@@ -1,43 +1,85 @@
 package bimobile.service;
 
 import bimobile.dao.CustomerDAO;
-import bimobile.model.Customer;
+import bimobile.model.CustomerModel.Customer;
+import bimobile.model.CustomerModel.CustomerInterface;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-// CustomerService ersetzt mit CustomerManager: View -> CustomerManager -> CustomerDAO anstatt View -> Controller -> Service -> DAO
+/**
+ * Beschreibung:
+ * Service Schicht zur Verwaltung der Kunden.
+ * Steht zwischen Model und Datenbank.
+ *
+ * @author Max Wildberg
+ */
 
-
+@Service
 public class CustomerService {
 
-    private final CustomerDAO customerDAO;
+    private CustomerDAO customerDAO;
 
-    public CustomerService(CustomerDAO customerDAO){
+    public CustomerService(CustomerDAO customerDAO) {
         this.customerDAO = customerDAO;
     }
 
-    public void addCustomer(Customer customer){
-        customerDAO.addCustomer(customer);
+    public String registerCustomer(CustomerInterface customer) {
+        try {
+            // Customer customer = new Customer(name.trim(), lastname.trim(), birthday, zip.trim(), address.trim(), residence.trim(), email.trim(), telephone.trim(), driverslicenseID.trim(), idCardNumber.trim());
+            customerDAO.addCustomer(customer);
+            return "Erfolg: Kunde '" + customer.getName() + " " + customer.getLastname() + "' wurde erfolgreich angelegt";
+        } catch (Exception exception) {
+            return "Fehler: Kunde konnte nicht gespeichert werden - " + exception.getMessage();
+        }
     }
 
-    public List<Customer> getAllCustomers(){
-        return customerDAO.getAllCustomers();
+    public String updateCustomer(CustomerInterface customer) {
+        try {
+            //Customer customer = new Customer(name.trim(), lastname.trim(), birthday, zip.trim(), address.trim(), residence.trim(), email.trim(), telephone.trim(), driverslicenseID.trim(), idCardNumber.trim());
+            customerDAO.updateCustomer(customer);
+            return "Erfolg: Kunde wurde aktualisiert";
+        } catch (Exception e) {
+            return "Fehler: Kunde konnte nicht aktualisiert werden - " + e.getMessage();
+        }
     }
 
-    public  void updateCustomer(Customer customer) {
-        customerDAO.updateCustomer(customer);
+    public List<Customer> findAllCustomers() {
+        try {
+            return customerDAO.getAllCustomers();
+        } catch (Exception e) {
+            System.err.println("Fehler beim Abrufen der Kunden: " + e.getMessage());
+            return List.of();
+        }
     }
 
-    public Customer getCustomerById(Long id){
-        return customerDAO.getCustomerById(id);
+    public String deleteCustomer(Long id) {
+        if (id == null || id <= 0) {
+            return "Fehler: Ungültige Kunden-ID";
+        }
+
+        Customer customer = customerDAO.getCustomerById(id);
+        if (customer == null) {
+            return "Fehler: Kunde mit ID " + id + " wurde nicht gefunden";
+        }
+
+        try {
+            customerDAO.deleteCustomer(id);
+            return "Erfolg: Kunde wurde gelöscht";
+        } catch (Exception e) {
+            return "Fehler: Kunde konnte nicht gelöscht werden - " + e.getMessage();
+        }
     }
 
-    public boolean deleteCustomer(Long id){
-        return customerDAO.deleteCustomer(id);
+    public Customer getCustomerByID(Long id){
+        if (id == null || id <= 0) {
+            return null;
+        } else {
+            try {
+                return customerDAO.getCustomerById(id);
+            } catch (Exception e) {
+                return null;
+            }
+        }
     }
-
-    /*public Customer getExampleCustomer() {
-        customerDAO.addCustomer();
-    }*/
 }

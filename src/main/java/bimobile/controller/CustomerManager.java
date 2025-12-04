@@ -1,8 +1,8 @@
 package bimobile.controller;
 
 import bimobile.dao.CustomerDAO;
-import bimobile.model.Customer;
-import bimobile.model.CustomerInterface;
+import bimobile.model.CustomerModel.Customer;
+import bimobile.model.CustomerModel.CustomerInterface;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +14,8 @@ import java.util.List;
  *
  * @author Max Wildberg
  */
+
+// Überflüssig da Service vorhanden
 
 @Service
 public class CustomerManager {
@@ -87,3 +89,4 @@ public class CustomerManager {
 
 
 }
+

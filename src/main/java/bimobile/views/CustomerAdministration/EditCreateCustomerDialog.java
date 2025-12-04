@@ -1,9 +1,9 @@
 package bimobile.views.CustomerAdministration;
 
 import bimobile.controller.CustomerManager;
-import bimobile.model.BusinessCustomer;
-import bimobile.model.Customer;
-import bimobile.model.CustomerInterface;
+import bimobile.model.CustomerModel.BusinessCustomer;
+import bimobile.model.CustomerModel.Customer;
+import bimobile.model.CustomerModel.CustomerInterface;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;

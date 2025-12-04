@@ -1,9 +1,9 @@
 package bimobile.views.CustomerAdministration;
 
 import bimobile.controller.CustomerManager;
-import bimobile.model.BusinessCustomer;
-import bimobile.model.Customer;
-import bimobile.model.CustomerInterface;
+import bimobile.model.CustomerModel.BusinessCustomer;
+import bimobile.model.CustomerModel.CustomerInterface;
+import bimobile.model.Invoice;
 import bimobile.model.Rental;
 import bimobile.views.MainLayout;
 import com.vaadin.flow.component.UI;
@@ -26,6 +26,8 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import jakarta.annotation.security.PermitAll;
+
+import javax.swing.*;
 
 /**
  * Beschreibung:
@@ -133,7 +135,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
             } else if (tabs.getSelectedTab() == historie) {
                 content.add(createHistoryContent());
             } else {
-                content.add(createDocumentsContent());
+                content.add(createInvoiceContent());
             }
         });
 
@@ -212,9 +214,12 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return card;
     }
 
-    // Methoden zur Füllung der Karten
-    // Füllen ein Div mit Informationen über den spezifischen Kunden
-    // Jeweils als Parameter übergeben in createCard Methode
+    /**
+     * Methoden zur Füllung der Karten
+     * Füllen ein Div mit Informationen über den spezifischen Kunden
+     * Jeweils als Parameter übergeben in createCard Methode
+     * @return
+     */
     private Div createPersonalData() {
         Div d = new Div();
 
@@ -272,36 +277,56 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     // Füllt ein Grid mit Mieten des Kunden
     private Div createHistoryContent() {
 
-        Div d = new Div();
-        d.add(new Paragraph("Miethistorie (Platzhalter)"));
+        Div container = new Div();
+        container.add(new Paragraph("Miethistorie (Platzhalter)"));
 
         if (customerInterface.getRents() == null || customerInterface.getRents().isEmpty()) {
-            d.add(new Paragraph("Dieser Kunde hat noch kein Fahrzeug gemietet."));
+            container.add(new Paragraph("Dieser Kunde hat noch kein Fahrzeug gemietet."));
         } else {
             Grid<Rental> grid = new Grid<>(Rental.class, true);
-            grid.setItems(customerInterface.getRents()); // populate the grid
+            grid.setItems(customerInterface.getRents());
             grid.addThemeVariants(GridVariant.LUMO_COLUMN_BORDERS);
-            d.add(grid);
+            grid.setHeight("400px");
+            container.add(grid);
         }
-
-        return d;
+        return container;
     }
 
-    // Füllt Grid mit Rechnungen
-    private Div createDocumentsContent() {
-        Div d = new Div();
-        d.add(new Paragraph("Dokumente (Platzhalter)"));
-        return d;
+    /**
+     * Bei Auswahl des Tabs "Rechnungen" wird ein Grid mit allen Rechnungen zugehörig zum Kunden gefüllt
+     * @return Div mit Grid als Übersicht aller Rechnungen
+     */
+    private Div createInvoiceContent() {
+        Div container = new Div();
+        container.add(new Paragraph("Dokumente (Platzhalter)"));
+
+        if (customerInterface.getInvoices() == null || customerInterface.getInvoices().isEmpty()) {
+            container.add(new Paragraph("Dieser Kunde hat noch keine Rechnungen."));
+        } else {
+            Grid<Invoice> grid = new Grid<>(Invoice.class, true);
+            grid.setItems(customerInterface.getInvoices());
+            grid.addThemeVariants(GridVariant.LUMO_COLUMN_BORDERS);
+            grid.setHeight("400px");
+            container.add(grid);
+        }
+        return container;
     }
 
-    // Liest die Initiale des Kunden aus zur Darstellung in der Detail Übersicht
+    /**
+     * Liest die Initiale des Kunden aus zur Darstellung in der Detail Übersicht
+     * @param first Initial des Vornamens
+     * @param last Initial des Nachnamens
+     * @return Rückgabe der Initiale an UI zur Darstellung
+     */
     private String getInitials(String first, String last) {
         String f = first != null && !first.isBlank() ? first.substring(0, 1).toUpperCase() : "";
         String l = last != null && !last.isBlank() ? last.substring(0, 1).toUpperCase() : "";
         return (f + l).isEmpty() ? "?" : f + l;
     }
 
-    // Lädt die entsprechenden Seiten bei auswahl der Tabs
+    /**
+     * Lädt die entsprechenden Seiten bei auswahl der Tabs -> Übersicht, Miethistorie, Rechnungshistorie
+     */
     private void reloadCustomerData(){
         if (customerId == null) return;
 
@@ -314,7 +339,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         } if (tabs.getSelectedTab().getLabel().equals("Miethistore")) {
             content.add(createHistoryContent());
         } else {
-            content.add(createDocumentsContent());
+            content.add(createInvoiceContent());
         }
 
         removeAll();
