@@ -1,7 +1,4 @@
-package bimobile.model.CustomerModel;
-
-import bimobile.model.Invoice;
-import bimobile.model.Rental;
+package bimobile.model;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -36,7 +33,7 @@ public interface CustomerInterface {
 
     String getTelephone();
 
-    String getDriverslicenseID();
+    String getDriversLicenseID();
 
     String getIdCardNumber();
 
@@ -53,6 +50,8 @@ public interface CustomerInterface {
     String getFullName();
 
     List<Invoice> getInvoices();
+
+    String getSalutation();
 
     void setName(String name);
 
@@ -75,4 +74,7 @@ public interface CustomerInterface {
     void setIdCardNumber(String idCardNumber);
 
     void setBirthday(LocalDate birthday);
+
+    void setSalutation(String salutation);
+
 }

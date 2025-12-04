@@ -1,8 +1,8 @@
 package bimobile.controller;
 
 import bimobile.dao.CustomerDAO;
-import bimobile.model.CustomerModel.Customer;
-import bimobile.model.CustomerModel.CustomerInterface;
+import bimobile.model.Customer;
+import bimobile.model.CustomerInterface;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

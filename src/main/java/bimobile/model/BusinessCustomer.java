@@ -1,4 +1,4 @@
-package bimobile.model.CustomerModel;
+package bimobile.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,7 +27,8 @@ public class BusinessCustomer extends Customer implements CustomerInterface {
     public BusinessCustomer() {}
 
     // Optional convenience constructor
-    public BusinessCustomer(String name,
+    public BusinessCustomer(String salutation,
+                            String name,
                             String lastname,
                             LocalDate birthday,
                             String address,
@@ -40,7 +41,7 @@ public class BusinessCustomer extends Customer implements CustomerInterface {
                             String idCardNumber,
                             String company,
                             String companyAddress) {
-        super(name, lastname, birthday, address, zip, residence, country, email, telephone, driverslicenseID, idCardNumber);
+        super(salutation, name, lastname, birthday, address, zip, residence, country, email, telephone, driverslicenseID, idCardNumber);
 
         this.company = company;
         this.companyAddress = companyAddress;

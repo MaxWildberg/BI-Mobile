@@ -4,10 +4,7 @@ import bimobile.model.Customer;
 import bimobile.model.Facility;
 import bimobile.model.Rental;
 import bimobile.model.Vehicle;
-import bimobile.service.RentalService;
-import bimobile.service.CustomerService;
-import bimobile.service.VehicleService;
-import bimobile.service.FacilityService;
+import bimobile.service.*;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -28,7 +25,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -64,7 +60,7 @@ public class RentalsOverviewView extends VerticalLayout {
      * @param facilityService  Service zum Laden von Standorten
      */
     public RentalsOverviewView(RentalService rentalService,
-                               CustomerService customerService,
+                               CustomerServiceImpl customerService,
                                VehicleService vehicleService,
                                FacilityService facilityService) {
 
@@ -148,7 +144,7 @@ public class RentalsOverviewView extends VerticalLayout {
         H3 dialogTitle = new H3("Neue Ausleihe anlegen");
 
         ComboBox<Customer> customerBox = new ComboBox<>("Kunde");
-        customerBox.setItems(customerService.findAll());
+        customerBox.setItems(customerService.findAllCustomers());
         customerBox.setItemLabelGenerator(Customer::getFullName);
 
         ComboBox<Vehicle> vehicleBox = new ComboBox<>("Fahrzeug");
@@ -228,7 +224,7 @@ public class RentalsOverviewView extends VerticalLayout {
 
         // Kunde & Fahrzeug nur lesbar anzeigen
         ComboBox<Customer> customerBox = new ComboBox<>("Kunde");
-        customerBox.setItems(customerService.findAll());
+        customerBox.setItems(customerService.findAllCustomers());
         customerBox.setItemLabelGenerator(Customer::getFullName);
         customerBox.setValue(rental.getCustomer());
         customerBox.setReadOnly(true);

@@ -1,8 +1,8 @@
 package bimobile.views.CustomerAdministration;
 
 import bimobile.controller.CustomerManager;
-import bimobile.model.CustomerModel.BusinessCustomer;
-import bimobile.model.CustomerModel.CustomerInterface;
+import bimobile.model.BusinessCustomer;
+import bimobile.model.CustomerInterface;
 import bimobile.model.Invoice;
 import bimobile.model.Rental;
 import bimobile.views.MainLayout;
@@ -26,8 +26,6 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import jakarta.annotation.security.PermitAll;
-
-import javax.swing.*;
 
 /**
  * Beschreibung:
@@ -269,7 +267,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
 
     private Div createDocumentsSummary() {
         Div d = new Div();
-        d.add(new Paragraph("Führerscheinnummer: " + customerInterface.getDriverslicenseID()));
+        d.add(new Paragraph("Führerscheinnummer: " + customerInterface.getDriversLicenseID()));
         d.add(new Paragraph("Ausweisnummer: " + customerInterface.getIdCardNumber()));
         return d;
     }

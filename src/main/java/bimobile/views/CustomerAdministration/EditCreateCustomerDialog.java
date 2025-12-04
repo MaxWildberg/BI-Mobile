@@ -1,11 +1,12 @@
 package bimobile.views.CustomerAdministration;
 
 import bimobile.controller.CustomerManager;
-import bimobile.model.CustomerModel.BusinessCustomer;
-import bimobile.model.CustomerModel.Customer;
-import bimobile.model.CustomerModel.CustomerInterface;
+import bimobile.model.BusinessCustomer;
+import bimobile.model.Customer;
+import bimobile.model.CustomerInterface;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -37,6 +38,7 @@ public class EditCreateCustomerDialog extends Dialog {
 
     private final Binder<CustomerInterface> binder = new Binder<>(CustomerInterface.class);
 
+    private final ComboBox<String> genderBox = new ComboBox<>("Anrede/Geschlecht");
     private final DatePicker birthdate = new DatePicker("Geburtsdatum");
     private final TextField firstName = new TextField("Vorname");
     private final TextField lastName = new TextField("Nachname");
@@ -88,8 +90,10 @@ public class EditCreateCustomerDialog extends Dialog {
         add(subtitle);
 
         // --- Persönliche Daten ---
+        genderBox.setItems("Herr", "Frau", "Divers");
+        genderBox.setValue("Frau");
         add(sectionHeader("Persönliche Daten", VaadinIcon.USER));
-        add(new FormLayout(firstName, lastName, birthdate));
+        add(new FormLayout(genderBox, firstName, lastName, birthdate));
 
         // --- Adresse ---
         add(sectionHeader("Adresse", VaadinIcon.HOME));
@@ -134,6 +138,10 @@ public class EditCreateCustomerDialog extends Dialog {
     // Passt sich ebenfalls an Objekt an -> Kunde oder Business Kunde
     private void configureBinder() {
 
+        binder.forField(genderBox)
+                .asRequired("Bitte Geburtsdatum eingeben")
+                .bind(CustomerInterface::getSalutation, CustomerInterface::setSalutation);
+
         binder.forField(birthdate)
                 .asRequired("Bitte Geburtsdatum eingeben")
                 .bind(CustomerInterface::getBirthday, CustomerInterface::setBirthday);
@@ -168,7 +176,7 @@ public class EditCreateCustomerDialog extends Dialog {
 
         binder.forField(driversLicense)
                 .asRequired("Bitte Führerscheinnummer eingeben")
-                .bind(CustomerInterface::getDriverslicenseID, CustomerInterface::setDriverslicenseID);
+                .bind(CustomerInterface::getDriversLicenseID, CustomerInterface::setDriverslicenseID);
 
         binder.forField(email)
                 .asRequired("Bitte E-Mail eingeben")
