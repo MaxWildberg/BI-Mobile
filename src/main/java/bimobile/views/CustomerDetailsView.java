@@ -1,6 +1,6 @@
 package bimobile.views;
 
-import bimobile.controller.CustomerManager;
+import bimobile.service.CustomerService;
 import bimobile.model.BusinessCustomer;
 import bimobile.model.CustomerInterface;
 import bimobile.model.Invoice;
@@ -40,14 +40,14 @@ import jakarta.annotation.security.PermitAll;
 @PermitAll
 public class CustomerDetailsView extends VerticalLayout implements BeforeEnterObserver {
 
-    private final CustomerManager manager;
+    private final CustomerService service;
     private CustomerInterface customerInterface;
     private Long customerId;
     private Div content;
     private Tabs tabs;
 
-    public CustomerDetailsView(CustomerManager controller) {
-        this.manager = controller;
+    public CustomerDetailsView(CustomerService controller) {
+        this.service = controller;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -95,7 +95,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         Button edit = new Button("Bearbeiten", new Icon(VaadinIcon.EDIT));
         edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         edit.addClickListener(event -> {
-            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customerInterface, true, manager, this::reloadCustomerData);
+            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customerInterface, true, service, this::reloadCustomerData);
             dialog.open();
         });
 
@@ -152,7 +152,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
 
         try {
             customerId = Long.valueOf(idStr);
-            customerInterface = manager.getCustomerByID(customerId);
+            customerInterface = service.getCustomerByID(customerId);
         } catch (NumberFormatException ex) {
             removeAll();
             add(new H2("Ungültige Kunden-ID"));
@@ -327,7 +327,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     private void reloadCustomerData(){
         if (customerId == null) return;
 
-        this.customerInterface = manager.getCustomerByID(customerId);
+        this.customerInterface = service.getCustomerByID(customerId);
 
         content.removeAll();
 
@@ -355,7 +355,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         content.add(customer.getName() + " " + customer.getLastname() + ", Geburtsdatum: " + customer.getBirthday());
 
         Button confirmButton = new Button("Löschen", e -> {
-            String result = manager.deleteCustomer(customer.getCustomerId());
+            String result = service.deleteCustomer(customer.getCustomerId());
 
             Notification notification = Notification.show(result);
             if (result.startsWith("Erfolg")) {

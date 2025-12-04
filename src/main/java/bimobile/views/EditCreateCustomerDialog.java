@@ -1,6 +1,6 @@
 package bimobile.views;
 
-import bimobile.controller.CustomerManager;
+import bimobile.service.CustomerService;
 import bimobile.model.BusinessCustomer;
 import bimobile.model.Customer;
 import bimobile.model.CustomerInterface;
@@ -31,7 +31,7 @@ import com.vaadin.flow.data.binder.Binder;
 
 public class EditCreateCustomerDialog extends Dialog {
 
-    private final CustomerManager manager;
+    private final CustomerService service;
     private final Runnable onSaveSuccess;
     private CustomerInterface customer;
     private boolean editMode;
@@ -63,7 +63,7 @@ public class EditCreateCustomerDialog extends Dialog {
     private final Button cancelButton = new Button("Abbrechen");
 
     // Konstruktor für Formular, verwendet in CustomerOverview und CustomerDetailsView
-    public EditCreateCustomerDialog(CustomerInterface customer, boolean editMode, CustomerManager manager, Runnable onSaveSuccess) {
+    public EditCreateCustomerDialog(CustomerInterface customer, boolean editMode, CustomerService manager, Runnable onSaveSuccess) {
         if (customer instanceof Customer) {
             this.customer = customer != null ? customer : new Customer();
         } else {
@@ -71,7 +71,7 @@ public class EditCreateCustomerDialog extends Dialog {
         }
 
         this.editMode = editMode;
-        this.manager = manager;
+        this.service = manager;
         this.onSaveSuccess = onSaveSuccess;
 
         buildUI();
@@ -221,9 +221,9 @@ public class EditCreateCustomerDialog extends Dialog {
             String msg;
 
             if (editMode) {
-                msg = manager.updateCustomer(customer);
+                msg = service.updateCustomer(customer);
             } else {
-                msg = manager.registerCustomer(customer);
+                msg = service.registerCustomer(customer);
             }
 
             Notification.show(msg);

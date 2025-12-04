@@ -1,6 +1,6 @@
 package bimobile.views;
 
-import bimobile.controller.CustomerManager;
+import bimobile.service.CustomerService;
 import bimobile.model.Customer;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -36,11 +36,11 @@ import java.util.List;
 @PermitAll
 public class CustomerOverview extends VerticalLayout {
 
-    private final CustomerManager manager;
+    private final CustomerService service;
     private final Grid<Customer> grid = new Grid<>();
 
-    public CustomerOverview(CustomerManager controller){
-        this.manager = controller;
+    public CustomerOverview(CustomerService service){
+        this.service = service;
 
         //Layout-Grundstruktur
         setPadding(true);
@@ -53,7 +53,7 @@ public class CustomerOverview extends VerticalLayout {
         Button registerCustomerButton = new Button("Neuen Kunden anlegen", new Icon(VaadinIcon.PLUS));
         registerCustomerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         registerCustomerButton.addClickListener(e -> {
-            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(null, false, controller, this::updateGrid);
+            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(null, false, service, this::updateGrid);
             dialog.open();
         });
 
@@ -74,7 +74,7 @@ public class CustomerOverview extends VerticalLayout {
             Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
             bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
             bearbeiten.addClickListener(e -> {
-                EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, true, controller, this::updateGrid);
+                EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, true, service, this::updateGrid);
                 dialog.open();
             });
 
@@ -101,7 +101,7 @@ public class CustomerOverview extends VerticalLayout {
 
     // Manager zieht alle Kunden aus der Datenbank und aktualisiert das Grid
     private void updateGrid() {
-        List<Customer> customers = manager.getAllCustomers();
+        List<Customer> customers = service.findAllCustomers();
         grid.setItems(customers);
     }
 
@@ -117,7 +117,7 @@ public class CustomerOverview extends VerticalLayout {
         content.add(customer.getName() + " " + customer.getLastname() + ", Geburtsdatum: " + customer.getBirthday());
 
         Button confirmButton = new Button("Löschen", e -> {
-            String result = manager.deleteCustomer(customer.getCustomerId());
+            String result = service.deleteCustomer(customer.getCustomerId());
 
             Notification notification = Notification.show(result);
             if (result.startsWith("Erfolg")) {
