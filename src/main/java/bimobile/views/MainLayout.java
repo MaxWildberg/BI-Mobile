@@ -50,6 +50,11 @@ public class MainLayout extends AppLayout {
 		// Navigationseinträge
 		RouterLink dashboard = new RouterLink("Dashboard", DashboardView.class);
 		RouterLink uebersicht = new RouterLink("Standorte", LocationsOverviewView.class);
+        RouterLink employees = new RouterLink("Mitarbeiter", EmployeeView.class);
+
+
+        // Gemeinsames Styling der Links
+		for (var link : new RouterLink[]{dashboard, uebersicht}) {
 		RouterLink fahrzeugverwaltung = new RouterLink("Fahrzeuge", VehicleView.class);
 
 		// Gemeinsames Styling der Links
@@ -59,6 +64,7 @@ public class MainLayout extends AppLayout {
 			link.getElement().getStyle().set("margin", "4px 8px");
 		}
 
+		nav.add(new H3("Navigation"), dashboard, uebersicht,employees);
 		nav.add(new H3("Navigation"), dashboard, uebersicht, fahrzeugverwaltung);
 		addToDrawer(nav);
 	}
