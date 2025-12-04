@@ -27,6 +27,15 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import jakarta.annotation.security.PermitAll;
 
+/**
+ * Beschreibung:
+ * User Interface zur Darstellung eines spezifischen Kunden mit sämtlichen Informationen.
+ * Enthält Tabs zur gesonderten Darstellung zwischen Attributen, sämtlicher Ausleihen und Rechnungen des Kunden.
+ * Enthält Funktionen wie bearbeiten und löschen.
+ *
+ * @author Max Wildberg
+ */
+
 @Route(value = "kunden/details/:customerId", layout = MainLayout.class)
 @PageTitle("Kunden Details")
 @PermitAll
@@ -80,7 +89,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         left.setSpacing(true);
         left.setAlignItems(Alignment.CENTER);
 
-        // Aktionen
+        //
         Button export = new Button("Exportieren", new Icon(VaadinIcon.DOWNLOAD));
         export.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
@@ -106,6 +115,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return header;
     }
 
+    // Methode zum Aufbau der Tabs
     private VerticalLayout createTabs() {
         Tab uebersicht = new Tab("Übersicht");
         Tab historie = new Tab("Miethistorie");
@@ -130,6 +140,8 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return new VerticalLayout(tabs, content);
     }
 
+    // Methode zur Kontrolle, ob ein Kunden-Objekt aus CustomerOverview übergeben wurde
+    // Baut bei Erfolg das UI oder erzeugt eine Fehlermeldung
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         String idStr = event.getRouteParameters().get("customerId").orElse(null);
@@ -159,6 +171,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         add(createTabs());
     }
 
+
     private HorizontalLayout createOverviewContent() {
         HorizontalLayout twoCols = new HorizontalLayout();
         twoCols.setWidthFull();
@@ -184,6 +197,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return twoCols;
     }
 
+    // Hilfsmethode zur mehrfach wiederkehrenden erzeugung einer Overview Card
     private Div createCard(String title, Div content) {
         Div card = new Div();
 
@@ -198,6 +212,9 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return card;
     }
 
+    // Methoden zur Füllung der Karten
+    // Füllen ein Div mit Informationen über den spezifischen Kunden
+    // Jeweils als Parameter übergeben in createCard Methode
     private Div createPersonalData() {
         Div d = new Div();
 
@@ -252,6 +269,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return d;
     }
 
+    // Füllt ein Grid mit Mieten des Kunden
     private Div createHistoryContent() {
 
         Div d = new Div();
@@ -269,18 +287,21 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return d;
     }
 
+    // Füllt Grid mit Rechnungen
     private Div createDocumentsContent() {
         Div d = new Div();
         d.add(new Paragraph("Dokumente (Platzhalter)"));
         return d;
     }
 
+    // Liest die Initiale des Kunden aus zur Darstellung in der Detail Übersicht
     private String getInitials(String first, String last) {
         String f = first != null && !first.isBlank() ? first.substring(0, 1).toUpperCase() : "";
         String l = last != null && !last.isBlank() ? last.substring(0, 1).toUpperCase() : "";
         return (f + l).isEmpty() ? "?" : f + l;
     }
 
+    // Lädt die entsprechenden Seiten bei auswahl der Tabs
     private void reloadCustomerData(){
         if (customerId == null) return;
 
@@ -301,6 +322,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         add(createTabs());
     }
 
+    // Öffnet ein Dialog welches dem Nutzer die Wahl gibt, ob der Kunde gelöscht werden soll
     private void openDeleteDialog(CustomerInterface customer) {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");

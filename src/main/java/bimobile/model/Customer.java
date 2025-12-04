@@ -8,6 +8,13 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Beschreibung:
+ * Entity Klasse, welche einen Kunden mit grundsätzlichen Attributen darstellt.
+ *
+ * @author Max Wildberg
+ */
 @Entity
 @Table(name = "customers")
 public class Customer implements CustomerInterface {

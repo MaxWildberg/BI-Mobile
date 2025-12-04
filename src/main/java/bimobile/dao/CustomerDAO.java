@@ -9,6 +9,15 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Beschreibung:
+ * Direkter Datenbank Zugriff
+ * Speichert, updated und liest Kunden anhand von SQL Kommandos.
+ * Erhält Anweisung von CustomerManager bzw. gibt Objekte aus Datenbank daran weiter.
+ *
+ * @author Max Wildberg
+ */
+
 @Repository
 public class CustomerDAO {
 

@@ -7,18 +7,23 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Beschreibung:
+ * Service Schicht zur Verwaltung der Kunden.
+ * Steht zwischen Model und Datenbank.
+ *
+ * @author Max Wildberg
+ */
+
 @Service
 public class CustomerManager {
 
     private CustomerDAO customerDAO;
-    //private CustomerService customerService;
-    //private CustomerDAO customerDAO;
 
     public CustomerManager(CustomerDAO customerDAO) {
         this.customerDAO = customerDAO;
     }
 
-    // String name, String lastname, LocalDate birthday, String address, String zip,  String residence, String driverslicenseID, String idCardNumber, String email, String telephone
     public String registerCustomer(CustomerInterface customer) {
         try {
             // Customer customer = new Customer(name.trim(), lastname.trim(), birthday, zip.trim(), address.trim(), residence.trim(), email.trim(), telephone.trim(), driverslicenseID.trim(), idCardNumber.trim());
@@ -28,8 +33,6 @@ public class CustomerManager {
             return "Fehler: Kunde konnte nicht gespeichert werden - " + exception.getMessage();
         }
     }
-
-    //String name, String lastname, LocalDate birthday, String address, String zip,  String residence, String driverslicenseID, String idCardNumber, String email, String telephone
 
     public String updateCustomer(CustomerInterface customer) {
         try {

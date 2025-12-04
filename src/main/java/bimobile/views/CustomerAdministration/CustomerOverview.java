@@ -23,16 +23,25 @@ import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
 
+/**
+ * Beschreibung:
+ * Hauptübersicht aller Kunden der Kundenadministration.
+ * Zeigt alle vorhandenen Kunden. Nutzer können auf alle Kunden zugreifen.
+ * Bietet Funktionen im Quick-Access wie bearbeiten und löschen.
+ *
+ * @author Max Wildberg
+ */
+
 @Route(value = "kunden", layout = MainLayout.class)
 @PageTitle("Kundenübersicht")
 @PermitAll
 public class CustomerOverview extends VerticalLayout {
 
-    private final CustomerManager controller;
+    private final CustomerManager manager;
     private final Grid<Customer> grid = new Grid<>();
 
     public CustomerOverview(CustomerManager controller){
-        this.controller = controller;
+        this.manager = controller;
 
         //Layout-Grundstruktur
         setPadding(true);
@@ -91,14 +100,14 @@ public class CustomerOverview extends VerticalLayout {
 
     }
 
-    // Holt alle Kunden aus dem Controller und aktualisiert das Grid
+    // Manager zieht alle Kunden aus der Datenbank und aktualisiert das Grid
     private void updateGrid() {
-        List<Customer> customers = controller.getAllCustomers();
+        List<Customer> customers = manager.getAllCustomers();
         grid.setItems(customers);
     }
 
 
-    //Löschen eines Standorts
+    // Öffnet Dialog welches dem Nutzer den Kunden anzeigt und die Wahl gibt zu löschen
     private void openDeleteDialog(Customer customer) {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");
@@ -109,7 +118,7 @@ public class CustomerOverview extends VerticalLayout {
         content.add(customer.getName() + " " + customer.getLastname() + ", Geburtsdatum: " + customer.getBirthday());
 
         Button confirmButton = new Button("Löschen", e -> {
-            String result = controller.deleteCustomer(customer.getCustomerId());
+            String result = manager.deleteCustomer(customer.getCustomerId());
 
             Notification notification = Notification.show(result);
             if (result.startsWith("Erfolg")) {

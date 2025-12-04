@@ -3,6 +3,15 @@ package bimobile.model;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Beschreibung:
+ * Interface, welches von allen Kunden-Klassen implementiert wird.
+ * Verwendung überall wo auf ein Kunden-Objekt zugegriffen werden soll
+ * -> Ermöglicht einfaches Hinzufügen von weiteren Kunden-Arten
+ *
+ * @author Max Wildberg
+ */
+
 public interface CustomerInterface {
     Long getCustomerId();
 
