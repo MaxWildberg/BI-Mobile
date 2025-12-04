@@ -27,13 +27,36 @@ import java.util.List;
 @Route(value = "standorte", layout = MainLayout.class)
 @PageTitle("Standortübersicht")
 @PermitAll
-public class StandortUebersichtView extends VerticalLayout {
+/**
+ *  Übesicht aller Standorte im BI-Mobile System.
+
+ *  Diese View stellt ein Grid zur Anzeige aller gespeicherten Standorte bereit und ermöglicht deren Verwaltung.
+ *  Dazu gehören:
+ *  - Anlegen neuer Standorte
+ *  - Bearbeiten bestehender Standorte
+ *  - Deaktivieren eines Standortes
+
+ *  Die View kommuniziert direkt mit dem {@link FacilityController}, lädt dessen Daten in ein Grid
+ *  und öffnet je nach Benutzeraktion passende Dialoge (Anlegen, Bearbeiten, Deaktivieren).
+
+ * @Author Ben Berlin, Jannick Braun
+ */
+public class LocationsOverviewView extends VerticalLayout {
 
 	private final FacilityController controller;
 	private final Grid<Facility> grid = new Grid<>(Facility.class, false);
 
 	@Autowired
-	public StandortUebersichtView(FacilityController controller) {
+	/**
+	 * Erstellt dei Standortübersicht und initialisiert das Layout, das Grid sowie alle Aktionen über
+	 * den übergebenen {@link FacilityController} werden die Standortdaten aus der Datenbank abgerufen
+	 * und Änderungen verarbeitet.
+	 *
+	 * @param controller Controller für Standort-Operationen (CRUD)
+	 *
+	 * @Author Ben Berlin
+	 */
+	public LocationsOverviewView(FacilityController controller) {
 		this.controller = controller;
 
 		//Layout-Grundstruktur
@@ -80,13 +103,37 @@ public class StandortUebersichtView extends VerticalLayout {
 		setFlexGrow(1, grid);
 	}
 
-	// Holt alle Standorte aus dem Controller und aktualisiert das Grid
+	/**
+	 * Aktualisiert das Grid, indem alle Standorte aus dem {@link FacilityController} geladen
+	 * und anschließend als Grid-Items gesetzt werden.
+
+	 * Nach jedem anlegen, bearbeiten oder deaktivieren eines Standorts wird die Methode aufgerufen,
+	 * um das UI konsistent zu halten.
+	 *
+	 * @Author Ben Berlin
+	 */
 	private void updateGrid() {
 		List<Facility> facilities = controller.getAllFacilities();
 		grid.setItems(facilities);
 	}
 
-	//Standort anlegen als Dialog
+	/**
+	 * Öffnet ein Dialogfeld zum Anlegen eines neuen Standorts.
+	 * Der Dialog enthält Eingabefelder für die Adresse, E-Mail und Telefonnummer.
+
+	 * Es wird nach der eingabe geprüft ob:
+	 *  1. Alle Felder ausgefüllt sind,
+	 *  2. Das die Telefonnummer eine gültige Zahl ist.
+	 *  Ungültige Eingaben führen zu visuellen Fehlerhinweisen und blockieren den Speichervorgang.
+
+	 *  Beim Speichern:
+	 *  - werden die Eingaben geprüft,
+	 *  - wird der neue Standort über {@link FacilityController#standortAnlegen} angelegt,
+	 *  - wird das Grid aktualisiert,
+	 *  - der Dialog wird geschlossen.
+	 *
+	 * @Author Ben Berlin
+	 */
 	private void openCreateDialog() {
 		Dialog dialog = new Dialog();
 		dialog.setWidth("500px");
@@ -97,25 +144,32 @@ public class StandortUebersichtView extends VerticalLayout {
 
 		TextField address = new TextField("Adresse");
 		EmailField email = new EmailField("E-Mail");
+		email.setRequiredIndicatorVisible(true);
+		email.setErrorMessage("Bitte eine gültige E-Mail eingeben!");
+		email.setClearButtonVisible(true);
 		TextField phone = new TextField("Telefonnummer");
 
 		//Speichern-Button
 		Button save = new Button("Speichern", e -> {
-			try {
 				if (address.isEmpty() || email.isEmpty() || phone.isEmpty()) {
 					Notification.show("Bitte alle Felder ausfüllen!");
 					return;
 				}
-
-				int tel = Integer.parseInt(phone.getValue().trim());
-				String msg = controller.standortAnlegen(address.getValue(), email.getValue(), tel);
-
-				Notification.show(msg);
-
-				if (msg.startsWith("Erfolg")) {
-					updateGrid();
-					dialog.close();
+				if (email.isInvalid()) {
+					Notification.show("Ungültige E-Mail-Adresse!").addThemeVariants(NotificationVariant.LUMO_ERROR);
+					return;
 				}
+
+				try{
+					String tel = phone.getValue().trim();
+					String msg = controller.standortAnlegen(address.getValue(), email.getValue(), tel);
+
+					Notification.show(msg);
+
+					if (msg.startsWith("Erfolg")) {
+						updateGrid();
+						dialog.close();
+					}
 			} catch (NumberFormatException ex) {
 				Notification.show("Telefonnummer muss eine gültige Zahl sein!");
 			}
@@ -134,7 +188,22 @@ public class StandortUebersichtView extends VerticalLayout {
 		dialog.open();
 	}
 
-	//Bearbeiten eines Standorts
+	/**
+	 * Öffnet einen Dialog zum Bearbeiten eines bestehenden Standortes.
+
+	 * Die aktuellen Werte des Standortes werden vorausgefüllt.
+	 * Änderungen werden validiert.
+
+	 * Beim Speichern:
+	 * - werden die neuen Eingaben geprüft,
+	 * - anschließend über {@link FacilityController#standortBearbeiten} aktualisiert und in der Datenbank gespeichert,
+	 * - eine Erfolgsmeldung angezeigt,
+	 * - und das Grid neu geladen.
+
+	 * @param facility Der zu bearbeitende Standort
+	 *
+	 * @Author Ben Berlin, Jannick Braun
+	 */
 	private void openEditDialog(Facility facility) {
 		Dialog dialog = new Dialog();
 		dialog.setWidth("500px");
@@ -142,12 +211,19 @@ public class StandortUebersichtView extends VerticalLayout {
 		H3 dialogTitle = new H3("Standort bearbeiten");
 
 		TextField addressField = new TextField("Adresse", facility.getAddress(), "");
-		EmailField emailField = new EmailField("E-Mail"); //später einfügen
+		EmailField emailField = new EmailField("E-Mail", facility.getMail());
+		emailField.setRequiredIndicatorVisible(true);
+		emailField.setClearButtonVisible(true);
+		emailField.setErrorMessage("Bitte eine gültige E-Mail eingeben!");
 		TextField phoneField = new TextField("Telefonnummer", String.valueOf(facility.getTelephoneNr()), "");
 
 		Button saveButton = new Button("Speichern", e -> {
+			if(emailField.isInvalid()){
+				Notification.show("Ungültige E-Mail-Adresse!");
+				return;
+			}
 			try {
-				int tel = Integer.parseInt(phoneField.getValue());
+				String tel = phoneField.getValue();
 				String result = controller.standortBearbeiten(
 						facility.getId(),
 						addressField.getValue(),
@@ -180,7 +256,17 @@ public class StandortUebersichtView extends VerticalLayout {
 		dialog.open();
 	}
 
-	//Löschen eines Standorts
+	/**
+	 * Öffnet einen Bestätigungsdialog zum Deaktivieren eines Standortes.
+
+	 * Der Benutzer muss die Löschaktion bestätigen.
+	 * Nach der Bestätigung wird der Standort über {@link FacilityController#standortDeaktivieren} deaktiviert.
+	 * Anschließend aktualisiert das Grid und zeigt eine passende Meldung.
+	 *
+	 * @param facility Der zu deaktivierende Standort
+	 *
+	 * @Author Jannick Braun
+	 */
 	private void openDeleteDialog(Facility facility) {
 		Dialog dialog = new Dialog();
 		dialog.setWidth("400px");

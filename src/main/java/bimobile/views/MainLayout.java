@@ -1,7 +1,6 @@
 package bimobile.views;
 
 import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -9,11 +8,29 @@ import com.vaadin.flow.router.RouterLink;
 import jakarta.annotation.security.PermitAll;
 
 @PermitAll
+/**
+ * Hauptlayout der BI-Mobile Verwaltungsoberfläche.
 
+ * Dieses Layout definiert die globale Struktur der Anwendung, bestehend aus:
+ * - einer Top-Bar mit Titel
+ * - einer linken Navigationsleiste mit allen wichtigen Views.
+
+ * Das Layout sorgt für ein einheitliches Styling und ein konsistentes Benutzererlebnis innerhalb der gesamten Anwendung.
+
+ * Wird automatisch durch Vaadin verwendet, sobald Views das Layout in der @Route-Annotation angeben.
+ *
+ * @Author Ben Berlin
+ */
 public class MainLayout extends AppLayout {
 
+	/**
+	 * Initialisiert das Hauptlayout der Anwendung.
+	 * Der Konstruktor:
+	 * - baut Top-Bar und die Linke Navigationsleiste auf.
+	 * - legt ein einheitliches visuelles Styling fest.
+	 */
 	public MainLayout() {
-		//TopBar
+		// TopBar
 		H3 brand = new H3("BI-Mobile · Verwaltung");
 		brand.getStyle().set("margin", "0");
 		HorizontalLayout top = new HorizontalLayout(brand);
@@ -30,19 +47,19 @@ public class MainLayout extends AppLayout {
 		nav.getStyle().set("border-right", "1px solid #e5e7eb");
 		nav.getStyle().set("box-shadow", "2px 0 6px rgba(0,0,0,0.05)");
 
-		//Navigationseinträge
+		// Navigationseinträge
 		RouterLink dashboard = new RouterLink("Dashboard", DashboardView.class);
-		RouterLink uebersicht = new RouterLink("Standorte", StandortUebersichtView.class);
-		RouterLink anlegen = new RouterLink("Neuen Standort anlegen", StandortAnlegenView.class);
+		RouterLink uebersicht = new RouterLink("Standorte", LocationsOverviewView.class);
+		RouterLink fahrzeugverwaltung = new RouterLink("Fahrzeuge", VehicleView.class);
 
-		//Gemeinsames Styling der Links
-		for (var link : new RouterLink[]{dashboard, uebersicht, anlegen}) {
+		// Gemeinsames Styling der Links
+		for (var link : new RouterLink[]{dashboard, uebersicht, fahrzeugverwaltung}) {
 			link.getElement().getStyle().set("padding", "10px 16px");
 			link.getElement().getStyle().set("border-radius", "8px");
 			link.getElement().getStyle().set("margin", "4px 8px");
 		}
 
-		nav.add(new H3("Navigation"), dashboard, uebersicht, anlegen);
+		nav.add(new H3("Navigation"), dashboard, uebersicht, fahrzeugverwaltung);
 		addToDrawer(nav);
 	}
 }

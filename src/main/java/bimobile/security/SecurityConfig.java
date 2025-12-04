@@ -1,45 +1,38 @@
 package bimobile.security;
 
+import bimobile.service.CustomUserDetailsService;
+import bimobile.views.LoginView;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import bimobile.views.LoginView;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig extends VaadinWebSecurity {
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        super.configure(http);
-        setLoginView(http, LoginView.class);
+    private final CustomUserDetailsService userDetailsService;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
     }
 
-    @Bean
-    public UserDetailsService users() {
-        // Testuser erstellen
-        UserDetails user = User.builder()
-                .username("user")
-                .password(passwordEncoder().encode("user123"))
-                .roles("USER")
-                .build();
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+        );
 
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("admin123"))
-                .roles("ADMIN", "USER")
-                .build();
+        http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
-        return new InMemoryUserDetailsManager(user, admin);
+        super.configure(http);
+        setLoginView(http, LoginView.class);
+
+        http.userDetailsService(userDetailsService);
     }
 
     @Bean
