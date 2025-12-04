@@ -1,85 +1,45 @@
 package bimobile.service;
 
-import bimobile.dao.CustomerDAO;
-import bimobile.model.CustomerModel.Customer;
-import bimobile.model.CustomerModel.CustomerInterface;
+import bimobile.dao.CustomerRepository;
+import bimobile.model.Customer;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Beschreibung:
- * Service Schicht zur Verwaltung der Kunden.
- * Steht zwischen Model und Datenbank.
- *
- * @author Max Wildberg
+ * @author Ben Berlin
  */
-
 @Service
 public class CustomerService {
 
-    private CustomerDAO customerDAO;
+	private final CustomerRepository customerRepository;
 
-    public CustomerService(CustomerDAO customerDAO) {
-        this.customerDAO = customerDAO;
-    }
+	public CustomerService(CustomerRepository customerRepository) {
+		this.customerRepository = customerRepository;
+	}
 
-    public String registerCustomer(CustomerInterface customer) {
-        try {
-            // Customer customer = new Customer(name.trim(), lastname.trim(), birthday, zip.trim(), address.trim(), residence.trim(), email.trim(), telephone.trim(), driverslicenseID.trim(), idCardNumber.trim());
-            customerDAO.addCustomer(customer);
-            return "Erfolg: Kunde '" + customer.getName() + " " + customer.getLastname() + "' wurde erfolgreich angelegt";
-        } catch (Exception exception) {
-            return "Fehler: Kunde konnte nicht gespeichert werden - " + exception.getMessage();
-        }
-    }
+	/**
+	 * Liefert alle Kunden, sortiert wie vom Repository vorgegeben.
+	 * Wird z.B. in RentalsOverviewView für die ComboBox verwendet.
+	 */
+	public List<Customer> findAll() {
+		return customerRepository.findAll();
+	}
 
-    public String updateCustomer(CustomerInterface customer) {
-        try {
-            //Customer customer = new Customer(name.trim(), lastname.trim(), birthday, zip.trim(), address.trim(), residence.trim(), email.trim(), telephone.trim(), driverslicenseID.trim(), idCardNumber.trim());
-            customerDAO.updateCustomer(customer);
-            return "Erfolg: Kunde wurde aktualisiert";
-        } catch (Exception e) {
-            return "Fehler: Kunde konnte nicht aktualisiert werden - " + e.getMessage();
-        }
-    }
+	/**
+	 * Einfacher Create/Update – praktisch, falls du später eine Kundenverwaltung einbaust.
+	 */
+	public Customer save(Customer customer) {
+		return customerRepository.save(customer);
+	}
 
-    public List<Customer> findAllCustomers() {
-        try {
-            return customerDAO.getAllCustomers();
-        } catch (Exception e) {
-            System.err.println("Fehler beim Abrufen der Kunden: " + e.getMessage());
-            return List.of();
-        }
-    }
+	public Optional<Customer> findById(Long id) {
+		return customerRepository.findById(id);
+	}
 
-    public String deleteCustomer(Long id) {
-        if (id == null || id <= 0) {
-            return "Fehler: Ungültige Kunden-ID";
-        }
-
-        Customer customer = customerDAO.getCustomerById(id);
-        if (customer == null) {
-            return "Fehler: Kunde mit ID " + id + " wurde nicht gefunden";
-        }
-
-        try {
-            customerDAO.deleteCustomer(id);
-            return "Erfolg: Kunde wurde gelöscht";
-        } catch (Exception e) {
-            return "Fehler: Kunde konnte nicht gelöscht werden - " + e.getMessage();
-        }
-    }
-
-    public Customer getCustomerByID(Long id){
-        if (id == null || id <= 0) {
-            return null;
-        } else {
-            try {
-                return customerDAO.getCustomerById(id);
-            } catch (Exception e) {
-                return null;
-            }
-        }
-    }
+	public void deleteById(Long id) {
+		customerRepository.deleteById(id);
+	}
 }
+

@@ -18,5 +18,7 @@ public interface VehicleService {
 
     List<Vehicle> findAllVehicles();
 
+	Vehicle save(Vehicle vehicle);
+
     Vehicle findById(Long id);
 }

@@ -65,7 +65,8 @@ public class VehicleServiceImpl implements VehicleService {
         existing.setModel(vehicle.getModel());
         existing.setPriceClass(vehicle.getPriceClass());
         existing.setMileage(vehicle.getMileage());
-        existing.setInspectionDueDate(vehicle.getInspectionDueDate());
+        existing.setNextInspectionDate(vehicle.getNextInspectionDate());
+		existing.setNextServiceDate(vehicle.getNextServiceDate());
         existing.setMaintenanceActive(vehicle.isMaintenanceActive());
 
         Vehicle saved = vehicleRepository.save(existing);
@@ -137,4 +138,8 @@ public class VehicleServiceImpl implements VehicleService {
         return vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Fahrzeug wurde nicht gefunden."));
     }
+	@Override
+	public Vehicle save(Vehicle vehicle) {
+		return vehicleRepository.save(vehicle);
+	}
 }

@@ -2,6 +2,7 @@ package bimobile.service;
 
 import bimobile.dao.InvoiceRepository;
 import bimobile.dao.RentalRepository;
+import bimobile.enums.RentalStatus;
 import bimobile.model.Invoice;
 import bimobile.model.Rental;
 import org.springframework.stereotype.Service;
