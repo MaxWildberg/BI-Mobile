@@ -33,11 +33,11 @@ public class SecurityConfig extends VaadinWebSecurity {
 			    .anyRequest().authenticated()
 	    );
 
-	    // H2 benötigt Frames
+	    // H2 benötigt Frames und eine CSRF-Ausnahme
 	    http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
-	    http.csrf(csrf -> csrf.disable());
+	    http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
 	    http.userDetailsService(userDetailsService);
-
+    // Vaadin konfiguriert anyRequest().authenticated(); muss nach unseren Ausnahmen laufen
 	    super.configure(http);
 
 	    // Login View definieren
