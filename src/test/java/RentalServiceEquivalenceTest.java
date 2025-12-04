@@ -37,10 +37,8 @@ public class RentalServiceEquivalenceTest {
 	@InjectMocks
 	private RentalService rentalService;
 
-	// ---------------------------------------------------------------------
 	// ÄQUIVALENZKLASSE 1: Enddatum < Startdatum → ungültig
 	// Erwartung: IllegalArgumentException
-	// ---------------------------------------------------------------------
 	@Test
 	void ek_invalidDateRange_throwsIllegalArgumentException() {
 		Customer customer = new Customer();
@@ -55,10 +53,9 @@ public class RentalServiceEquivalenceTest {
 		);
 	}
 
-	// ---------------------------------------------------------------------
+
 	// ÄQUIVALENZKLASSE 2: Fahrzeug bereits aktiv ausgeliehen → ungültig
 	// Erwartung: IllegalStateException
-	// ---------------------------------------------------------------------
 	@Test
 	void ek_vehicleAlreadyActive_throwsIllegalStateException() {
 		Customer customer = new Customer();
@@ -77,10 +74,9 @@ public class RentalServiceEquivalenceTest {
 		);
 	}
 
-	// ---------------------------------------------------------------------
+
 	// JUNIT-TEST 1: Gültige Ausleihe erzeugt korrektes Rental-Objekt
 	// (Repräsentiert die gültige Äquivalenzklasse)
-	// ---------------------------------------------------------------------
 	@Test
 	void validRental_createsRentalSuccessfully() {
 		Customer customer = new Customer();
@@ -111,11 +107,10 @@ public class RentalServiceEquivalenceTest {
 		verify(vehicleService).save(vehicle);
 	}
 
-	// ---------------------------------------------------------------------
+
 	// JUNIT-TEST 2: Fahrzeug gesperrt wegen Inspektion/HU
 	// → IllegalStateException
 	// (Weitere ungültige Äquivalenzklasse)
-	// ---------------------------------------------------------------------
 	@Test
 	void vehicleBlockedDueToInspection_throwsIllegalStateException() {
 		Customer customer = new Customer();
