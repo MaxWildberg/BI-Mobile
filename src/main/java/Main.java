@@ -9,7 +9,7 @@ public class Main {
         FacilityDAO facilityDAO = new FacilityDAO();
 
         // Create a facility
-        Facility bielefeld = new Facility("Unter den Linden 1", "bielefeld@mail", 1234);
+        Facility bielefeld = new Facility("Unter den Linden 1", "bielefeld@mail", "010122");
         facilityDAO.addFacility(bielefeld);
 
         // Create employees and assign them to the facility

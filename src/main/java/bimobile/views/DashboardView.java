@@ -12,7 +12,22 @@ import jakarta.annotation.security.PermitAll;
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("Dashboard")
 @PermitAll
+/**
+ * Ein Dashbord Ansicht von BI-Mobile.
+ * Diese View dient als Übersicht mit einer ersten Navigation und zeigt eine einfache Übersicht.
+ *
+ * Von hier aus können Benutzer direkt zur Standortsicht wechseln und könnte weitere Verwaltungsfunktionen aufrufen.
+ *
+ * @Author Ben Berlin
+ */
 public class DashboardView extends VerticalLayout {
+	/**
+	 * Erzeugt das Dashboard und initialisiert die grundlegenden UI-Elemente.
+
+	 * Das Dashboard zeigt:
+	 * - den Titel der Anwendung,
+	 * - einen Button zu Navigation in die Standortübersicht.
+	 */
 	public DashboardView() {
 		setSpacing(true);
 		setPadding(true);
@@ -25,10 +40,7 @@ public class DashboardView extends VerticalLayout {
 				e -> getUI().ifPresent(ui-> ui.navigate("standorte")));
 		standorteBTN.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-		Button anlegenBTN = new Button("Neuen Standort anlegen",
-				e -> getUI().ifPresent(ui -> ui.navigate("standort-anlegen")));
-		anlegenBTN.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 
-		add(title, standorteBTN, anlegenBTN);
+		add(title, standorteBTN);
 	}
 }
