@@ -1,5 +1,6 @@
 package bimobile.views;
 
+import bimobile.views.CustomerAdministration.CustomerOverview;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -56,6 +57,7 @@ public class MainLayout extends AppLayout {
         // Gemeinsames Styling der Links
 		for (var link : new RouterLink[]{dashboard, uebersicht}) {
 		RouterLink fahrzeugverwaltung = new RouterLink("Fahrzeuge", VehicleView.class);
+		RouterLink customerAdmin = new RouterLink("Kunden", CustomerOverview.class);
 
 		// Gemeinsames Styling der Links
 		for (var link : new RouterLink[]{dashboard, uebersicht, fahrzeugverwaltung}) {
