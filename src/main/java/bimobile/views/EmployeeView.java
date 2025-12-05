@@ -22,7 +22,6 @@ import jakarta.annotation.security.RolesAllowed;
 import java.util.List;
 
 @Route(value = "employees", layout = MainLayout.class)
-@RolesAllowed({"ADMIN"})
 public class EmployeeView extends VerticalLayout {
 
     private final EmployeeController controller;
