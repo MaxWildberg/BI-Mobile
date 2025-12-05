@@ -185,7 +185,10 @@ public class Customer implements CustomerInterface {
 
     @Override
     public List<Invoice> getInvoices() {
-        return invoices;
+        return rents.stream()
+                .map(Rental::getInvoice)
+                .filter(inv -> inv != null)
+                .toList();
     }
 
     @Override
