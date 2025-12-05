@@ -174,11 +174,10 @@ public class VehicleView extends VerticalLayout {
                 e -> changeStatus(VehicleStatus.AVAILABLE));
         Button setRentedButton = new Button("Verliehen",
                 e -> changeStatus(VehicleStatus.RENTED));
-        Button setMaintenanceButton = new Button("In Wartung",
-                e -> changeStatus(VehicleStatus.IN_MAINTENANCE));
+    
 
         HorizontalLayout buttonBar =
-                new HorizontalLayout(saveButton, setAvailableButton, setRentedButton, setMaintenanceButton);
+                new HorizontalLayout(saveButton, setAvailableButton, setRentedButton);
         buttonBar.setSpacing(true);
 
         HorizontalLayout wrapper = new HorizontalLayout(formLayout, buttonBar);
