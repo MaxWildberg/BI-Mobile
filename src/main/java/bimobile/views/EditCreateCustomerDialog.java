@@ -20,6 +20,8 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
+import java.time.LocalDate;
+
 /**
  * Beschreibung:
  * User Interface für Formular welches den Nutzer einen Kunden erstellen bzw. bearbeiten lässt.
@@ -64,7 +66,7 @@ public class EditCreateCustomerDialog extends Dialog {
 
     /**
      *
-     * @param customer
+     * @param customer Kundenobjekt welches geändert werden soll
      * @param editMode
      * @param service
      * @param onSaveSuccess
@@ -100,6 +102,9 @@ public class EditCreateCustomerDialog extends Dialog {
         // --- Persönliche Daten ---
         genderBox.setItems("Herr", "Frau", "Divers");
         genderBox.setValue("Frau");
+        birthdate.setMax(LocalDate.now().minusYears(18)); // maximal heute vor 18 Jahren
+        birthdate.setMin(LocalDate.now().minusYears(120)); // niemand älter als 120 Jahre
+        birthdate.setErrorMessage("Der Kunde muss mindestens 18 Jahre alt sein.");
         add(sectionHeader("Persönliche Daten", VaadinIcon.USER));
         add(new FormLayout(genderBox, firstName, lastName, birthdate));
 
@@ -129,10 +134,10 @@ public class EditCreateCustomerDialog extends Dialog {
     }
 
     /**
-     * Hilfsmethode für mehrfach wiederkehrende Erstellung eines Absatzes in UI
-     * @param title
-     * @param iconType
-     * @return
+     * Hilfsmethode für mehrfach wiederkehrende Erstellung einer Sektionsüberschrift in UI
+     * @param title Titel der Sektion
+     * @param iconType Welches Icon im Header angezeigt werden soll
+     * @return Rückgabe des gesamten layouts an Methode buildUI
      */
     private HorizontalLayout sectionHeader(String title, VaadinIcon iconType) {
         Icon icon = iconType.create();
@@ -228,7 +233,7 @@ public class EditCreateCustomerDialog extends Dialog {
 
     /**
      * Führt Binder aus sobald das Formular gespeichert wird
-     * Gibt Anweisung an CustomerManager für update oder neues Kunden-Objekt
+     * Gibt Anweisung an CustomerService für update oder neues Kunden-Objekt
      * Gibt Erfolgsmeldung in UI, wenn erfolgreich
      */
     private void onSave() {
