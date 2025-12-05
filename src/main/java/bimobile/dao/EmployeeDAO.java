@@ -1,9 +1,6 @@
 package bimobile.dao;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.Persistence;
+import jakarta.persistence.*;
 import bimobile.model.Employee;
 import org.springframework.stereotype.Repository;
 
@@ -12,14 +9,14 @@ import java.util.List;
 @Repository
 public class EmployeeDAO {
 
-    private final EntityManagerFactory emf =
-            Persistence.createEntityManagerFactory("carrentalPU");
-    private final EntityManager em = emf.createEntityManager();
+    @PersistenceContext
+    private EntityManager em;
+
+    public EmployeeDAO() {
+    }
 
     public void addEmployee(Employee employee) {
-        em.getTransaction().begin();
         em.persist(employee);
-        em.getTransaction().commit();
     }
 
     public List<Employee> getAllEmployees() {
@@ -41,9 +38,7 @@ public class EmployeeDAO {
     }
 
     public void updateEmployee(Employee employee) {
-        em.getTransaction().begin();
         em.merge(employee);
-        em.getTransaction().commit();
     }
 
     public List<Employee> getEmployeesByFacility(Long facilityId) {
@@ -53,10 +48,5 @@ public class EmployeeDAO {
                 )
                 .setParameter("facilityId", facilityId)
                 .getResultList();
-    }
-
-    public void close() {
-        em.close();
-        emf.close();
     }
 }
