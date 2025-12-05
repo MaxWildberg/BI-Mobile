@@ -91,6 +91,9 @@ public class Rental {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    @OneToOne(mappedBy = "rental", cascade = CascadeType.ALL)
+    private Invoice invoice;
+
     /**
      * Parameterloser Standardkonstruktor für JPA.
      */
@@ -218,5 +221,13 @@ public class Rental {
      */
     private void touch() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
+    }
+
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
     }
 }
