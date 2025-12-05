@@ -1,45 +1,21 @@
 package bimobile.service;
 
-import bimobile.dao.CustomerRepository;
 import bimobile.model.Customer;
-import org.springframework.stereotype.Service;
+import bimobile.model.CustomerInterface;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * @author Ben Berlin
- */
-@Service
-public class CustomerService {
+public interface CustomerService {
+    String registerCustomer(CustomerInterface customer);
 
-	private final CustomerRepository customerRepository;
+    String updateCustomer(CustomerInterface customer);
 
-	public CustomerService(CustomerRepository customerRepository) {
-		this.customerRepository = customerRepository;
-	}
+    List<Customer> findAllCustomers();
 
-	/**
-	 * Liefert alle Kunden, sortiert wie vom Repository vorgegeben.
-	 * Wird z.B. in RentalsOverviewView für die ComboBox verwendet.
-	 */
-	public List<Customer> findAll() {
-		return customerRepository.findAll();
-	}
+    String deleteCustomer(Long id);
 
-	/**
-	 * Einfacher Create/Update – praktisch, falls du später eine Kundenverwaltung einbaust.
-	 */
-	public Customer save(Customer customer) {
-		return customerRepository.save(customer);
-	}
+    Customer getCustomerByID(Long id);
 
-	public Optional<Customer> findById(Long id) {
-		return customerRepository.findById(id);
-	}
-
-	public void deleteById(Long id) {
-		customerRepository.deleteById(id);
-	}
+    Optional<Customer> getCustomerByEmail(String email);
 }
-

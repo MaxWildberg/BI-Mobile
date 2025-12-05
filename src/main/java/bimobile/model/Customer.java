@@ -1,102 +1,274 @@
 package bimobile.model;
 
-/**
- * Customer.java
- *
- * @author Ben Berlin
- */
+
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
+
+
+/**
+ * Entity Klasse, welche einen Kunden mit grundsätzlichen Attributen darstellt.
+ *
+ * Grundklasse für weitere Kundenklassen, die darauf aufbauen.
+ *
+ * Ein Kunde hat eine Verknüpfung zu Ausleihe (Rental)
+ * Jedes Objekt kennt alle seine Ausleihen.
+ *
+ *
+ * @author Max Wildberg
+ */
 @Entity
-public class Customer {
+@Table(name = "customers")
+public class Customer implements CustomerInterface {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
 
-	/**
-	 * Anrede, z.B. "Herr", "Frau", "Divers".
-	 */
-	@Column(length = 20)
-	private String salutation;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto ID
+    private Long customerId;
 
-	@Column(nullable = false, length = 100)
-	private String firstName;
+    @Column(nullable = false)
+    private String salutation;
 
-	@Column(nullable = false, length = 100)
-	private String lastName;
+    @Column(nullable = false)
+    private String name;
 
-	@Column(nullable = false, unique = true, length = 200)
-	private String email;
+    @Column(nullable = false)
+    private String lastname;
 
-	@Column(length = 50)
-	private String phone;
+    @Column(nullable = false)
+    private LocalDate birthday;
 
-	// --- Konstruktoren ---
+    @Column(nullable = false)
+    private String address;
 
-	public Customer() {
-	}
+    @Column(nullable = false)
+    private String zip;
 
-	public Customer(String salutation, String firstName, String lastName, String email, String phone) {
-		this.salutation = salutation;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.email = email;
-		this.phone = phone;
-	}
+    @Column(nullable = false)
+    private String residence;
 
-	// --- Getter & Setter ---
+    @Column(nullable = false)
+    private String country;
 
-	public Long getId() {
-		return id;
-	}
+    @Column(nullable = false)
+    private String email;
 
-	public String getSalutation() {
-		return salutation;
-	}
+    @Column(nullable = false)
+    private String telephone;
 
-	public void setSalutation(String salutation) {
-		this.salutation = salutation;
-	}
+    @Column(nullable = false)
+    private String driverslicenseID;
 
-	public String getFirstName() {
-		return firstName;
-	}
+    @Column(nullable = false)
+    private String idCardNumber;
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    private List<Rental> rents = new ArrayList<>();
 
-	public String getLastName() {
-		return lastName;
-	}
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    private List<Invoice> invoices = new ArrayList<>();
 
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
+    /**
+     * Parameterloser Standardkonstruktor für JPA.
+     */
+    public Customer(){
 
-	public String getEmail() {
-		return email;
-	}
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    /**
+     * Konstruktor zum Anlegen eines neuen Kunden
+     * @param salutation Anrede
+     * @param name Name
+     * @param lastname Nachname
+     * @param birthday Geburtstag
+     * @param address Adresse
+     * @param zip Postleitzahl
+     * @param residence Wohnort
+     * @param email E-Mail Adresse
+     * @param telephone Telefonnummer
+     * @param driverslicenseID Führerscheinnummer
+     * @param idCardNumber Ausweisnummer
+     */
 
-	public String getPhone() {
-		return phone;
-	}
+    public Customer(String salutation, String name, String lastname, LocalDate birthday, String address, String zip, String residence, String country, String email, String telephone, String driverslicenseID, String idCardNumber) {
+        this.salutation = salutation;
+        this.name = name;
+        this.lastname = lastname;
+        this.birthday = birthday;
+        this.address = address;
+        this.zip = zip;
+        this.residence = residence;
+        this.country = country;
+        this.email = email;
+        this.telephone = telephone;
+        this.driverslicenseID = driverslicenseID;
+        this.idCardNumber = idCardNumber;
+    }
 
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
+    @Override
+    public Long getCustomerId() {
+        return customerId;
+    }
 
-	/**
-	 * Vollständiger Name für UI-Anzeige (z.B. ComboBox/ Grid).
-	 */
-	public String getFullName() {
-		String fn = firstName != null ? firstName : "";
-		String ln = lastName  != null ? lastName  : "";
-		return (fn + " " + ln).trim();
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getLastname() {
+        return lastname;
+    }
+
+    @Override
+    public LocalDate getBirthday() {
+        return birthday;
+    }
+
+    @Override
+    public String getAddress() {
+        return address;
+    }
+
+    @Override
+    public String getZip() {
+        return zip;
+    }
+
+    @Override
+    public String getResidence() {
+        return residence;
+    }
+
+    @Override
+    public String getCountry() {
+        return country;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public String getTelephone() {
+        return telephone;
+    }
+
+    @Override
+    public String getDriversLicenseID() {
+        return driverslicenseID;
+    }
+
+    @Override
+    public String getIdCardNumber() {
+        return idCardNumber;
+    }
+
+    @Override
+    public int getAge() {
+        return Period.between(getBirthday(), LocalDate.now()).getYears();
+    }
+
+    @Override
+    public List<Rental> getRents() {
+        return rents;
+    }
+
+    @Override
+    public String getFullName(){
+        return getName() + " " + getLastname();
+    }
+
+    @Override
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    @Override
+    public void addRent(Rental rental) {
+        this.rents.add(rental);
+    }
+
+    @Override
+    public String getRentCount() {
+        return String.valueOf(rents.size());
+    }
+
+    @Override
+    public double getTotalRevenue() {
+        double totalRevenue = 0;
+        for (Rental rent : rents){
+            totalRevenue += rent.getTotalPrice();
+        }
+        return totalRevenue;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    @Override
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    @Override
+    public void setZip(String zip) {
+        this.zip = zip;
+    }
+
+    @Override
+    public void setResidence(String residence) {
+        this.residence = residence;
+    }
+
+    @Override
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    @Override
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    @Override
+    public void setDriverslicenseID(String driverslicenseID) {
+        this.driverslicenseID = driverslicenseID;
+    }
+
+    @Override
+    public void setIdCardNumber(String idCardNumber) {
+        this.idCardNumber = idCardNumber;
+    }
+
+    @Override
+    public void setBirthday(LocalDate birthday) {
+        this.birthday = birthday;
+    }
+
+    @Override
+    public String getSalutation() {
+        return salutation;
+    }
+
+    @Override
+    public void setSalutation(String salutation) {
+        this.salutation = salutation;
+    }
 }

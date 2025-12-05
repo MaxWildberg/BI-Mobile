@@ -53,10 +53,11 @@ public class MainLayout extends AppLayout {
 		RouterLink vehicles = new RouterLink("Fahrzeuge", VehicleView.class);
 		RouterLink rentals = new RouterLink("Ausleihen", RentalsOverviewView.class);
 		RouterLink employees = new RouterLink("Mitarbeiter", EmployeeView.class);
+		RouterLink customers = new RouterLink("Kunden", CustomerOverview.class);
 
-		styleLinks(dashboard, facilities, vehicles, rentals, employees);
+		styleLinks(dashboard, facilities, vehicles, rentals, employees, customers);
 
-		nav.add(new H3("Navigation"), dashboard, facilities, vehicles, rentals, employees);
+		nav.add(new H3("Navigation"), dashboard, facilities, vehicles, rentals, employees, customers);
 		addToDrawer(nav);
 
 	}
