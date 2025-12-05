@@ -20,6 +20,8 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
+import java.time.LocalDate;
+
 /**
  * Beschreibung:
  * User Interface für Formular welches den Nutzer einen Kunden erstellen bzw. bearbeiten lässt.
@@ -62,8 +64,14 @@ public class EditCreateCustomerDialog extends Dialog {
     private final Button saveButton = new Button("Kunde registrieren");
     private final Button cancelButton = new Button("Abbrechen");
 
-    // Konstruktor für Formular, verwendet in CustomerOverview und CustomerDetailsView
-    public EditCreateCustomerDialog(CustomerInterface customer, boolean editMode, CustomerService manager, Runnable onSaveSuccess) {
+    /**
+     *
+     * @param customer Kundenobjekt welches geändert werden soll
+     * @param editMode
+     * @param service
+     * @param onSaveSuccess
+     */
+    public EditCreateCustomerDialog(CustomerInterface customer, boolean editMode, CustomerService service, Runnable onSaveSuccess) {
         if (customer instanceof Customer) {
             this.customer = customer != null ? customer : new Customer();
         } else {
@@ -71,7 +79,7 @@ public class EditCreateCustomerDialog extends Dialog {
         }
 
         this.editMode = editMode;
-        this.service = manager;
+        this.service = service;
         this.onSaveSuccess = onSaveSuccess;
 
         buildUI();
@@ -80,7 +88,9 @@ public class EditCreateCustomerDialog extends Dialog {
         binder.readBean(customer);
     }
 
-    // Baut das Fomular auf, je nach Use Case -> Kunde, Business Kunde? / Bearbeiten, neu erstellen?
+    /**
+     *
+     */
     private void buildUI() {
 
         setHeaderTitle(editMode ? "Kunden Details bearbeiten" : "Neuen Kunden anlegen");
@@ -92,6 +102,9 @@ public class EditCreateCustomerDialog extends Dialog {
         // --- Persönliche Daten ---
         genderBox.setItems("Herr", "Frau", "Divers");
         genderBox.setValue("Frau");
+        birthdate.setMax(LocalDate.now().minusYears(18)); // maximal heute vor 18 Jahren
+        birthdate.setMin(LocalDate.now().minusYears(120)); // niemand älter als 120 Jahre
+        birthdate.setErrorMessage("Der Kunde muss mindestens 18 Jahre alt sein.");
         add(sectionHeader("Persönliche Daten", VaadinIcon.USER));
         add(new FormLayout(genderBox, firstName, lastName, birthdate));
 
@@ -120,7 +133,12 @@ public class EditCreateCustomerDialog extends Dialog {
         getFooter().add(cancelButton, saveButton);
     }
 
-    // Hilfsmethode für mehrfach wiederkehrende Erstellung eines Absatzes in UI
+    /**
+     * Hilfsmethode für mehrfach wiederkehrende Erstellung einer Sektionsüberschrift in UI
+     * @param title Titel der Sektion
+     * @param iconType Welches Icon im Header angezeigt werden soll
+     * @return Rückgabe des gesamten layouts an Methode buildUI
+     */
     private HorizontalLayout sectionHeader(String title, VaadinIcon iconType) {
         Icon icon = iconType.create();
         icon.setColor("var(--lumo-primary-color)");
@@ -134,8 +152,10 @@ public class EditCreateCustomerDialog extends Dialog {
         return layout;
     }
 
-    // Konfiguriert Binder, liest eingegebene Daten aus dem Formular und erstellt/updated damit das Kunden-Objekt
-    // Passt sich ebenfalls an Objekt an -> Kunde oder Business Kunde
+    /**
+     * Konfiguriert Binder, liest eingegebene Daten aus dem Formular und erstellt/updated damit das Kunden-Objekt
+     * Passt sich ebenfalls an Objekt an -> Kunde oder Business Kunde
+     */
     private void configureBinder() {
 
         binder.forField(genderBox)
@@ -211,9 +231,11 @@ public class EditCreateCustomerDialog extends Dialog {
 
     }
 
-    // Führt Binder aus sobald das Formular gespeichert wird
-    // Gibt Anweisung an CustomerManager für update oder neues Kunden-Objekt
-    // Gibt Erfolgsmeldung in UI, wenn erfolgreich
+    /**
+     * Führt Binder aus sobald das Formular gespeichert wird
+     * Gibt Anweisung an CustomerService für update oder neues Kunden-Objekt
+     * Gibt Erfolgsmeldung in UI, wenn erfolgreich
+     */
     private void onSave() {
 
         if (binder.writeBeanIfValid(customer)) {

@@ -26,6 +26,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import jakarta.annotation.security.PermitAll;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 /**
  * Beschreibung:
  * User Interface zur Darstellung eines spezifischen Kunden mit sämtlichen Informationen.
@@ -219,10 +222,13 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
      */
     private Div createPersonalData() {
         Div d = new Div();
+        DateTimeFormatter german = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        String birthday = customerInterface.getBirthday().format(german);
 
+        d.add(new Paragraph("Anrede: " + customerInterface.getSalutation()));
         d.add(new Paragraph("Vorname: " + customerInterface.getName()));
         d.add(new Paragraph("Nachname: " + customerInterface.getLastname()));
-        d.add(new Paragraph("Geburtsdatum: " + customerInterface.getBirthday() + " (" + customerInterface.getAge() + " Jahre)"));
+        d.add(new Paragraph("Geburtsdatum: " + birthday + " (" + customerInterface.getAge() + " Jahre)"));
 
         return d;
     }

@@ -7,13 +7,11 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 
 /**
- * Description: Represents a business customer, extending the base
- * Customer entity with additional fields such as company name and address attributes.
  *
  * @author Max Wildberg
  */
 @Entity
-@Table(name = "business_customer") // optional: use underscore naming for DB
+@Table(name = "business_customer")
 public class BusinessCustomer extends Customer implements CustomerInterface {
 
     // Zusätzlich Felder für Business Customer
@@ -26,7 +24,6 @@ public class BusinessCustomer extends Customer implements CustomerInterface {
     // Default constructor for JPA
     public BusinessCustomer() {}
 
-    // Optional convenience constructor
     public BusinessCustomer(String salutation,
                             String name,
                             String lastname,
