@@ -62,8 +62,14 @@ public class EditCreateCustomerDialog extends Dialog {
     private final Button saveButton = new Button("Kunde registrieren");
     private final Button cancelButton = new Button("Abbrechen");
 
-    // Konstruktor für Formular, verwendet in CustomerOverview und CustomerDetailsView
-    public EditCreateCustomerDialog(CustomerInterface customer, boolean editMode, CustomerService manager, Runnable onSaveSuccess) {
+    /**
+     *
+     * @param customer
+     * @param editMode
+     * @param service
+     * @param onSaveSuccess
+     */
+    public EditCreateCustomerDialog(CustomerInterface customer, boolean editMode, CustomerService service, Runnable onSaveSuccess) {
         if (customer instanceof Customer) {
             this.customer = customer != null ? customer : new Customer();
         } else {
@@ -71,7 +77,7 @@ public class EditCreateCustomerDialog extends Dialog {
         }
 
         this.editMode = editMode;
-        this.service = manager;
+        this.service = service;
         this.onSaveSuccess = onSaveSuccess;
 
         buildUI();
@@ -80,7 +86,9 @@ public class EditCreateCustomerDialog extends Dialog {
         binder.readBean(customer);
     }
 
-    // Baut das Fomular auf, je nach Use Case -> Kunde, Business Kunde? / Bearbeiten, neu erstellen?
+    /**
+     *
+     */
     private void buildUI() {
 
         setHeaderTitle(editMode ? "Kunden Details bearbeiten" : "Neuen Kunden anlegen");
@@ -120,7 +128,12 @@ public class EditCreateCustomerDialog extends Dialog {
         getFooter().add(cancelButton, saveButton);
     }
 
-    // Hilfsmethode für mehrfach wiederkehrende Erstellung eines Absatzes in UI
+    /**
+     * Hilfsmethode für mehrfach wiederkehrende Erstellung eines Absatzes in UI
+     * @param title
+     * @param iconType
+     * @return
+     */
     private HorizontalLayout sectionHeader(String title, VaadinIcon iconType) {
         Icon icon = iconType.create();
         icon.setColor("var(--lumo-primary-color)");
@@ -134,8 +147,10 @@ public class EditCreateCustomerDialog extends Dialog {
         return layout;
     }
 
-    // Konfiguriert Binder, liest eingegebene Daten aus dem Formular und erstellt/updated damit das Kunden-Objekt
-    // Passt sich ebenfalls an Objekt an -> Kunde oder Business Kunde
+    /**
+     * Konfiguriert Binder, liest eingegebene Daten aus dem Formular und erstellt/updated damit das Kunden-Objekt
+     * Passt sich ebenfalls an Objekt an -> Kunde oder Business Kunde
+     */
     private void configureBinder() {
 
         binder.forField(genderBox)
@@ -211,9 +226,11 @@ public class EditCreateCustomerDialog extends Dialog {
 
     }
 
-    // Führt Binder aus sobald das Formular gespeichert wird
-    // Gibt Anweisung an CustomerManager für update oder neues Kunden-Objekt
-    // Gibt Erfolgsmeldung in UI, wenn erfolgreich
+    /**
+     * Führt Binder aus sobald das Formular gespeichert wird
+     * Gibt Anweisung an CustomerManager für update oder neues Kunden-Objekt
+     * Gibt Erfolgsmeldung in UI, wenn erfolgreich
+     */
     private void onSave() {
 
         if (binder.writeBeanIfValid(customer)) {

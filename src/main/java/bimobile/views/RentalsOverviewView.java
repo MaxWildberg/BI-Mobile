@@ -170,7 +170,7 @@ public class RentalsOverviewView extends VerticalLayout {
 		H3 dialogTitle = new H3("Neue Ausleihe anlegen");
 
 		ComboBox<Customer> customerBox = new ComboBox<>("Kunde");
-		customerBox.setItems(customerService.findAll());
+		customerBox.setItems(customerService.findAllCustomers());
 		customerBox.setItemLabelGenerator(Customer::getFullName);
 
 		ComboBox<Vehicle> vehicleBox = new ComboBox<>("Fahrzeug");
@@ -259,7 +259,7 @@ public class RentalsOverviewView extends VerticalLayout {
 
 		// Kunde & Fahrzeug nur lesbar anzeigen
 		ComboBox<Customer> customerBox = new ComboBox<>("Kunde");
-		customerBox.setItems(customerService.findAll());
+		customerBox.setItems(customerService.findAllCustomers());
 		customerBox.setItemLabelGenerator(Customer::getFullName);
 		customerBox.setValue(rental.getCustomer());
 		customerBox.setReadOnly(true);
