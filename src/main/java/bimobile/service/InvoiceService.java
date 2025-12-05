@@ -2,13 +2,23 @@ package bimobile.service;
 
 import bimobile.dao.InvoiceRepository;
 import bimobile.dao.RentalRepository;
-import bimobile.enums.RentalStatus;
 import bimobile.model.Invoice;
 import bimobile.model.Rental;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+
+/**
+ * Geschäftslogik zur Erstellung der Rechnung nach Abschluss der Ausleihe.
+ * Verantwortlichkeiten:
+ * - Berechnung der Preise und befüllen der Invoice Attribute
+ * - Übergabe der aus PdfGeneratorService erstellten PDF in Variable pdf der Klasse byte[]
+ * - Übergabe der pdf an die Mail-Methode
+ * - Erstellung des PDF-Namens
+ * - Aktivierung des MailService
+ * @author Leonard Köchling
+ */
 
 @Service
 public class InvoiceService {
@@ -28,15 +38,21 @@ public class InvoiceService {
         this.rentalRepository = rentalRepository;
     }
 
+    /**
+     * @param rental aus confirmCarReturn und der Rückgabemethode aus der View
+     * Speichert die Invoice in der Datenbank
+     * @return invoice
+     */
     @Transactional
     public Invoice createInvoiceForRental(Rental rental) {
 
+        Rental loaded = rentalRepository.findByIdWithAllAttributes(rental.getId());
         Invoice invoice = new Invoice();
-        invoice.setRental(rental);
+        invoice.setRental(loaded);
         invoice.setInvoiceDate(LocalDateTime.now());
 
-        double netto = rental.getDailyRate() *
-                (rental.getStartDate().until(rental.getEndDate()).getDays());
+        double netto = loaded.getDailyRate() *
+                (loaded.getStartDate().until(loaded.getEndDate()).getDays());
 
         double tax = netto * 0.19;
         double gross = netto + tax;
@@ -44,7 +60,7 @@ public class InvoiceService {
         invoice.setNetAmount(netto);
         invoice.setTaxAmount(tax);
         invoice.setGrossAmount(gross);
-        invoice.setVehicle(rental.getVehicle());
+        invoice.setVehicle(loaded.getVehicle());
 
         invoiceRepository.save(invoice);
 
@@ -54,7 +70,7 @@ public class InvoiceService {
         // Mail verschicken
         mailService.sendInvoiceMail(
                 invoice,
-                rental.getCustomer().getEmail(),
+                loaded.getCustomer().getEmail(),
                 pdf,
                 "Rechnung-" + invoice.getId() + ".pdf"
         );
@@ -63,12 +79,16 @@ public class InvoiceService {
     }
 
 
+    /**
+     * Kreiert Rental-Daten für die createInvocieForRental-Methode
+     *
+     * @param rentalId übergebene Rental, die gerade abgeschlossen wurde
+     */
+    @Transactional
     public void confirmCarReturn(Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId).orElseThrow();
-        rental.setStatus(RentalStatus.COMPLETED);
         rentalRepository.save(rental);
         createInvoiceForRental(rental);
     }
 
 }
-
