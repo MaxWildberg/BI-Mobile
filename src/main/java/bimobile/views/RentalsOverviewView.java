@@ -129,6 +129,20 @@ public class RentalsOverviewView extends VerticalLayout {
 			loeschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
 			loeschen.addClickListener(e -> openDeleteDialog(rental));
 
+			Button zurueckgeben = new Button(new Icon(VaadinIcon.CHECK));
+            zurueckgeben.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY);
+            zurueckgeben.addClickListener(e -> {
+                try {
+                    rentalService.returnRental(rental); // setzt Status COMPLETED + erstellt Rechnung
+                    Notification.show("Ausleihe #" + rental.getId() + " zurückgegeben.")
+                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                    updateGrid();
+                } catch (Exception ex) {
+                    Notification.show("Fehler beim Zurückgeben der Ausleihe.")
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    ex.printStackTrace();
+                }
+            });
 			return new HorizontalLayout(bearbeiten, loeschen);
 		}).setHeader("Aktionen");
 
