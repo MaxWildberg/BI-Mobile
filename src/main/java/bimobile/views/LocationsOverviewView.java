@@ -162,7 +162,7 @@ public class LocationsOverviewView extends VerticalLayout {
 
 				try{
 					String tel = phone.getValue().trim();
-					String msg = controller.standortAnlegen(address.getValue(), email.getValue(), tel);
+					String msg = controller.standortAnlegen(address.getValue(), email.getValue(), Integer.parseInt(tel));
 
 					Notification.show(msg);
 
@@ -228,7 +228,7 @@ public class LocationsOverviewView extends VerticalLayout {
 						facility.getId(),
 						addressField.getValue(),
 						emailField.getValue(),
-						tel
+                        Integer.parseInt(tel)
 				);
 
 				if (result.startsWith("Erfolg")) {
