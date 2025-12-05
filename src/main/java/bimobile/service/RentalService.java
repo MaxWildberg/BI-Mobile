@@ -37,7 +37,7 @@ public class RentalService {
 
     private final RentalRepository rentalRepository;
     private final VehicleService vehicleService;
-	private final InvoiceService invoiceService;
+    private final InvoiceService invoiceService;
 
     /**
      * Konstruktor-Injektion der Abhängigkeiten.
@@ -46,10 +46,11 @@ public class RentalService {
      * @param vehicleService   Service für Fahrzeugzugriffe
      */
     public RentalService(RentalRepository rentalRepository,
-                         VehicleService vehicleService, InvoiceService invoiceService) {
+                         VehicleService vehicleService,
+                         InvoiceService invoiceService) {
         this.rentalRepository = rentalRepository;
         this.vehicleService = vehicleService;
-	    this.invoiceService = invoiceService;
+        this.invoiceService = invoiceService;
     }
 
     /**
@@ -138,19 +139,27 @@ public class RentalService {
     /**
      * Schließt eine bestehende Ausleihe ab und gibt das Fahrzeug wieder frei.
      *
-     * @param rental        Ausleihe, die abgeschlossen werden soll tatsächliches Rückgabedatum
+     * @param rental        Ausleihe, die abgeschlossen werden soll
+     * @param actualEndDate tatsächliches Rückgabedatum
      * @return aktualisierte Ausleihe
      */
     @Transactional
-    public Rental returnRental(Rental rental) {
-        Rental loaded = rentalRepository.findByIdWithAllAttributes(rental.getId());
-        loaded.setStatus(RentalStatus.COMPLETED);
-        Rental saved = rentalRepository.save(loaded);
+    public Rental completeRental(Rental rental, LocalDate actualEndDate) {
+        if (rental == null) {
+            throw new IllegalArgumentException("Ausleihe darf nicht null sein.");
+        }
 
-        // Rechnung erzeugen
-        invoiceService.createInvoiceForRental(saved);
+        if (actualEndDate != null && actualEndDate.isAfter(rental.getStartDate())) {
+            rental.setEndDate(actualEndDate);
+        }
 
-        return saved;
+        rental.setStatus(RentalStatus.COMPLETED);
+
+        Vehicle vehicle = rental.getVehicle();
+        vehicle.setAvailable(true);
+        vehicleService.save(vehicle);
+
+        return rentalRepository.save(rental);
     }
 
     /**
@@ -208,6 +217,25 @@ public class RentalService {
     }
 
     /**
+     * Gibt die ausgewählte Ausleihe zurück
+     *
+     * und übergibt sie der Rechnungs-Methode
+     * @param rental Speichert die zu bearbeitende Rental in saved ab
+     * @return Rentalobjekt für welches die Rechnung erstellt wird
+     * @author Leonard Köchling
+     */
+    public Rental returnRental(Rental rental) {
+        Rental loaded = rentalRepository.findByIdWithAllAttributes(rental.getId());
+        loaded.setStatus(RentalStatus.COMPLETED);
+        Rental saved = rentalRepository.save(loaded);
+
+        // Rechnung erzeugen
+        invoiceService.createInvoiceForRental(saved);
+
+        return saved;
+    }
+
+    /**
      *  Aktualisiert eine bestehende Ausleihe und berechnet den Gesamtpreis neu
      *
      * @param rental zu aktualisierende Ausleihe
@@ -243,14 +271,19 @@ public class RentalService {
      * Min. ein Tag wird berechnet.
      *
      * @param vehicle Fahrzeug mit Tagespreis
-     * @param start   Startdatum
-     * @param end     Enddatum
+     * @param start Startdatum
+     * @param end Enddatum
      * @return Gesamtpreis
      */
     private double calculateTotalPrice(Vehicle vehicle, LocalDate start, LocalDate end) {
-        return 0;
+        long days = ChronoUnit.DAYS.between(start, end);
+        if(days <= 0){
+            days = 1;
+        }
+        return days * vehicle.getDailyRate();
     }
 
-    public void returnRental(Rental rental) {
+    public List<Rental> findAllWithCustomerVehicleFacility() {
+        return rentalRepository.findAllWithCustomerVehicleFacility();
     }
 }
