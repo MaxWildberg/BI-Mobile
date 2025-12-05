@@ -141,22 +141,15 @@ public class RentalService {
      * @return aktualisierte Ausleihe
      */
     @Transactional
-    public Rental completeRental(Rental rental, LocalDate actualEndDate) {
-        if (rental == null) {
-            throw new IllegalArgumentException("Ausleihe darf nicht null sein.");
-        }
+    public Rental returnRental(Rental rental) {
+        Rental loaded = rentalRepository.findByIdWithAllAttributes(rental.getId());
+        loaded.setStatus(RentalStatus.COMPLETED);
+        Rental saved = rentalRepository.save(loaded);
 
-        if (actualEndDate != null && actualEndDate.isAfter(rental.getStartDate())) {
-            rental.setEndDate(actualEndDate);
-        }
+        // Rechnung erzeugen
+        invoiceService.createInvoiceForRental(saved);
 
-        rental.setStatus(RentalStatus.COMPLETED);
-
-        Vehicle vehicle = rental.getVehicle();
-        vehicle.setAvailable(true);
-        vehicleService.save(vehicle);
-
-        return rentalRepository.save(rental);
+        return saved;
     }
 
     /**
