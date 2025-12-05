@@ -29,8 +29,5 @@ public class Main {
                                 " | Facility: " + (e.getFacility() != null ? e.getFacility().getAddress() : "None")
                 )
         );
-
-        // Close DAOs
-        employeeDAO.close();
     }
 }

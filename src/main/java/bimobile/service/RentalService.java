@@ -37,6 +37,7 @@ public class RentalService {
 
     private final RentalRepository rentalRepository;
     private final VehicleService vehicleService;
+	private final InvoiceService invoiceService;
 
     /**
      * Konstruktor-Injektion der Abhängigkeiten.
@@ -45,9 +46,10 @@ public class RentalService {
      * @param vehicleService   Service für Fahrzeugzugriffe
      */
     public RentalService(RentalRepository rentalRepository,
-                         VehicleService vehicleService) {
+                         VehicleService vehicleService, InvoiceService invoiceService) {
         this.rentalRepository = rentalRepository;
         this.vehicleService = vehicleService;
+	    this.invoiceService = invoiceService;
     }
 
     /**
@@ -136,8 +138,7 @@ public class RentalService {
     /**
      * Schließt eine bestehende Ausleihe ab und gibt das Fahrzeug wieder frei.
      *
-     * @param rental        Ausleihe, die abgeschlossen werden soll
-     * @param actualEndDate tatsächliches Rückgabedatum
+     * @param rental        Ausleihe, die abgeschlossen werden soll tatsächliches Rückgabedatum
      * @return aktualisierte Ausleihe
      */
     @Transactional
