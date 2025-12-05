@@ -114,7 +114,7 @@ public class CustomerOverview extends VerticalLayout {
         H3 dialogTitle = new H3("Kunde löschen?");
         VerticalLayout content = new VerticalLayout();
         content.add("Möchten Sie den Kunden wirklich löschen?");
-        content.add(customer.getName() + " " + customer.getLastname() + ", Geburtsdatum: " + customer.getBirthday());
+        content.add(customer.getName() + " " + customer.getLastname() + ", Kunden-ID: " + customer.getCustomerId());
 
         Button confirmButton = new Button("Löschen", e -> {
             String result = service.deleteCustomer(customer.getCustomerId());
