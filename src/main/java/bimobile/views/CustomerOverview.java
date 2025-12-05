@@ -1,5 +1,6 @@
 package bimobile.views;
 
+import bimobile.model.CustomerInterface;
 import bimobile.service.CustomerService;
 import bimobile.model.Customer;
 import com.vaadin.flow.component.UI;
@@ -63,11 +64,11 @@ public class CustomerOverview extends VerticalLayout {
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         // Grid zur Übersicht aller Kunden
-        grid.addColumn(Customer::getCustomerId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(Customer::getLastname).setHeader("Nachname").setAutoWidth(true);
-        grid.addColumn(Customer::getName).setHeader("Name").setAutoWidth(true);
-        grid.addColumn(Customer::getEmail).setHeader("E-Mail").setAutoWidth(true);
-        grid.addColumn(Customer::getTelephone).setHeader("Telefonnummer").setAutoWidth(true);
+        grid.addColumn(CustomerInterface::getCustomerId).setHeader("ID").setAutoWidth(true);
+        grid.addColumn(CustomerInterface::getLastname).setHeader("Nachname").setAutoWidth(true);
+        grid.addColumn(CustomerInterface::getName).setHeader("Name").setAutoWidth(true);
+        grid.addColumn(CustomerInterface::getEmail).setHeader("E-Mail").setAutoWidth(true);
+        grid.addColumn(CustomerInterface::getTelephone).setHeader("Telefonnummer").setAutoWidth(true);
 
         // fügt buttons "Bearbeiten" und "Löschen" zum Grid hinzu
         grid.addComponentColumn(customer -> {
@@ -107,7 +108,7 @@ public class CustomerOverview extends VerticalLayout {
 
 
     // Öffnet Dialog welches dem Nutzer den Kunden anzeigt und die Wahl gibt zu löschen
-    private void openDeleteDialog(Customer customer) {
+    private void openDeleteDialog(CustomerInterface customer) {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");
 
