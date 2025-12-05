@@ -4,6 +4,8 @@ import bimobile.model.Rental;
 import bimobile.enums.RentalStatus;
 import bimobile.model.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -52,4 +54,21 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
      * @return Liste der Ausleihen dieses Fahrzeugs
      */
     List<Rental> findByVehicle(Vehicle vehicle);
+
+
+    /**
+     * damit permanent beim Zugriff der Klassen untereinander die Injection aktualisiert wird
+     * @author Leonard Köchling
+     */
+    // Holt alle Rentals und lädt den Customer,Facility und Fahrzeug gleich mit
+    @Query("SELECT r FROM Rental r JOIN FETCH r.customer JOIN FETCH r.vehicle JOIN FETCH r.facility")
+    List<Rental> findAllWithCustomerVehicleFacility();
+
+    //für das zurückgeben der Rental braucht man hier das jeweilige Rental-Objekt
+    @Query("SELECT r FROM Rental r " +
+            "JOIN FETCH r.customer " +
+            "JOIN FETCH r.vehicle " +
+            "JOIN FETCH r.facility " +
+            "WHERE r.id = :id")
+    Rental findByIdWithAllAttributes(@Param("id") Long id);
 }
