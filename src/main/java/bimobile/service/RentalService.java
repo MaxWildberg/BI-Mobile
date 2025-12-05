@@ -249,15 +249,14 @@ public class RentalService {
      * Min. ein Tag wird berechnet.
      *
      * @param vehicle Fahrzeug mit Tagespreis
-     * @param start Startdatum
-     * @param end Enddatum
+     * @param start   Startdatum
+     * @param end     Enddatum
      * @return Gesamtpreis
      */
     private double calculateTotalPrice(Vehicle vehicle, LocalDate start, LocalDate end) {
-        long days = ChronoUnit.DAYS.between(start, end);
-        if(days <= 0){
-            days = 1;
-        }
-        return days * vehicle.getDailyRate();
+        return 0;
+    }
+
+    public void returnRental(Rental rental) {
     }
 }
