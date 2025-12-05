@@ -26,9 +26,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import jakarta.annotation.security.PermitAll;
 
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-
 /**
  * Beschreibung:
  * User Interface zur Darstellung eines spezifischen Kunden mit sämtlichen Informationen.
@@ -73,13 +70,13 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         header.setSpacing(true);
 
         // Initialen als "Avatar"
-        Span avatar = new Span(getInitials(customerInterface.getName(), customerInterface.getLastname()));
+        Span avatar = new Span(getInitials(customerInterface.getFirstName(), customerInterface.getLastName()));
         avatar.getStyle().set("padding", "12px 16px");
         avatar.getStyle().set("border-radius", "50%");
         avatar.getStyle().set("background", "#eee");
         avatar.getStyle().set("font-weight", "600");
 
-        H2 name = new H2(customerInterface.getName() + " " + customerInterface.getLastname());
+        H2 name = new H2(customerInterface.getFirstName() + " " + customerInterface.getLastName());
         Span id = new Span("Kunden-ID: " + customerInterface.getCustomerId());
         id.getStyle().set("color", "gray");
 
@@ -222,13 +219,10 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
      */
     private Div createPersonalData() {
         Div d = new Div();
-        DateTimeFormatter german = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        String birthday = customerInterface.getBirthday().format(german);
 
-        d.add(new Paragraph("Anrede: " + customerInterface.getSalutation()));
-        d.add(new Paragraph("Vorname: " + customerInterface.getName()));
-        d.add(new Paragraph("Nachname: " + customerInterface.getLastname()));
-        d.add(new Paragraph("Geburtsdatum: " + birthday + " (" + customerInterface.getAge() + " Jahre)"));
+        d.add(new Paragraph("Vorname: " + customerInterface.getFirstName()));
+        d.add(new Paragraph("Nachname: " + customerInterface.getLastName()));
+        d.add(new Paragraph("Geburtsdatum: " + customerInterface.getBirthday() + " (" + customerInterface.getAge() + " Jahre)"));
 
         return d;
     }
@@ -358,7 +352,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         H3 dialogTitle = new H3("Kunde löschen?");
         VerticalLayout content = new VerticalLayout();
         content.add("Möchten Sie den Kunden wirklich löschen?");
-        content.add(customer.getName() + " " + customer.getLastname() + ", Geburtsdatum: " + customer.getBirthday());
+        content.add(customer.getFirstName() + " " + customer.getLastName() + ", Geburtsdatum: " + customer.getBirthday());
 
         Button confirmButton = new Button("Löschen", e -> {
             String result = service.deleteCustomer(customer.getCustomerId());

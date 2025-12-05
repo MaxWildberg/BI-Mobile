@@ -129,7 +129,7 @@ public class RentalsOverviewView extends VerticalLayout {
 			loeschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
 			loeschen.addClickListener(e -> openDeleteDialog(rental));
 
-			Button zurueckgeben = new Button(new Icon(VaadinIcon.CHECK));
+            Button zurueckgeben = new Button(new Icon(VaadinIcon.CHECK));
             zurueckgeben.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY);
             zurueckgeben.addClickListener(e -> {
                 try {
@@ -143,7 +143,8 @@ public class RentalsOverviewView extends VerticalLayout {
                     ex.printStackTrace();
                 }
             });
-			return new HorizontalLayout(bearbeiten, loeschen);
+            return new HorizontalLayout(bearbeiten, loeschen, zurueckgeben);
+
 		}).setHeader("Aktionen");
 
 		// Initiale Datenladung
@@ -161,7 +162,7 @@ public class RentalsOverviewView extends VerticalLayout {
 	 * Wird nach jeder Änderungsoperation aufgerufen.
 	 */
 	private void updateGrid() {
-		List<Rental> rentals = rentalService.findAll();
+		List<Rental> rentals = rentalService.findAllWithCustomerVehicleFacility();
 		grid.setItems(rentals);
 	}
 

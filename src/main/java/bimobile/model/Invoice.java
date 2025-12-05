@@ -31,9 +31,7 @@ public class Invoice {
     private Vehicle vehicle;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
     private Customer customer;
-
 
     public Invoice() {
         this.invoiceDate = LocalDateTime.now();

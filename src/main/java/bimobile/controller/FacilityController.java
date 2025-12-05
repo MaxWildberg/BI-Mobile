@@ -17,7 +17,7 @@ public class FacilityController {
         this.facilityDAO = facilityDAO;
     }
 
-    public String standortAnlegen(String address, String mail, String telephoneNr) {
+    public String standortAnlegen(String address, String mail, int telephoneNr) {
         if (address == null || address.trim().isEmpty()) {
             return "Fehler: Adresse ist ein Pflichtfeld";
         }
@@ -35,16 +35,11 @@ public class FacilityController {
             return "Fehler: Ungültiges E-Mail-Format";
         }
 
-	    if (telephoneNr == null || telephoneNr.isBlank()) {
-		    return "Fehler: Telefonnummer darf nicht leer sein.";
-	    }
+        if (telephoneNr <= 0) {
+            return "Fehler: Telefonnummer muss eine positive Zahl sein";
+        }
 
-	    if (!telephoneNr.matches("^[0-9+ ]{6,20}$")) {
-		    return "Fehler: Telefonnummer muss gültig sein (nur Ziffern, + und Leerzeichen).";
-	    }
-
-
-	    if (String.valueOf(telephoneNr).length() > 15) {
+        if (String.valueOf(telephoneNr).length() > 15) {
             return "Fehler: Telefonnummer ist zu lang";
         }
 
@@ -57,7 +52,7 @@ public class FacilityController {
         }
     }
 
-    public String standortBearbeiten(Long id, String address, String mail, String telephoneNr) {
+    public String standortBearbeiten(Long id, String address, String mail, int telephoneNr) {
         if (id == null || id <= 0) {
             return "Fehler: Ungültige Standort-ID";
         }
@@ -82,6 +77,14 @@ public class FacilityController {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         if (!mail.matches(emailRegex)) {
             return "Fehler: Ungültiges E-Mail-Format";
+        }
+
+        if (telephoneNr <= 0) {
+            return "Fehler: Telefonnummer muss eine positive Zahl sein";
+        }
+
+        if (String.valueOf(telephoneNr).length() > 15) {
+            return "Fehler: Telefonnummer ist zu lang";
         }
 
         try {

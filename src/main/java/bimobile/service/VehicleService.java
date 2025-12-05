@@ -1,7 +1,10 @@
 package bimobile.service;
 
+import bimobile.dao.VehicleRepository;
+import bimobile.model.Customer;
 import bimobile.model.Vehicle;
 import bimobile.model.VehicleStatus;
+import jakarta.persistence.EntityManager;
 
 import java.util.List;
 
@@ -16,9 +19,9 @@ public interface VehicleService {
 
     Vehicle changeStatus(Long vehicleId, VehicleStatus newStatus, String reason);
 
-    List<Vehicle> findAllVehicles();
+    List <Vehicle> findAllVehicles();
 
-	Vehicle save(Vehicle vehicle);
+    Vehicle save (Vehicle vehicle);
 
     Vehicle findById(Long id);
 }

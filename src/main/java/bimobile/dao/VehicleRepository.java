@@ -3,14 +3,17 @@ package bimobile.dao;
 import bimobile.model.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Repository für Fahrzeuge (Datenbankzugriff).
+ * Datenzugriffsschicht für Fahrzeuge.
+ * Spring Data JPA erzeugt die Implementierung automatisch zur Laufzeit.
  */
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
-    boolean existsByLicensePlateIgnoreCase(String licensePlate);
+    // Liefert ein Fahrzeug zu einem bestimmten Kennzeichen (falls vorhanden)
+    Optional<Vehicle> findByLicensePlate(String licensePlate);
 
-    Optional<Vehicle> findByLicensePlateIgnoreCase(String licensePlate);
+    boolean existsByLicensePlateIgnoreCase(String licensePlate);
 }

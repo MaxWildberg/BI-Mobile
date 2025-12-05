@@ -33,7 +33,7 @@ public class Customer implements CustomerInterface {
     private String salutation;
 
     @Column(nullable = false)
-    private String name;
+    private String firstname;
 
     @Column(nullable = false)
     private String lastname;
@@ -71,7 +71,6 @@ public class Customer implements CustomerInterface {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Invoice> invoices = new ArrayList<>();
 
-
     /**
      * Parameterloser Standardkonstruktor für JPA.
      */
@@ -93,9 +92,10 @@ public class Customer implements CustomerInterface {
      * @param driverslicenseID Führerscheinnummer
      * @param idCardNumber Ausweisnummer
      */
+
     public Customer(String salutation, String name, String lastname, LocalDate birthday, String address, String zip, String residence, String country, String email, String telephone, String driverslicenseID, String idCardNumber) {
         this.salutation = salutation;
-        this.name = name;
+        this.firstname = name;
         this.lastname = lastname;
         this.birthday = birthday;
         this.address = address;
@@ -114,12 +114,12 @@ public class Customer implements CustomerInterface {
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstname;
     }
 
     @Override
-    public String getLastname() {
+    public String getLastName() {
         return lastname;
     }
 
@@ -180,7 +180,7 @@ public class Customer implements CustomerInterface {
 
     @Override
     public String getFullName(){
-        return getName() + " " + getLastname();
+        return getFirstName() + " " + getLastName();
     }
 
     @Override
@@ -211,12 +211,12 @@ public class Customer implements CustomerInterface {
     }
 
     @Override
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String name) {
+        this.firstname = name;
     }
 
     @Override
-    public void setLastname(String lastname) {
+    public void setLastName(String lastname) {
         this.lastname = lastname;
     }
 

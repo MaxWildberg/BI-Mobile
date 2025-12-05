@@ -3,6 +3,7 @@ package bimobile.service;
 import bimobile.dao.CustomerRepository;
 import bimobile.model.Customer;
 import bimobile.model.CustomerInterface;
+import bimobile.model.Rental;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,8 +36,8 @@ public class CustomerServiceImpl implements CustomerService {
 
             Customer newCustomer = new Customer(
                     customer.getSalutation().trim(),
-                    customer.getName().trim(),
-                    customer.getLastname().trim(),
+                    customer.getFirstName().trim(),
+                    customer.getLastName().trim(),
                     customer.getBirthday(),
                     customer.getAddress().trim(),
                     customer.getZip().trim(),
@@ -71,8 +72,8 @@ public class CustomerServiceImpl implements CustomerService {
 
         try {
             Customer existing = optionalCustomer.get();
-            existing.setName(customer.getName().trim());
-            existing.setLastname(customer.getLastname().trim());
+            existing.setFirstName(customer.getFirstName().trim());
+            existing.setLastName(customer.getLastName().trim());
             existing.setBirthday(customer.getBirthday());
             existing.setAddress(customer.getAddress().trim());
             existing.setZip(customer.getZip().trim());
@@ -139,4 +140,5 @@ public class CustomerServiceImpl implements CustomerService {
     public Optional<Customer> getCustomerByEmail(String email) {
         return customerRepository.findByEmail(email);
     }
+
 }

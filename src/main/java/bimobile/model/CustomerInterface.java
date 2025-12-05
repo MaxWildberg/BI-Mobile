@@ -15,9 +15,9 @@ import java.util.List;
 public interface CustomerInterface {
     Long getCustomerId();
 
-    String getName();
+    String getFirstName();
 
-    String getLastname();
+    String getLastName();
 
     LocalDate getBirthday();
 
@@ -53,9 +53,9 @@ public interface CustomerInterface {
 
     String getSalutation();
 
-    void setName(String name);
+    void setFirstName(String name);
 
-    void setLastname(String lastname);
+    void setLastName(String lastname);
 
     void setAddress(String address);
 

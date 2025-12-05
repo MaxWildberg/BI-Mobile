@@ -1,6 +1,5 @@
 package bimobile.views;
 
-import bimobile.model.CustomerInterface;
 import bimobile.service.CustomerService;
 import bimobile.model.Customer;
 import com.vaadin.flow.component.UI;
@@ -64,11 +63,11 @@ public class CustomerOverview extends VerticalLayout {
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         // Grid zur Übersicht aller Kunden
-        grid.addColumn(CustomerInterface::getCustomerId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(CustomerInterface::getLastname).setHeader("Nachname").setAutoWidth(true);
-        grid.addColumn(CustomerInterface::getName).setHeader("Name").setAutoWidth(true);
-        grid.addColumn(CustomerInterface::getEmail).setHeader("E-Mail").setAutoWidth(true);
-        grid.addColumn(CustomerInterface::getTelephone).setHeader("Telefonnummer").setAutoWidth(true);
+        grid.addColumn(Customer::getCustomerId).setHeader("ID").setAutoWidth(true);
+        grid.addColumn(Customer::getLastName).setHeader("Nachname").setAutoWidth(true);
+        grid.addColumn(Customer::getFirstName).setHeader("Name").setAutoWidth(true);
+        grid.addColumn(Customer::getEmail).setHeader("E-Mail").setAutoWidth(true);
+        grid.addColumn(Customer::getTelephone).setHeader("Telefonnummer").setAutoWidth(true);
 
         // fügt buttons "Bearbeiten" und "Löschen" zum Grid hinzu
         grid.addComponentColumn(customer -> {
@@ -108,14 +107,14 @@ public class CustomerOverview extends VerticalLayout {
 
 
     // Öffnet Dialog welches dem Nutzer den Kunden anzeigt und die Wahl gibt zu löschen
-    private void openDeleteDialog(CustomerInterface customer) {
+    private void openDeleteDialog(Customer customer) {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");
 
         H3 dialogTitle = new H3("Kunde löschen?");
         VerticalLayout content = new VerticalLayout();
         content.add("Möchten Sie den Kunden wirklich löschen?");
-        content.add(customer.getName() + " " + customer.getLastname() + ", Kunden-ID: " + customer.getCustomerId());
+        content.add(customer.getFirstName() + " " + customer.getLastName() + ", Geburtsdatum: " + customer.getBirthday());
 
         Button confirmButton = new Button("Löschen", e -> {
             String result = service.deleteCustomer(customer.getCustomerId());

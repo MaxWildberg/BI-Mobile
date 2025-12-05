@@ -1,94 +1,64 @@
 package bimobile.model;
 
+import bimobile.dao.VehicleRepository;
+import bimobile.service.VehicleService;
 import jakarta.persistence.*;
+
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entity für ein Fahrzeug.
+ * Repräsentiert ein Fahrzeug im System.
  */
 @Entity
-@Table(
-        name = "vehicle",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_vehicle_license_plate", columnNames = "license_plate")
-        }
-)
-public class Vehicle {
+public class Vehicle  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Eindeutiges Kennzeichen.
-     */
-    @Column(name = "license_plate", nullable = false, length = 20)
+    // Nummernschild (muss eindeutig sein)
+    @Column(nullable = false, unique = true)
     private String licensePlate;
 
-    /**
-     * Marke (z.B. VW, Mercedes).
-     */
-    @Column(nullable = false)
     private String brand;
-
-    /**
-     * Modellbezeichnung (z.B. Golf, A-Klasse).
-     */
-    @Column(nullable = false)
     private String model;
 
-    /**
-     * Preisklasse (z.B. A, B, C).
-     */
+    // Preisklasse A/B/C/D 
     private String priceClass;
 
-    /**
-     * Kilometerstand.
-     */
     private int mileage;
 
-    /**
-     * Aktueller Status des Fahrzeugs.
-     */
+
+
+    private double dailyRate;
+
+    private LocalDate purchaseDate;
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private VehicleStatus status = VehicleStatus.AVAILABLE;
 
-    /**
-     * Datum der nächsten HU/Inspektion.
-     * Wird für die Regel "Status Verfügbar nur, wenn HU nicht fällig" verwendet.
-     */
     private LocalDate nextInspectionDate;
 
-	/**
-	 * Datum des nächsten Service-Termins.
-	 */
-	private LocalDate nextServiceDate;
-    /**
-     * True, wenn aktuell eine Wartung läuft/geplant ist.
-     */
+    private LocalDate nextServiceDate;
+
     private boolean maintenanceActive;
 
-	/**
-	 * Tagespreis, der für Mietberechnungen genutzt wird.
-	 */
-	private double dailyRate;
+    private boolean available;
 
-	/**
-	 * Flag, ob das Fahrzeug grundsätzlich verfügbar ist.
-	 */
-	private boolean available = true;
-
-    /**
-     * Historie-Einträge (Lebenslauf).
-     */
+    // Ein Fahrzeug kann mehrere Wartungstermine haben
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VehicleHistoryEntry> history = new ArrayList<>();
+    private List<MaintenanceAppointment> maintenanceAppointments = new ArrayList<>();
 
-    protected Vehicle() {
-        // für JPA
+    // Ein Fahrzeug kann viele History-Einträge haben (Lebenslauf)
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VehicleHistoryEntry> historyEntries = new ArrayList<>();
+
+    // --- Konstruktoren ---
+
+    public Vehicle() {
     }
 
     public Vehicle(String licensePlate, String brand, String model, String priceClass) {
@@ -99,22 +69,35 @@ public class Vehicle {
         this.status = VehicleStatus.AVAILABLE;
     }
 
+    // --- Methoden ---
+
     /**
-     * Prüft, ob HU/Inspektion fällig oder überfällig ist.
+     * Aktualisiert den Status des Fahrzeugs.
+     * Die eigentliche Fachlogik (z.B. ob der Statuswechsel erlaubt ist)
+     * wird im Service geprüft, hier wird nur gesetzt.
      */
-    public boolean isInspectionOverdue() {
-	    return nextInspectionDate != null && !nextInspectionDate.isAfter(LocalDate.now());
+    public void setStatus(VehicleStatus status) {
+        this.status = status;
     }
 
     /**
-     * Eintrag zum Lebenslauf hinzufügen.
+     * Fügt dem Fahrzeug einen Wartungstermin hinzu.
+     * Die Beziehung wird von beiden Seiten korrekt gesetzt.
+     */
+    public void addMaintenanceAppointment(MaintenanceAppointment appointment) {
+        appointment.setVehicle(this);
+        this.maintenanceAppointments.add(appointment);
+    }
+
+    /**
+     * Fügt einen neuen History-Eintrag (Lebenslauf) hinzu.
      */
     public void addHistoryEntry(VehicleHistoryEntry entry) {
-        history.add(entry);
         entry.setVehicle(this);
+        this.historyEntries.add(entry);
     }
 
-    // Getter/Setter
+    // --- Getter & Setter ---
 
     public Long getId() {
         return id;
@@ -160,44 +143,58 @@ public class Vehicle {
         this.mileage = mileage;
     }
 
+    public LocalDate getPurchaseDate() {
+        return purchaseDate;
+    }
+
+    public void setPurchaseDate(LocalDate purchaseDate) {
+        this.purchaseDate = purchaseDate;
+    }
+
     public VehicleStatus getStatus() {
         return status;
     }
 
-    public void setStatus(VehicleStatus status) {
-        this.status = status;
+    public List<MaintenanceAppointment> getMaintenanceAppointments() {
+        return maintenanceAppointments;
     }
 
-	public LocalDate getNextInspectionDate() {
-		return nextInspectionDate;
-	}
+    public LocalDate getNextInspectionDate() {
+        return nextInspectionDate;
+    }
 
-	public void setNextInspectionDate(LocalDate nextInspectionDate) {
-		this.nextInspectionDate = nextInspectionDate;
-	}
+    public void setNextInspectionDate(LocalDate nextInspectionDate) {
+        this.nextInspectionDate = nextInspectionDate;
+    }
 
-	public LocalDate getNextServiceDate() {
-		return nextServiceDate;
-	}
-	public double getDailyRate() {
-		return dailyRate;
-	}
+    public LocalDate getNextServiceDate() {
+        return nextServiceDate;
+    }
 
-	public void setDailyRate(double dailyRate) {
-		this.dailyRate = dailyRate;
-	}
+    public void setNextServiceDate(LocalDate nextServiceDate) {
+        this.nextServiceDate = nextServiceDate;
+    }
 
-	public boolean isAvailable() {
-		return available;
-	}
+    public double getDailyRate() {
+        return dailyRate;
+    }
 
-	public void setAvailable(boolean available) {
-		this.available = available;
-	}
+    public void setDailyRate(double dailyRate) {
+        this.dailyRate = dailyRate;
+    }
 
-	public void setNextServiceDate(LocalDate nextServiceDate) {
-		this.nextServiceDate = nextServiceDate;
-	}
+    public boolean isInspectionOverdue() {
+        return nextInspectionDate != null && !nextInspectionDate.isAfter(LocalDate.now());
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
     public boolean isMaintenanceActive() {
         return maintenanceActive;
     }
@@ -206,11 +203,8 @@ public class Vehicle {
         this.maintenanceActive = maintenanceActive;
     }
 
-    public List<VehicleHistoryEntry> getHistory() {
-        return history;
-    }
-
-    public void setHistory(List<VehicleHistoryEntry> history) {
-        this.history = history;
+    public List<VehicleHistoryEntry> getHistoryEntries() {
+        return historyEntries;
     }
 }
+

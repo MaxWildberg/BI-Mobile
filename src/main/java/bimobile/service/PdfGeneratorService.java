@@ -8,9 +8,20 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * Geschäftslogik zur Konfiguration der PDF.
+
+ * @author Leonard Köchling
+ */
 
 @Service
 public class PdfGeneratorService {
+
+    /** Befüllt das PDF mit den Daten als Stream-Objekt
+     *
+     * @param invoice zum Übergeben der in Invoice-Service befüllten Daten an diese Methode
+     * @return konvertiert den Stream-Objekt-Buffer in ein Byte-Array, damit es attached werden kann
+     */
 
     public byte[] generateInvoicePdf(Invoice invoice) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -34,9 +45,6 @@ public class PdfGeneratorService {
             document.add(new Paragraph("Leihdauer: "
                     + invoice.getRental().getStartDate() + " bis " + invoice.getRental().getEndDate()));
             document.add(new Paragraph("Tagespreis: " + invoice.getRental().getDailyRate() + " €"));
-	        document.add(new Paragraph("Tagespreis: " + invoice.getRental().getDailyRate() + " €"));
-	        document.add(new Paragraph("Kilometer vorher: " + invoice.getKilometersBefore()));
-	        document.add(new Paragraph("Kilometer nachher:  " + invoice.getKilometersAfter()));
 
             document.add(new Paragraph("----------------------------"));
             document.add(new Paragraph("Netto: " + invoice.getNetAmount() + " €"));
