@@ -1,32 +1,18 @@
 package bimobile.model;
 
-
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
-
-/**
- * Entity Klasse, welche einen Kunden mit grundsätzlichen Attributen darstellt.
- *
- * Grundklasse für weitere Kundenklassen, die darauf aufbauen.
- *
- * Ein Kunde hat eine Verknüpfung zu Ausleihe (Rental)
- * Jedes Objekt kennt alle seine Ausleihen.
- *
- *
- * @author Max Wildberg
- */
 @Entity
-@Table(name = "customers")
-public class Customer implements CustomerInterface {
-
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "customer_type")
+public abstract class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto ID
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long customerId;
 
     @Column(nullable = false)
@@ -71,31 +57,27 @@ public class Customer implements CustomerInterface {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Invoice> invoices = new ArrayList<>();
 
-    /**
-     * Parameterloser Standardkonstruktor für JPA.
-     */
-    public Customer(){
 
+    protected Customer() {
+        // JPA requires empty constructor
     }
 
-    /**
-     * Konstruktor zum Anlegen eines neuen Kunden
-     * @param salutation Anrede
-     * @param name Name
-     * @param lastname Nachname
-     * @param birthday Geburtstag
-     * @param address Adresse
-     * @param zip Postleitzahl
-     * @param residence Wohnort
-     * @param email E-Mail Adresse
-     * @param telephone Telefonnummer
-     * @param driverslicenseID Führerscheinnummer
-     * @param idCardNumber Ausweisnummer
-     */
-
-    public Customer(String salutation, String name, String lastname, LocalDate birthday, String address, String zip, String residence, String country, String email, String telephone, String driverslicenseID, String idCardNumber) {
+    public Customer(
+            String salutation,
+            String firstname,
+            String lastname,
+            LocalDate birthday,
+            String address,
+            String zip,
+            String residence,
+            String country,
+            String email,
+            String telephone,
+            String driverslicenseID,
+            String idCardNumber
+    ) {
         this.salutation = salutation;
-        this.firstname = name;
+        this.firstname = firstname;
         this.lastname = lastname;
         this.birthday = birthday;
         this.address = address;
@@ -108,170 +90,149 @@ public class Customer implements CustomerInterface {
         this.idCardNumber = idCardNumber;
     }
 
-    @Override
+    // ----------------------
+    // Getter & Setter
+    // ----------------------
+
     public Long getCustomerId() {
         return customerId;
     }
 
-    @Override
-    public String getFirstName() {
-        return firstname;
-    }
-
-    @Override
-    public String getLastName() {
-        return lastname;
-    }
-
-    @Override
-    public LocalDate getBirthday() {
-        return birthday;
-    }
-
-    @Override
-    public String getAddress() {
-        return address;
-    }
-
-    @Override
-    public String getZip() {
-        return zip;
-    }
-
-    @Override
-    public String getResidence() {
-        return residence;
-    }
-
-    @Override
-    public String getCountry() {
-        return country;
-    }
-
-    @Override
-    public String getEmail() {
-        return email;
-    }
-
-    @Override
-    public String getTelephone() {
-        return telephone;
-    }
-
-    @Override
-    public String getDriversLicenseID() {
-        return driverslicenseID;
-    }
-
-    @Override
-    public String getIdCardNumber() {
-        return idCardNumber;
-    }
-
-    @Override
-    public int getAge() {
-        return Period.between(getBirthday(), LocalDate.now()).getYears();
-    }
-
-    @Override
-    public List<Rental> getRents() {
-        return rents;
-    }
-
-    @Override
-    public String getFullName(){
-        return getFirstName() + " " + getLastName();
-    }
-
-    @Override
-    public List<Invoice> getInvoices() {
-        return rents.stream()
-                .map(Rental::getInvoice)
-                .filter(inv -> inv != null)
-                .toList();
-    }
-
-    @Override
-    public void addRent(Rental rental) {
-        this.rents.add(rental);
-    }
-
-    @Override
-    public String getRentCount() {
-        return String.valueOf(rents.size());
-    }
-
-    @Override
-    public double getTotalRevenue() {
-        double totalRevenue = 0;
-        for (Rental rent : rents){
-            totalRevenue += rent.getTotalPrice();
-        }
-        return totalRevenue;
-    }
-
-    @Override
-    public void setFirstName(String name) {
-        this.firstname = name;
-    }
-
-    @Override
-    public void setLastName(String lastname) {
-        this.lastname = lastname;
-    }
-
-    @Override
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    @Override
-    public void setZip(String zip) {
-        this.zip = zip;
-    }
-
-    @Override
-    public void setResidence(String residence) {
-        this.residence = residence;
-    }
-
-    @Override
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    @Override
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    @Override
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
-    }
-
-    @Override
-    public void setDriverslicenseID(String driverslicenseID) {
-        this.driverslicenseID = driverslicenseID;
-    }
-
-    @Override
-    public void setIdCardNumber(String idCardNumber) {
-        this.idCardNumber = idCardNumber;
-    }
-
-    @Override
-    public void setBirthday(LocalDate birthday) {
-        this.birthday = birthday;
-    }
-
-    @Override
     public String getSalutation() {
         return salutation;
     }
 
-    @Override
     public void setSalutation(String salutation) {
         this.salutation = salutation;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public LocalDate getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(LocalDate birthday) {
+        this.birthday = birthday;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getZip() {
+        return zip;
+    }
+
+    public void setZip(String zip) {
+        this.zip = zip;
+    }
+
+    public String getResidence() {
+        return residence;
+    }
+
+    public void setResidence(String residence) {
+        this.residence = residence;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public String getDriverslicenseID() {
+        return driverslicenseID;
+    }
+
+    public void setDriverslicenseID(String driverslicenseID) {
+        this.driverslicenseID = driverslicenseID;
+    }
+
+    public String getIdCardNumber() {
+        return idCardNumber;
+    }
+
+    public void setIdCardNumber(String idCardNumber) {
+        this.idCardNumber = idCardNumber;
+    }
+
+    public List<Rental> getRents() {
+        return rents;
+    }
+
+    public void addRent(Rental rental) {
+        this.rents.add(rental);
+    }
+
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    public void addInvoice(Invoice invoice) {
+        this.invoices.add(invoice);
+    }
+
+    // ----------------------
+    // Helper methods
+    // ----------------------
+
+    @Transient
+    public int getAge() {
+        return Period.between(getBirthday(), LocalDate.now()).getYears();
+    }
+
+    @Transient
+    public String getFullName() {
+        return firstname + " " + lastname;
+    }
+
+    @Transient
+    public int getRentCount() {
+        return rents.size();
+    }
+
+    @Transient
+    public double getTotalRevenue() {
+        return rents.stream()
+                .mapToDouble(Rental::getTotalPrice)
+                .sum();
     }
 }
