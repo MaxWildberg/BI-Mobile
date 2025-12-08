@@ -1,8 +1,10 @@
 package bimobile.service;
 
+import bimobile.model.Rental;
 import bimobile.model.customer.Company;
 import bimobile.model.customer.Customer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,4 +28,7 @@ public interface CustomerService {
     boolean existsByContactInfoEmail(String email);
 
     Company saveCompany(Company newCompany);
+
+
+    List<Rental> findAllWithCustomerAndVehicle();
 }

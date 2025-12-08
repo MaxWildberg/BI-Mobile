@@ -17,6 +17,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -28,12 +29,12 @@ import com.vaadin.flow.router.PageTitle;
 import jakarta.annotation.security.PermitAll;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
- * Beschreibung:
  * User Interface zur Darstellung eines spezifischen Kunden mit sämtlichen Informationen.
  * Enthält Tabs zur gesonderten Darstellung zwischen Attributen, sämtlicher Ausleihen und Rechnungen des Kunden.
- * Enthält Funktionen wie bearbeiten und löschen.
+ * Enthält Funktionen wie bearbeiten und löschen eines Kunden.
  *
  * @author Max Wildberg
  */
@@ -49,8 +50,8 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     private Div content;
     private Tabs tabs;
 
-    public CustomerDetailsView(CustomerService controller) {
-        this.service = controller;
+    public CustomerDetailsView(CustomerService service) {
+        this.service = service;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -60,19 +61,19 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
             add(new H2("Kunde konnte nicht gefunden werden"));
             return;
         }
-
-
-        //add(createHeader());
-        //add(createTabs());
     }
 
+    /**
+     *
+     * @return
+     */
     private HorizontalLayout createHeader() {
         HorizontalLayout header = new HorizontalLayout();
         header.setWidthFull();
         header.setAlignItems(Alignment.CENTER);
         header.setSpacing(true);
 
-        // Initialen als "Avatar"
+
         Span avatar = new Span(getInitials(customer.getPersonalData().getFirstname(), customer.getPersonalData().getLastname()));
         avatar.getStyle().set("padding", "12px 16px");
         avatar.getStyle().set("border-radius", "50%");
@@ -91,7 +92,6 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         left.setSpacing(true);
         left.setAlignItems(Alignment.CENTER);
 
-        //
         Button export = new Button("Exportieren", new Icon(VaadinIcon.DOWNLOAD));
         export.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
@@ -117,7 +117,10 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return header;
     }
 
-    // Methode zum Aufbau der Tabs
+    /**
+     *
+     * @return
+     */
     private VerticalLayout createTabs() {
         Tab uebersicht = new Tab("Übersicht");
         Tab historie = new Tab("Miethistorie");
@@ -142,8 +145,11 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return new VerticalLayout(tabs, content);
     }
 
-    // Methode zur Kontrolle, ob ein Kunden-Objekt aus CustomerOverview übergeben wurde
-    // Baut bei Erfolg das UI oder erzeugt eine Fehlermeldung
+    /**
+     * Methode zur Kontrolle, ob ein Kunden-Objekt aus CustomerOverview übergeben wurde
+     * Baut bei Erfolg das UI oder erzeugt eine Fehlermeldung
+     * @param event
+     */
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         String idStr = event.getRouteParameters().get("customerId").orElse(null);
@@ -173,20 +179,24 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         add(createTabs());
     }
 
-
-    private HorizontalLayout createOverviewContent() {
-        HorizontalLayout twoCols = new HorizontalLayout();
+    /**
+     * Hilfsmethode zur Darstellung der Kundendaten nach öffnen der DetailsView
+     * @return gefülltes Flexlayout an CustomerDetailsView
+     */
+    private FlexLayout createOverviewContent() {
+        // Hauptlayout
+        FlexLayout twoCols = new FlexLayout();
         twoCols.setWidthFull();
-        twoCols.setSpacing(true);
+        twoCols.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        twoCols.setJustifyContentMode(FlexLayout.JustifyContentMode.START);
+        twoCols.setAlignItems(FlexLayout.Alignment.START);
+        twoCols.getStyle().set("gap", "var(--lumo-space-m)"); // Abstand zwischen den Spalten
 
+        // Linke Spalte
         VerticalLayout leftCol = new VerticalLayout();
-        leftCol.setWidth("65%");
         leftCol.setPadding(false);
-
-        VerticalLayout rightCol = new VerticalLayout();
-        rightCol.setWidth("35%");
-        rightCol.setPadding(false);
-
+        leftCol.setSpacing(false);
+        leftCol.setWidth("65%"); // Maximalbreite
         leftCol.add(createCard("Persönliche Daten", createPersonalData()));
         leftCol.add(createCard("Adresse", createAddressData()));
         leftCol.add(createCard("Kontakt", createContactData()));
@@ -194,27 +204,48 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
             leftCol.add(createCard("Gewerbeanschrift", createEmployerData()));
         }
 
+        // Rechte Spalte
+        VerticalLayout rightCol = new VerticalLayout();
+        rightCol.setPadding(false);
+        rightCol.setSpacing(false);
+        rightCol.setWidth("30%"); // Maximalbreite
         rightCol.add(createCard("Statistiken", createStatisticsData()));
         rightCol.add(createCard("Dokumente", createDocumentsSummary()));
 
+        // Spalten hinzufügen
         twoCols.add(leftCol, rightCol);
+
         return twoCols;
     }
 
-    // Hilfsmethode zur mehrfach wiederkehrenden erzeugung einer Overview Card
+
+    /**
+     * Hilfsmethode zur mehrfach wiederkehrenden erzeugung einer Overview Card
+     * @param title Titel der Karte
+     * @param content
+     * @return
+     */
     private Div createCard(String title, Div content) {
         Div card = new Div();
 
+        // Überschrift
         H3 h = new H3(title);
-        h.getStyle().set("margin-top", "0");
+        h.getStyle().set("margin", "0 0 12px 0"); // Abstand unter der Überschrift
 
-        card.getStyle().set("border", "1px solid #ccc");
+        // Card Styling
+        card.getStyle().set("border", "1px solid #e0e0e0"); // leichterer Rahmen
         card.getStyle().set("padding", "16px");
         card.getStyle().set("border-radius", "8px");
+        card.getStyle().set("box-shadow", "0 2px 5px rgba(0,0,0,0.1)"); // leichter Schatten
+        card.getStyle().set("background-color", "white"); // sicherstellen, dass Hintergrund weiß ist
+        card.getStyle().set("display", "flex");
+        card.getStyle().set("flex-direction", "column");
+        card.getStyle().set("gap", "8px"); // Abstand zwischen Überschrift und Inhalt
 
         card.add(h, content);
         return card;
     }
+
 
     /**
      * Methoden zur Füllung der Karten
@@ -283,21 +314,44 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     private Div createHistoryContent() {
 
         Div container = new Div();
-        container.add(new Paragraph("Dokumente (Platzhalter)"));
 
         if (customer.getRents() == null || customer.getRents().isEmpty()) {
             container.add(new Paragraph("Dieser Kunde hat noch kein Fahrzeug gemietet."));
         } else {
-            Grid<Rental> grid = new Grid<>();
-            grid.addColumn(Rental::getId).setHeader("ID");
-            grid.addColumn(r -> r.getVehicle().getBrand() + " " +
-                    r.getVehicle().getModel() + " (" +
-                    r.getVehicle().getLicensePlate() + ")")
-                    .setHeader("Fahrzeug");
-            grid.addColumn(Rental::getStartDate).setHeader("Von");
-            grid.addColumn(Rental::getEndDate).setHeader("Bis");
-            grid.setItems(customer.getRents());
-            container.add(grid);
+
+            Grid<Rental> rentalGrid = new Grid<>(Rental.class, false);
+
+            rentalGrid.addColumn(r -> r.getVehicle().getLicensePlate())
+                    .setHeader("Fahrzeug")
+                    .setAutoWidth(true);
+
+            rentalGrid.addColumn(Rental::getStartDate)
+                    .setHeader("Startdatum")
+                    .setAutoWidth(true);
+
+            rentalGrid.addColumn(Rental::getEndDate)
+                    .setHeader("Enddatum")
+                    .setAutoWidth(true);
+
+            rentalGrid.addColumn(Rental::getDailyRate)
+                    .setHeader("Tagespreis")
+                    .setAutoWidth(true);
+
+            rentalGrid.addColumn(Rental::getTotalPrice)
+                    .setHeader("Gesamtpreis")
+                    .setAutoWidth(true);
+
+            rentalGrid.addColumn(r -> r.getStatus().name())
+                    .setHeader("Status")
+                    .setAutoWidth(true);
+
+            List<Rental> rentals = service.findAllWithCustomerAndVehicle()
+                    .stream()
+                    .filter(r -> r.getCustomer().getCustomerId().equals(customer.getCustomerId()))
+                    .toList();
+
+            rentalGrid.setItems(rentals);
+            container.add(rentalGrid);
         }
         return container;
     }

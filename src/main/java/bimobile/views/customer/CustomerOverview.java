@@ -19,11 +19,13 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Beschreibung:
@@ -53,6 +55,25 @@ public class CustomerOverview extends VerticalLayout {
 
         H2 title = new H2("Kundenübersicht");
 
+        List<Customer> allCustomers = service.findAllCustomers();
+        TextField searchField = new TextField();
+        searchField.setPlaceholder("Suchen...");
+        searchField.setClearButtonVisible(true);
+        searchField.setWidth("300px");
+
+        searchField.addValueChangeListener(e -> {
+            String filter = e.getValue().trim().toLowerCase();
+
+            List<Customer> filtered = allCustomers.stream()
+                    .filter(c -> c.getFullName().toLowerCase().contains(filter)
+                            || c.getContactInfo().getMail().toLowerCase().contains(filter)
+                            || c.getContactInfo().getTelephone().toLowerCase().contains(filter))
+                    .collect(Collectors.toList());
+
+            grid.setItems(filtered);
+        });
+
+
         Button registerCustomerButton = new Button("Neuen Kunden anlegen", new Icon(VaadinIcon.PLUS));
         registerCustomerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         registerCustomerButton.addClickListener(e -> {
@@ -70,7 +91,7 @@ public class CustomerOverview extends VerticalLayout {
             typeSelectionDialog.open();
         });
 
-        HorizontalLayout header = new HorizontalLayout(title, registerCustomerButton);
+        HorizontalLayout header = new HorizontalLayout(title, searchField, registerCustomerButton);
         header.setWidthFull();
         header.setAlignItems(Alignment.CENTER);
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);

@@ -8,7 +8,25 @@ import java.util.function.Consumer;
 
 public class CustomerTypeSelectionDialog extends Dialog {
 
-    public enum CustomerType { PRIVATE, BUSINESS }
+    public enum CustomerType {
+        PRIVATE("Privatkunde"),
+        BUSINESS("Firmenkunde");
+
+        private final String displayName;
+
+        CustomerType(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
 
     public CustomerTypeSelectionDialog(Consumer<CustomerType> onTypeSelected) {
         setHeaderTitle("Kundentyp auswählen");
@@ -18,13 +36,12 @@ public class CustomerTypeSelectionDialog extends Dialog {
         typeComboBox.setPlaceholder("Bitte wählen...");
         typeComboBox.setAllowCustomValue(false);
 
-        // Callback auslösen, wenn eine Auswahl getroffen wird
         typeComboBox.addValueChangeListener(event -> {
             CustomerType selected = event.getValue();
             System.out.println("Selected type: " + selected);
             if (selected != null) {
                 onTypeSelected.accept(selected);
-                close(); // Dialog schließen
+                close();
             }
         });
 

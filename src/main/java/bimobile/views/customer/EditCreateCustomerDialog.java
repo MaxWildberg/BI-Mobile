@@ -143,17 +143,21 @@ public class EditCreateCustomerDialog extends Dialog {
     private void configureBinder() {
         // bindInstanceFields nutzt die Feldnamen der DTO-Felder
         binder.bindInstanceFields(this);
-
+        String regex = "^[a-zA-Z0-9 ]+$";
         // Basis-Felder
         binder.forField(title)
                 .bind(CustomerFormDTO::getTitle, CustomerFormDTO::setTitle);
 
         binder.forField(firstName)
                 .asRequired("Vorname erforderlich")
+                .withValidator(s -> s != null && s.trim().matches("[A-Za-z]+"),
+                        "Nur Buchstaben ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getFirstname, CustomerFormDTO::setFirstname);
 
         binder.forField(lastName)
                 .asRequired("Nachname erforderlich")
+                .withValidator(s -> s != null && s.trim().matches("[A-Za-z]+"),
+                        "Nur Buchstaben ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getLastname, CustomerFormDTO::setLastname);
 
         binder.forField(birthday)
@@ -162,36 +166,60 @@ public class EditCreateCustomerDialog extends Dialog {
 
         binder.forField(email)
                 .asRequired("E-Mail erforderlich")
+                .withValidator(new com.vaadin.flow.data.validator.EmailValidator(
+                        "Bitte eine gültige E-Mail-Adresse eingeben"))
                 .bind(CustomerFormDTO::getEmail, CustomerFormDTO::setEmail);
 
         binder.forField(telephone)
                 .asRequired("Telefonnummer erforderlich")
+                .withValidator(
+                        tel -> tel.matches("\\d+"),
+                        "Nur Zahlen erlaubt"
+                )
                 .bind(CustomerFormDTO::getTelephone, CustomerFormDTO::setTelephone);
 
         // Address
         binder.forField(street)
                 .asRequired("Straße erforderlich")
+                .withValidator(street -> street.matches(regex),
+                        "Nur Buchstaben, Zahlen und Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getStreet, CustomerFormDTO::setStreet);
 
         binder.forField(zip)
                 .asRequired("PLZ erforderlich")
+                .withValidator(
+                        zip -> zip.matches("\\d{5}"),
+                        "PLZ muss genau 5 Ziffern enthalten"
+                )
                 .bind(CustomerFormDTO::getZip, CustomerFormDTO::setZip);
 
         binder.forField(city)
                 .asRequired("Ort erforderlich")
+                .withValidator(city -> city.matches(regex),
+                        "Nur Buchstaben, Zahlen und Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getCity, CustomerFormDTO::setCity);
 
         binder.forField(country)
                 .asRequired("Land erforderlich")
+                .withValidator(s -> s != null && s.trim().matches("[A-Za-z]+"),
+                        "Nur Buchstaben ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getCountry, CustomerFormDTO::setCountry);
 
         // Dokumente
         binder.forField(driversLicense)
                 .asRequired("Führerscheinnummer erforderlich")
+                .withValidator(
+                        s -> s.matches("[A-Z0-9]+"),
+                        "Nur Buchstaben und Zahlen ohne Leerzeichen erlaubt"
+                )
                 .bind(CustomerFormDTO::getDriversLicense, CustomerFormDTO::setDriversLicense);
 
         binder.forField(idCardNum)
                 .asRequired("Ausweis erforderlich")
+                .withValidator(
+                        s -> s.matches("[A-Z0-9]+"),
+                        "Nur Buchstaben und Zahlen ohne Leerzeichen erlaubt"
+                )
                 .bind(CustomerFormDTO::getIdCardNum, CustomerFormDTO::setIdCardNum);
 
 

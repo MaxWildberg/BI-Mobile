@@ -1,7 +1,9 @@
 package bimobile.service;
 
+import bimobile.dao.RentalRepository;
 import bimobile.dao.companyRepositoriy;
 import bimobile.dao.CustomerRepository;
+import bimobile.model.Rental;
 import bimobile.model.customer.Company;
 import bimobile.model.customer.Customer;
 import org.springframework.stereotype.Service;
@@ -14,11 +16,14 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final companyRepositoriy companyRepositoriy;
+    private final RentalRepository rentalRepository;
 
     public CustomerServiceImpl(CustomerRepository customerRepository,
-                               companyRepositoriy companyRepositoriy) {
+                               companyRepositoriy companyRepositoriy,
+                               RentalRepository rentalRepository) {
         this.customerRepository = customerRepository;
         this.companyRepositoriy = companyRepositoriy;
+        this.rentalRepository = rentalRepository;
     }
 
     /**
@@ -171,4 +176,10 @@ public class CustomerServiceImpl implements CustomerService {
             return null;
         }
     }
+
+    public List<Rental> findAllWithCustomerAndVehicle() {
+        return rentalRepository.findAllWithCustomerAndVehicle();
+    }
+
+
 }
