@@ -1,6 +1,7 @@
 package bimobile.model;
 
 import bimobile.enums.RentalStatus;
+import bimobile.model.customer.Customer;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

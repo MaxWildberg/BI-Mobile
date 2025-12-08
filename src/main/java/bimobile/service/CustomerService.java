@@ -1,15 +1,15 @@
 package bimobile.service;
 
-import bimobile.model.Customer;
-import bimobile.model.CustomerInterface;
+import bimobile.model.customer.Company;
+import bimobile.model.customer.Customer;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface CustomerService {
-    String registerCustomer(CustomerInterface customer);
+    String registerCustomer(Customer customer);
 
-    String updateCustomer(CustomerInterface customer);
+    String updateCustomer(Customer customer);
 
     List<Customer> findAllCustomers();
 
@@ -18,4 +18,12 @@ public interface CustomerService {
     Customer getCustomerByID(Long id);
 
     Optional<Customer> getCustomerByEmail(String email);
+
+    List<Company> getAllCompanies();
+
+    Company getCompanyById(Long companyId);
+
+    boolean existsByContactInfoEmail(String email);
+
+    Company saveCompany(Company newCompany);
 }

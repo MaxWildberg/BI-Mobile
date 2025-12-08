@@ -1,6 +1,8 @@
 package bimobile.model;
 
 import java.time.*;
+
+import bimobile.model.customer.Customer;
 import jakarta.persistence.*;
 
 @Entity

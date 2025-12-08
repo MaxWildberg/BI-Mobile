@@ -1,13 +1,11 @@
 package bimobile.views;
 
 import bimobile.controller.FacilityController;
-import bimobile.enums.RentalStatus;
-import bimobile.model.Customer;
+import bimobile.model.customer.*;
 import bimobile.model.Facility;
 import bimobile.model.Rental;
 import bimobile.model.Vehicle;
 import bimobile.service.InvoiceService;
-import bimobile.service.RentalService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -19,12 +17,10 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jdk.jshell.Snippet;
 import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.annotation.security.PermitAll;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import static bimobile.enums.RentalStatus.COMPLETED;
 
@@ -38,18 +34,22 @@ public class StandortAnlegenView extends VerticalLayout {
     @Autowired
     public StandortAnlegenView(InvoiceService invoiceService, FacilityController controller) {
         this.controller = controller;
-        Customer customer = new Customer("Herr",
-                "Max",
-                "Mustermann",
-                LocalDate.of(2001, 11, 10),
-                "Interaktion 1, 33602 Bielefeld",
-                "33790",
-                "Hochschule Bielefeld",
-                "Germany",
-                "leonard.koechling@hotmail.com",
-                "0521 123456",
-                "DL-NR 12345",
-                "L7KC124HT1");
+        PrivateCustomer customer = new PrivateCustomer(new PersonalData("Herr", "Max", "Mustermann", LocalDate.now()),
+                new Address("Straße", "12345", "Musterstadt", "Deutschland"),
+                new ContactInfo("mail.mail@mail.de", "1234567"),
+                new Identification("1234", "1234"));
+//        Customer customer = new Customer("Herr",
+//                "Max",
+//                "Mustermann",
+//                LocalDate.of(2001, 11, 10),
+//                "Interaktion 1, 33602 Bielefeld",
+//                "33790",
+//                "Hochschule Bielefeld",
+//                "Germany",
+//                "leonard.koechling@hotmail.com",
+//                "0521 123456",
+//                "DL-NR 12345",
+//                "L7KC124HT1");
         Vehicle vehicle = new Vehicle("BI-BI 126","mercedes","sclass","");
         Facility facility = new Facility("Bielefeld", "", 5200001);
         LocalDate startDate = LocalDate.now();

@@ -1,7 +1,7 @@
 package bimobile.dao;
 
-import bimobile.model.Customer;
-import bimobile.model.CustomerInterface;
+import bimobile.model.customer.Customer;
+import bimobile.model.customer.CustomerInterface;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;

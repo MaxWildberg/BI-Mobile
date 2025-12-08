@@ -96,6 +96,13 @@
             <version>1.3.30</version>
         </dependency>
 
+        <!-- enables life-reload on sourcecode change -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+
              
     </dependencies>
 

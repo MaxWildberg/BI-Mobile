@@ -1,56 +1,43 @@
 package bimobile.service;
 
+import bimobile.dao.companyRepositoriy;
 import bimobile.dao.CustomerRepository;
-import bimobile.model.Customer;
-import bimobile.model.CustomerInterface;
-import bimobile.model.Rental;
+import bimobile.model.customer.Company;
+import bimobile.model.customer.Customer;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Service-Schicht zur Verwaltung der Kunden.
- * Steht zwischen Model und Datenbank.
- *
- * @author Max Wildberg
- */
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final companyRepositoriy companyRepositoriy;
 
-    public CustomerServiceImpl(CustomerRepository customerRepository) {
+    public CustomerServiceImpl(CustomerRepository customerRepository,
+                               companyRepositoriy companyRepositoriy) {
         this.customerRepository = customerRepository;
+        this.companyRepositoriy = companyRepositoriy;
     }
 
     /**
      * Registriert einen neuen Kunden. Prüft vorher, ob ein Kunde mit derselben E-Mail existiert.
      */
     @Override
-    public String registerCustomer(CustomerInterface customer) {
+    public String registerCustomer(Customer customer) {
         try {
-            if (customerRepository.existsByEmail(customer.getEmail())) {
+            String email = customer.getContactInfo() != null
+                    ? customer.getContactInfo().getMail()
+                    : null;
+
+            if (email != null && customerRepository.existsByContactInfo_Email(email)) {
                 return "Fehler: Ein Kunde mit dieser E-Mail existiert bereits";
             }
 
-            Customer newCustomer = new Customer(
-                    customer.getSalutation().trim(),
-                    customer.getFirstName().trim(),
-                    customer.getLastName().trim(),
-                    customer.getBirthday(),
-                    customer.getAddress().trim(),
-                    customer.getZip().trim(),
-                    customer.getResidence().trim(),
-                    customer.getCountry().trim(),
-                    customer.getEmail().trim(),
-                    customer.getTelephone().trim(),
-                    customer.getDriversLicenseID().trim(),
-                    customer.getIdCardNumber().trim()
-            );
+            customerRepository.save(customer);
+            return "Erfolg: Kunde '" + customer.getFullName() + "' wurde erfolgreich angelegt";
 
-            customerRepository.save(newCustomer);
-            return "Erfolg: Kunde '" + newCustomer.getFullName() + "' wurde erfolgreich angelegt";
         } catch (Exception e) {
             return "Fehler: Kunde konnte nicht gespeichert werden - " + e.getMessage();
         }
@@ -60,32 +47,37 @@ public class CustomerServiceImpl implements CustomerService {
      * Aktualisiert einen bestehenden Kunden.
      */
     @Override
-    public String updateCustomer(CustomerInterface customer) {
-        if (customer.getCustomerId() == null) {
+    public String updateCustomer(Customer updated) {
+
+        if (updated.getCustomerId() == null) {
             return "Fehler: Kunde-ID fehlt für das Update";
         }
 
-        Optional<Customer> optionalCustomer = customerRepository.findById(customer.getCustomerId());
+        Optional<Customer> optionalCustomer = customerRepository.findById(updated.getCustomerId());
         if (optionalCustomer.isEmpty()) {
-            return "Fehler: Kunde mit ID " + customer.getCustomerId() + " wurde nicht gefunden";
+            return "Fehler: Kunde mit ID " + updated.getCustomerId() + " wurde nicht gefunden";
         }
 
         try {
             Customer existing = optionalCustomer.get();
-            existing.setFirstName(customer.getFirstName().trim());
-            existing.setLastName(customer.getLastName().trim());
-            existing.setBirthday(customer.getBirthday());
-            existing.setAddress(customer.getAddress().trim());
-            existing.setZip(customer.getZip().trim());
-            existing.setResidence(customer.getResidence().trim());
-            existing.setCountry(customer.getCountry().trim());
-            existing.setEmail(customer.getEmail().trim());
-            existing.setTelephone(customer.getTelephone().trim());
-            existing.setDriverslicenseID(customer.getDriversLicenseID().trim());
-            existing.setIdCardNumber(customer.getIdCardNumber().trim());
+
+            // gesamte Value-Objects ersetzen (sauberste Methode)
+            existing.setPersonalData(updated.getPersonalData());
+            existing.setAddress(updated.getAddress());
+            existing.setContactInfo(updated.getContactInfo());
+            existing.setIdentification(updated.getIdentification());
+
+            // Falls BusinessCustomer → Firma übernehmen
+            if (updated instanceof bimobile.model.customer.BusinessCustomer ub &&
+                    existing instanceof bimobile.model.customer.BusinessCustomer eb) {
+
+                eb.setCompany(ub.getCompany());
+            }
 
             customerRepository.save(existing);
+
             return "Erfolg: Kunde wurde aktualisiert";
+
         } catch (Exception e) {
             return "Fehler: Kunde konnte nicht aktualisiert werden - " + e.getMessage();
         }
@@ -94,7 +86,6 @@ public class CustomerServiceImpl implements CustomerService {
     /**
      * Liefert alle Kunden zurück.
      */
-
     @Override
     public List<Customer> findAllCustomers() {
         return customerRepository.findAll();
@@ -117,28 +108,67 @@ public class CustomerServiceImpl implements CustomerService {
         try {
             customerRepository.deleteById(id);
             return "Erfolg: Kunde wurde gelöscht";
+
         } catch (Exception e) {
             return "Fehler: Kunde konnte nicht gelöscht werden - " + e.getMessage();
         }
     }
 
     /**
-     * Liefert einen Kunden nach ID oder null, wenn nicht vorhanden.
+     * Liefert einen Kunden nach ID.
      */
     @Override
     public Customer getCustomerByID(Long id) {
-        if (id == null || id <= 0) {
-            return null;
-        }
+        if (id == null || id <= 0) return null;
         return customerRepository.findById(id).orElse(null);
     }
 
     /**
-     * Liefert einen Kunden nach E-Mail zurück.
+     * Liefert kunden anhand der E-Mail zurück.
      */
     @Override
     public Optional<Customer> getCustomerByEmail(String email) {
-        return customerRepository.findByEmail(email);
+        if (email == null) return Optional.empty();
+        return customerRepository.findByContactInfo_Email(email);
     }
 
+    /**
+     * Alle Unternehmen
+     */
+    @Override
+    public List<Company> getAllCompanies() {
+        return companyRepositoriy.findAll();
+    }
+
+    @Override
+    public Company getCompanyById(Long companyId) {
+        return companyRepositoriy.getCompanyByCompanyId(companyId);
+    }
+
+    @Override
+    public boolean existsByContactInfoEmail(String email) {
+        return customerRepository.existsByContactInfo_Email(email);
+    }
+
+    @Override
+    public Company saveCompany(Company company) {
+        try {
+            String name = company.getName() != null
+                    ? company.getName()
+                    : null;
+
+            if (name != null && companyRepositoriy.existsByName(name)) {
+                System.out.println("Fehler: Eine Firma mit diesem Namen existiert bereits");
+                return null;
+            }
+
+            companyRepositoriy.save(company);
+            System.out.println("Erfolg: Firma '" + company.getName() + "' wurde erfolgreich angelegt");
+            return company;
+
+        } catch (Exception e) {
+            System.out.println("Fehler: Firma konnte nicht gespeichert werden - " + e.getMessage());
+            return null;
+        }
+    }
 }

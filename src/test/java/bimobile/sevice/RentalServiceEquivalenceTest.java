@@ -2,7 +2,7 @@ package bimobile.sevice;
 
 import bimobile.dao.RentalRepository;
 import bimobile.enums.RentalStatus;
-import bimobile.model.Customer;
+import bimobile.model.customer.Customer;
 import bimobile.model.Facility;
 import bimobile.model.Rental;
 import bimobile.model.Vehicle;

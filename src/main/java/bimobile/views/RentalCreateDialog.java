@@ -1,6 +1,6 @@
 package bimobile.views;
 
-import bimobile.model.Customer;
+import bimobile.model.customer.Customer;
 import bimobile.model.Facility;
 import bimobile.model.Vehicle;
 import bimobile.service.CustomerService;
@@ -17,8 +17,6 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-
-import java.util.function.Consumer;
 
 public class RentalCreateDialog extends Dialog {
 

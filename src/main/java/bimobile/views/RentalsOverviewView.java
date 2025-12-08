@@ -1,6 +1,6 @@
 package bimobile.views;
 
-import bimobile.model.Customer;
+import bimobile.model.customer.Customer;
 import bimobile.model.Facility;
 import bimobile.model.Rental;
 import bimobile.model.Vehicle;
@@ -28,8 +28,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -34,8 +34,8 @@ public class PdfGeneratorService {
             document.add(new Paragraph("Rechnung Nr: " + invoice.getId()));
             document.add(new Paragraph("Datum: " + invoice.getInvoiceDate()));
             document.add(new Paragraph("----------------------------"));
-            document.add(new Paragraph("Kunde: " + invoice.getRental().getCustomer().getSalutation()));
-            document.add(new Paragraph("Email: " + invoice.getRental().getCustomer().getEmail()));
+            document.add(new Paragraph("Kunde: " + invoice.getRental().getCustomer().getFullName()));
+            document.add(new Paragraph("Email: " + invoice.getRental().getCustomer().getContactInfo().getMail()));
 
             document.add(new Paragraph("----------------------------"));
             document.add(new Paragraph("Fahrzeug:" + invoice.getVehicle().getBrand() + " " + invoice.getVehicle().getModel()));

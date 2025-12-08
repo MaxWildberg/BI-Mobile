@@ -1,5 +1,6 @@
 package bimobile.views;
 
+import bimobile.views.customer.CustomerOverview;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
