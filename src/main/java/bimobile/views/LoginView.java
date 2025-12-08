@@ -30,6 +30,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         i18nForm.setUsername("E-Mail");
         i18nForm.setPassword("Passwort");
         i18nForm.setSubmit("Anmelden");
+        i18nForm.setForgotPassword("Passwort vergessen?");
         i18n.setForm(i18nForm);
 
         LoginI18n.ErrorMessage i18nErrorMessage = i18n.getErrorMessage();
@@ -39,7 +40,11 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
         login.setI18n(i18n);
         login.setAction("login");
-        login.setForgotPasswordButtonVisible(false);
+        login.setForgotPasswordButtonVisible(true);
+
+        login.addForgotPasswordListener(event -> {
+            getUI().ifPresent(ui -> ui.navigate("forgot-password"));
+        });
 
         add(
                 new H1("BI-Mobile"),
