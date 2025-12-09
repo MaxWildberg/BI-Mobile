@@ -16,8 +16,11 @@ public class RentalChangeLog {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "rental_id", nullable = false)
+    @JoinColumn(name = "rental_id", nullable = true) // Null erlaubt
     private Rental rental;
+
+    @Column(name= "rental_id_snapshot")
+    private Long rentalIdSnapshot;
 
     @Column(nullable = false)
     private String userIdentifier;
@@ -41,6 +44,11 @@ public class RentalChangeLog {
         this.action = action;
         this.details = details;
         this.timestamp = LocalDateTime.now();
+
+        //Snapshot der Rental-ID speichern, falls rental beim Löschen NULL wird
+        if(rental != null){
+            this.rentalIdSnapshot = rental.getId();
+        }
     }
 
     public Long getId() {
@@ -50,6 +58,11 @@ public class RentalChangeLog {
     public Rental getRental() {
         return rental;
     }
+
+    public Long getRentalIdSnapshot() {
+        return rentalIdSnapshot;
+    }
+
 
     public String getUserIdentifier() {
         return userIdentifier;
@@ -71,6 +84,9 @@ public class RentalChangeLog {
      * eine textuelle Referenz bei, damit das Änderungsprotokoll erhalten bleibt.
      */
     public void detachRental() {
+        if (this.rental != null && this.rentalIdSnapshot == null) {
+            this.rentalIdSnapshot = this.rental.getId(); // Merken der ID
+        }
         this.rental = null;
     }
 }

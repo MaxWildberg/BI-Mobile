@@ -454,7 +454,15 @@ public class RentalsOverviewView extends VerticalLayout {
     private VerticalLayout buildChangeLogSection() {
         changeLogGrid.addColumn(entry -> entry.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                 .setHeader("Datum/Uhrzeit").setAutoWidth(true);
-        changeLogGrid.addColumn(entry -> entry.getRental().getId()).setHeader("Ausleihe").setAutoWidth(true);
+        // Für bestehende Ausleihen wird die rental.Id() angezeigt.
+        // Für gelöschte Ausleihen wird die gespeicherte ID aus rental Snaphot angezeigt.
+        changeLogGrid.addColumn(entry -> {
+            if (entry.getRental() != null) {
+                return entry.getRental().getId();
+            } else {
+                return entry.getRentalIdSnapshot();
+            }
+        }).setHeader("Ausleihe").setAutoWidth(true);
         changeLogGrid.addColumn(RentalChangeLog::getUserIdentifier).setHeader("Benutzer").setAutoWidth(true);
         changeLogGrid.addColumn(RentalChangeLog::getAction).setHeader("Aktion").setAutoWidth(true);
         changeLogGrid.addColumn(RentalChangeLog::getDetails).setHeader("Details").setAutoWidth(true);
