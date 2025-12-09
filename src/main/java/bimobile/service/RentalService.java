@@ -5,6 +5,7 @@ import bimobile.model.Facility;
 import bimobile.model.Rental;
 import bimobile.enums.RentalStatus;
 import bimobile.model.Vehicle;
+import bimobile.model.VehicleStatus;
 import bimobile.dao.RentalRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,18 +100,8 @@ public class RentalService {
         if (days <= 0) {
             days = 1; // Mindestdauer: 1 Tag
         }
-
-        // Logik für Wartung / HU sperrt Ausleihe
-        if (isVehicleBlockedByMaintenance(vehicle, startDate, endDate)) {
-            throw new IllegalStateException(
-                    "Fahrzeug ist aufgrund fälliger oder in den Zeitraum fallender HU/Wartung gesperrt."
-            );
-        }
-
-        // Prüfung, ob bereits eine aktive Ausleihe für dieses Fahrzeug existiert
-        if (rentalRepository.existsByVehicleAndStatusIn(vehicle, ACTIVE_STATES)) {
-            throw new IllegalStateException("Fahrzeug ist bereits verliehen.");
-        }
+        //Logik, ob das Fahrzeug verfügbar ist.
+        validateVehicleAvailability(vehicle, startDate, endDate);
 
         // Preisberechnung
         double dailyRate = vehicle.getDailyRate();
@@ -209,6 +200,45 @@ public class RentalService {
         return false;
     }
 
+    /**
+     * Prüft, ob das ausgewählte Fahrzeug für den gewünschten Zeitraum ausgeliehen werden darf.
+     *
+     * Validiert Status, Wartungsfenster, parallele Ausleihen und Verfügbarkeitsflag.
+     * Liefert für jede Verletzung eine sprechende Fehlermeldung.
+     *
+     * @param vehicle    Fahrzeug, das geprüft werden soll
+     * @param rentalStart Startdatum der geplanten Ausleihe
+     * @param rentalEnd   Enddatum der geplanten Ausleihe
+     */
+    private void validateVehicleAvailability(Vehicle vehicle, LocalDate rentalStart, LocalDate rentalEnd) {
+        if (vehicle.getStatus() == VehicleStatus.SCRAPPED || vehicle.getStatus() == VehicleStatus.SOLD) {
+            throw new IllegalStateException("Das Fahrzeug ist aus dem Bestand entfernt und kann nicht ausgeliehen werden.");
+        }
+
+        if (vehicle.getStatus() == VehicleStatus.IN_MAINTENANCE || vehicle.isMaintenanceActive()) {
+            throw new IllegalStateException("Das Fahrzeug befindet sich aktuell in der Wartung und steht nicht zur Verfügung.");
+        }
+
+        if (vehicle.getStatus() == VehicleStatus.RENTED) {
+            throw new IllegalStateException("Das Fahrzeug ist momentan nicht verfügbar oder bereits vermietet.");
+        }
+
+        if (!vehicle.isAvailable() && vehicle.getStatus() != VehicleStatus.AVAILABLE) {
+            throw new IllegalStateException("Das Fahrzeug ist aktuell blockiert und nicht als verfügbar markiert.");
+        }
+
+        if (isVehicleBlockedByMaintenance(vehicle, rentalStart, rentalEnd)) {
+            throw new IllegalStateException(
+                    "Fahrzeug ist aufgrund fälliger oder in den Zeitraum fallender HU/Wartung gesperrt."
+            );
+        }
+
+        if (rentalRepository.existsByVehicleAndStatusIn(vehicle, ACTIVE_STATES)) {
+            throw new IllegalStateException("Für dieses Fahrzeug existiert bereits eine aktive Ausleihe im System.");
+        }
+    }
+
+
     public void deleteRental(Rental rental) {
         if(rental == null || rental.getId() == null){
             throw new IllegalArgumentException("Ungültige Ausleihe.");
@@ -252,8 +282,15 @@ public class RentalService {
         if (rental == null){
             throw new IllegalArgumentException("Ausleihe darf nicht null sein.");
         }
-        if(rental == null || end == null || !end.isAfter(start)) {
-            throw new IllegalArgumentException("Bitte gültigen Zeitraum angeben.");
+        if (start == null || end == null) {
+            throw new IllegalArgumentException("Bitte Start- und Enddatum auswählen.");
+        }
+        if (!end.isAfter(start)) {
+            throw new IllegalArgumentException("Das Enddatum muss nach dem Startdatum liegen.");
+        }
+
+        if (isVehicleBlockedByMaintenance(rental.getVehicle(), start, end)) {
+            throw new IllegalStateException("Die geplante Änderung kollidiert mit Wartung oder HU des Fahrzeugs.");
         }
 
         rental.setFacility(facility);
