@@ -2,6 +2,7 @@ package bimobile.views;
 
 import bimobile.controller.FacilityController;
 import bimobile.model.Facility;
+import bimobile.security.AuthorizationUtils;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -58,6 +59,13 @@ public class LocationsOverviewView extends VerticalLayout {
 	 */
 	public LocationsOverviewView(FacilityController controller) {
 		this.controller = controller;
+
+		// Only MANAGEMENT may access
+		if (!AuthorizationUtils.isManagement()) {
+			Notification.show("Keine Berechtigung für diesen View.");
+			getUI().ifPresent(ui -> ui.navigate("vehicles")); //
+			return;
+		}
 
 		//Layout-Grundstruktur
 		setPadding(true);

@@ -19,10 +19,12 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.VaadinServletRequest;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 @PermitAll
 public class MainLayout extends AppLayout {
@@ -142,13 +144,24 @@ public class MainLayout extends AppLayout {
         logoutBtn.setWidthFull();
         logoutBtn.addClickListener(e -> {
             dialog.close();
-            UI.getCurrent().getPage().setLocation("/logout");
+	        logout();
         });
+
 
         content.add(header, userInfo, changePasswordBtn, logoutBtn);
         dialog.add(content);
         dialog.open();
     }
+
+	private void logout() {
+		UI.getCurrent().getPage().setLocation("/login");
+		SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+		logoutHandler.logout(
+				VaadinServletRequest.getCurrent().getHttpServletRequest(),
+				null,
+				null
+		);
+	}
 
     private void openChangePasswordDialog() {
         Dialog dialog = new Dialog();

@@ -29,7 +29,7 @@ public class DataInitializer {
 						"Mustermann",
 						"director@bimobile.de",
 						passwordEncoder.encode("director123"),
-						RoleType.MANAGEMENT
+						RoleType.MANAGING_DIRECTOR
 				);
 				userRepository.save(director);
 				logger.info("Testbenutzer erstellt: director@bimobile.de / director123");
@@ -39,7 +39,7 @@ public class DataInitializer {
 						"Musterfrau",
 						"manager@bimobile.de",
 						passwordEncoder.encode("manager123"),
-						RoleType.BRANCH_MANAGER
+						RoleType.GENERAL_MANAGER
 				);
 				userRepository.save(manager);
 				logger.info("Testbenutzer erstellt: manager@bimobile.de / manager123");

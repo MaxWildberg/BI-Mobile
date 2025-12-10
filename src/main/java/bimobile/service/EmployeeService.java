@@ -32,26 +32,26 @@ public class EmployeeService implements EmployeeManagement {
                 return null;
             }
 
-            if (actingUser.getRole() == RoleType.BRANCH_MANAGER) {
+            if (actingUser.getRole() == RoleType.GENERAL_MANAGER) {
                 if (employee.getFacility() == null ||
                         !actingUser.getFacility().getId().equals(employee.getFacility().getId())) {
                     return null;
                 }
 
-                if (employee.getRole() == RoleType.BRANCH_MANAGER) {
+                if (employee.getRole() == RoleType.GENERAL_MANAGER){
                     return null;
                 }
             }
         }
 
         // Regel: pro Facility nur ein aktiver BRANCH_MANAGER
-        if (employee.getRole() == RoleType.BRANCH_MANAGER && employee.getFacility() != null) {
+        if (employee.getRole() == RoleType.GENERAL_MANAGER && employee.getFacility() != null) {
             List<Employee> facilityEmployees =
                     employeeDAO.getEmployeesByFacility(employee.getFacility().getId());
 
             for (Employee e : facilityEmployees) {
                 if (e.isActive() &&
-                        e.getRole() == RoleType.BRANCH_MANAGER) {
+                        e.getRole() == RoleType.GENERAL_MANAGER) {
                     return null;
                 }
             }
@@ -85,7 +85,7 @@ public class EmployeeService implements EmployeeManagement {
             }
 
             // BRANCH_MANAGER: nur eigener Standort, keine Rollenänderung zu Manager
-            if (actingUser.getRole() == RoleType.BRANCH_MANAGER) {
+            if (actingUser.getRole() == RoleType.GENERAL_MANAGER) {
 
                 if (existing.getFacility() == null ||
                         actingUser.getFacility() == null ||
@@ -93,7 +93,7 @@ public class EmployeeService implements EmployeeManagement {
                     return null;
                 }
 
-                if (updatedEmployee.getRole() == RoleType.BRANCH_MANAGER &&
+                if (updatedEmployee.getRole() == RoleType.GENERAL_MANAGER &&
                         !existing.getId().equals(actingUser.getId())) {
                     return null;
                 }
@@ -101,7 +101,7 @@ public class EmployeeService implements EmployeeManagement {
         }
 
         // Fachliche Regel: pro Facility nur ein Manager
-        if (updatedEmployee.getRole() == RoleType.BRANCH_MANAGER &&
+        if (updatedEmployee.getRole() == RoleType.GENERAL_MANAGER &&
                 updatedEmployee.getFacility() != null) {
 
             List<Employee> facilityEmployees =
@@ -110,7 +110,7 @@ public class EmployeeService implements EmployeeManagement {
             for (Employee e : facilityEmployees) {
                 if (!e.getId().equals(existing.getId()) &&
                         e.isActive() &&
-                        e.getRole() == RoleType.BRANCH_MANAGER) {
+                        e.getRole() == RoleType.GENERAL_MANAGER) {
                     return null;
                 }
             }
@@ -148,8 +148,8 @@ public class EmployeeService implements EmployeeManagement {
                 return;
             }
 
-            if (actingUser.getRole() == RoleType.BRANCH_MANAGER) {
-                if (existing.getRole() == RoleType.BRANCH_MANAGER) {
+            if (actingUser.getRole() == RoleType.GENERAL_MANAGER) {
+                if (existing.getRole() == RoleType.GENERAL_MANAGER) {
                     return;
                 }
 

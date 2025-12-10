@@ -6,6 +6,7 @@ import bimobile.model.PriceCategory;
 import bimobile.model.Vehicle;
 import bimobile.model.VehicleHistoryEntry;
 import bimobile.model.VehicleStatus;
+import bimobile.security.AuthorizationUtils;
 import bimobile.service.VehicleService;
 
 import java.time.format.DateTimeFormatter;
@@ -22,6 +23,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -72,6 +74,10 @@ public class VehicleView extends VerticalLayout {
 
 	private Vehicle selectedVehicle;
 
+	// Security-Flag: MANAGEMENT + BRANCH_MANAGER dürfen bearbeiten
+	private final boolean canEdit =
+			AuthorizationUtils.isManagement() || AuthorizationUtils.isBranchManager();
+
 	public VehicleView(VehicleService vehicleService) {
 		this.vehicleService = vehicleService;
 
@@ -83,10 +89,28 @@ public class VehicleView extends VerticalLayout {
 
 		H2 title = new H2("Fahrzeugverwaltung");
 
+		// Info-Hinweis, wenn der Nutzer nicht editieren darf
+		if (!canEdit) {
+			Span info = new Span("Sie haben keine Berechtigung, Fahrzeugdaten zu ändern. Anzeige ist schreibgeschützt.");
+			info.getStyle().set("color", "var(--lumo-secondary-text-color)");
+			add(info);
+		}
+
 		// Button "Neues Fahrzeug anlegen"
 		Button neu = new Button("Neues Fahrzeug anlegen", new Icon(VaadinIcon.PLUS));
 		neu.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-		neu.addClickListener(e -> openCreateDialog());
+		neu.addClickListener(e -> {
+			if (!canEdit) {
+				Notification.show("Keine Berechtigung zum Anlegen von Fahrzeugen.");
+				return;
+			}
+			openCreateDialog();
+		});
+
+		// Wenn keine Bearbeitungsrechte → Button deaktivieren
+		if (!canEdit) {
+			neu.setEnabled(false);
+		}
 
 		HorizontalLayout header = new HorizontalLayout(title, neu);
 		header.setWidthFull();
@@ -125,7 +149,13 @@ public class VehicleView extends VerticalLayout {
 		grid.addComponentColumn(vehicle -> {
 			Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
 			bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-			bearbeiten.addClickListener(e -> openEditDialog(vehicle));
+			bearbeiten.addClickListener(e -> {
+				if (!canEdit) {
+					Notification.show("Keine Berechtigung zum Bearbeiten von Fahrzeugen.");
+					return;
+				}
+				openEditDialog(vehicle);
+			});
 
 			Button history = new Button(new Icon(VaadinIcon.CLIPBOARD_TEXT));
 			history.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
@@ -137,17 +167,25 @@ public class VehicleView extends VerticalLayout {
 			verkaufen.getElement().setProperty("title", "Fahrzeug verkaufen");
 
 			// Button deaktivieren, wenn schon verkauft/ausgemustert
-			if (vehicle.getStatus() == VehicleStatus.SOLD || vehicle.getStatus() == VehicleStatus.SCRAPPED) {
-				verkaufen.setEnabled(false);
-			}
-
-			verkaufen.addClickListener(e -> openSellDialog(vehicle));
-
 			boolean isGone = (vehicle.getStatus() == VehicleStatus.SCRAPPED || vehicle.getStatus() == VehicleStatus.SOLD);
 			if (isGone) {
 				verkaufen.setEnabled(false);
 				bearbeiten.setEnabled(false);
 			}
+
+			// Falls keine Bearbeitungsrechte → Bearbeiten + Verkaufen deaktivieren
+			if (!canEdit) {
+				bearbeiten.setEnabled(false);
+				verkaufen.setEnabled(false);
+			}
+
+			verkaufen.addClickListener(e -> {
+				if (!canEdit) {
+					Notification.show("Keine Berechtigung zum Verkaufen von Fahrzeugen.");
+					return;
+				}
+				openSellDialog(vehicle);
+			});
 
 			return new HorizontalLayout(bearbeiten, history, verkaufen);
 		}).setHeader("Aktionen").setAutoWidth(true);
@@ -277,6 +315,11 @@ public class VehicleView extends VerticalLayout {
 	}
 
 	private void saveVehicle() {
+		if (!canEdit) {
+			Notification.show("Keine Berechtigung zum Speichern von Fahrzeugen.");
+			return;
+		}
+
 		try {
 			clearValidation();
 
@@ -379,6 +422,10 @@ public class VehicleView extends VerticalLayout {
 			Notification.show("Bitte wählen Sie zuerst ein Fahrzeug in der Tabelle aus.");
 			return;
 		}
+		if (!canEdit) {
+			Notification.show("Keine Berechtigung, den Fahrzeugstatus zu ändern.");
+			return;
+		}
 
 		try {
 			vehicleService.changeStatus(selectedVehicle.getId(), newStatus, "");
@@ -478,6 +525,12 @@ public class VehicleView extends VerticalLayout {
 		featuresForm.setWidthFull();
 
 		Button saveButton = new Button("Speichern", e -> {
+			if (!canEdit) {
+				Notification n = Notification.show("Keine Berechtigung zum Speichern.",
+						4000, Notification.Position.MIDDLE);
+				n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				return;
+			}
 			try {
 				saveVehicle();
 				dialog.close();
@@ -488,6 +541,11 @@ public class VehicleView extends VerticalLayout {
 			}
 		});
 		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+		// Wenn keine Edit-Rechte → Speichern-Button deaktivieren
+		if (!canEdit) {
+			saveButton.setEnabled(false);
+		}
 
 		Button cancelButton = new Button("Abbrechen", e -> dialog.close());
 		cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
@@ -592,6 +650,11 @@ public class VehicleView extends VerticalLayout {
 	}
 
 	private void openSellDialog(Vehicle vehicle) {
+		if (!canEdit) {
+			Notification.show("Keine Berechtigung zum Verkaufen von Fahrzeugen.");
+			return;
+		}
+
 		Dialog dialog = new Dialog();
 		dialog.setWidth("400px");
 		dialog.setModal(true);
@@ -611,6 +674,10 @@ public class VehicleView extends VerticalLayout {
 		priceField.setWidthFull();
 
 		Button sellButton = new Button("Verkauf abschließen", e -> {
+			if (!canEdit) {
+				Notification.show("Keine Berechtigung zum Verkaufen von Fahrzeugen.");
+				return;
+			}
 			try {
 				if (buyerField.isEmpty() || mileageField.isEmpty() || priceField.isEmpty()) {
 					Notification.show("Bitte alle Felder ausfüllen.");
@@ -637,6 +704,11 @@ public class VehicleView extends VerticalLayout {
 			}
 		});
 		sellButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+		// falls keine Editrechte → Button deaktivieren
+		if (!canEdit) {
+			sellButton.setEnabled(false);
+		}
 
 		Button cancelButton = new Button("Abbrechen", e -> dialog.close());
 		cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);

@@ -51,12 +51,12 @@ public class AuthorizationUtils {
 
 	// MANAGEMENT
 	public static boolean isManagement() {
-		return getCurrentRoleType() == RoleType.MANAGEMENT;
+		return getCurrentRoleType() == RoleType.MANAGING_DIRECTOR;
 	}
 
 	// BRANCH_MANAGER
 	public static boolean isBranchManager() {
-		return getCurrentRoleType() == RoleType.BRANCH_MANAGER;
+		return getCurrentRoleType() == RoleType.GENERAL_MANAGER;
 	}
 
 	// EMPLOYEE
