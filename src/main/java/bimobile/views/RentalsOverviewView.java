@@ -9,7 +9,6 @@ import bimobile.service.CustomerService;
 import bimobile.service.VehicleService;
 import bimobile.service.FacilityService;
 
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -26,6 +25,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
@@ -117,7 +117,7 @@ public class RentalsOverviewView extends VerticalLayout {
 		grid.addColumn(r -> r.getVehicle().getLicensePlate()).setHeader("Fahrzeug").setAutoWidth(true);
 		grid.addColumn(Rental::getStartDate).setHeader("Startdatum").setAutoWidth(true);
 		grid.addColumn(Rental::getEndDate).setHeader("Enddatum").setAutoWidth(true);
-		grid.addColumn(Rental::getTotalPrice).setHeader("Gesamtpreis (€)").setAutoWidth(true);
+		grid.addColumn(Rental::calculateTotalPrice).setHeader("Gesamtpreis (€)").setAutoWidth(true);
 		grid.addColumn(r -> r.getStatus().name()).setHeader("Status").setAutoWidth(true);
 
 		// Aktionsspalte (Bearbeiten / Löschen)
@@ -132,7 +132,6 @@ public class RentalsOverviewView extends VerticalLayout {
 
             Button zurueckgeben = new Button(new Icon(VaadinIcon.CHECK));
             zurueckgeben.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY);
-
             // Status-Check: Button nur aktivieren, wenn Ausleihe ACTIVE ist
             if (rental.getStatus() != bimobile.enums.RentalStatus.ACTIVE) {
                 zurueckgeben.setEnabled(false);
@@ -190,14 +189,36 @@ public class RentalsOverviewView extends VerticalLayout {
 		vehicleBox.setItems(vehicleService.findAllVehicles());
 		vehicleBox.setItemLabelGenerator(v -> v.getLicensePlate() + " – " + v.getModel());
 
-		ComboBox<Facility> facilityBox = new ComboBox<>("Standort");
+        ComboBox<Facility> facilityBox = new ComboBox<>("Standort");
 		facilityBox.setItems(facilityService.getAllFacilities());
 		facilityBox.setItemLabelGenerator(Facility::getAddress);
 
 		DatePicker startDate = new DatePicker("Startdatum");
 		DatePicker endDate = new DatePicker("Enddatum");
 
-		// Stellt sicher, dass Enddatum nicht vor Startdatum gewählt werden kann
+        TextField totalRateField = new TextField("Gesamtrate (€)");
+        totalRateField.setReadOnly(true);
+
+        // Berechnung der gesamten Ausleihegebühren
+        Runnable recalcTotal = () -> {
+            Vehicle v = vehicleBox.getValue();
+            LocalDate start = startDate.getValue();
+            LocalDate end = endDate.getValue();
+            if (v != null && start != null && end != null) {
+                long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
+                double dailyRate = v.getPriceCategory().getBaseRate();
+                totalRateField.setValue(String.valueOf(dailyRate * days));
+            } else {
+                totalRateField.clear();
+            }
+        };
+
+        // Listener für Änderungen
+        vehicleBox.addValueChangeListener(e -> recalcTotal.run());
+        startDate.addValueChangeListener(e -> recalcTotal.run());
+        endDate.addValueChangeListener(e -> recalcTotal.run());
+
+        // Stellt sicher, dass Enddatum nicht vor Startdatum gewählt werden kann
 		enforceDateOrder(startDate, endDate);
 
 		Button save = new Button("Speichern", e -> {
@@ -241,7 +262,7 @@ public class RentalsOverviewView extends VerticalLayout {
 		Button cancel = new Button("Abbrechen", e -> dialog.close());
 		cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
-		FormLayout form = new FormLayout(customerBox, vehicleBox, facilityBox, startDate, endDate);
+		FormLayout form = new FormLayout(customerBox, vehicleBox, facilityBox, startDate, endDate, totalRateField);
 		form.setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1),
 				new FormLayout.ResponsiveStep("500px", 2)
@@ -264,6 +285,7 @@ public class RentalsOverviewView extends VerticalLayout {
 	 * @param rental zu bearbeitende Ausleihe
 	 */
 	private void openEditDialog(Rental rental) {
+        double oldPrice = rental.calculateTotalPrice();
 		Dialog dialog = new Dialog();
 		dialog.setWidth("600px");
 		dialog.setModal(true);
@@ -295,6 +317,28 @@ public class RentalsOverviewView extends VerticalLayout {
 		DatePicker endDate = new DatePicker("Enddatum");
 		endDate.setValue(rental.getEndDate());
 
+        TextField totalRateField = new TextField("Gesamtrate (€)");
+        totalRateField.setReadOnly(true);
+
+        Runnable recalcTotal = () -> {
+            Vehicle v = vehicleBox.getValue();
+            LocalDate start = startDate.getValue();
+            LocalDate end = endDate.getValue();
+            if (v != null && start != null && end != null) {
+                long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
+                double dailyRate = v.getPriceCategory().getBaseRate();
+                totalRateField.setValue(String.valueOf(dailyRate * days));
+            } else {
+                totalRateField.clear();
+            }
+        };
+
+        startDate.addValueChangeListener(e -> recalcTotal.run());
+        endDate.addValueChangeListener(e -> recalcTotal.run());
+
+        // danach nochmal die Rate neu berechnen
+        recalcTotal.run();
+
 		// Validierung der zeitlichen Reihenfolge
 		enforceDateOrder(startDate, endDate);
 
@@ -306,13 +350,14 @@ public class RentalsOverviewView extends VerticalLayout {
 						startDate.getValue(),
 						endDate.getValue()
 				);
+                double newPrice = updated.calculateTotalPrice();
 
 				Notification.show("Ausleihe #" + updated.getId() + " erfolgreich aktualisiert.")
 						.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 				addChangeLogEntry(
 						"admin@bi-mobile.de",
 						"Ausleihe aktualisiert",
-						"Ausleihe #" + updated.getId() + " angepasst",
+						"Ausleihe #" + updated.getId() + " angepasst (Preis: " + oldPrice + " € -> " + newPrice + " €)",
 						"Erfolgreich"
 				);
 				updateGrid();
@@ -322,6 +367,7 @@ public class RentalsOverviewView extends VerticalLayout {
 				Notification.show("Fehler: " + ex.getMessage())
 						.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			} catch (Exception ex) {
+                ex.printStackTrace();
 				Notification.show("Unerwarteter Fehler bei der Aktualisierung.")
 						.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			}
@@ -331,7 +377,7 @@ public class RentalsOverviewView extends VerticalLayout {
 		Button cancel = new Button("Abbrechen", e -> dialog.close());
 		cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
-		FormLayout form = new FormLayout(customerBox, vehicleBox, facilityBox, startDate, endDate);
+		FormLayout form = new FormLayout(customerBox, vehicleBox, facilityBox, startDate, endDate, totalRateField);
 		form.setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1),
 				new FormLayout.ResponsiveStep("500px", 2)
@@ -484,8 +530,6 @@ public class RentalsOverviewView extends VerticalLayout {
 	 */
 	private record ChangeLogEntry(LocalDateTime timestamp, String user, String action, String details, String status) {
 	}
-
-    // in bimobile/views/RentalsOverviewView.java
 
     private void openReturnDialog(Rental rental) {
         Dialog dialog = new Dialog();
