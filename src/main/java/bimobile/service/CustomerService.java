@@ -1,38 +1,21 @@
 package bimobile.service;
 
-import bimobile.dao.CustomerDAO;
 import bimobile.model.Customer;
-import bimobile.model.Facility;
-import org.springframework.stereotype.Service;
+import bimobile.model.CustomerInterface;
 
 import java.util.List;
+import java.util.Optional;
 
-@Service
-public class CustomerService {
+public interface CustomerService {
+    String registerCustomer(CustomerInterface customer);
 
-    private final CustomerDAO customerDAO;
+    String updateCustomer(CustomerInterface customer);
 
-    public CustomerService(CustomerDAO customerDAO){
-        this.customerDAO = customerDAO;
-    }
+    List<Customer> findAllCustomers();
 
-    public void addCustomer(Customer customer){
-        customerDAO.addCustomer(customer);
-    }
+    String deleteCustomer(Long id);
 
-    public List<Customer> getAllCustomers(){
-        return customerDAO.getAllCustomers();
-    }
+    Customer getCustomerByID(Long id);
 
-    public  void updateCustomer(Customer customer) {
-        customerDAO.updateCustomer(customer);
-    }
-
-    public Customer getCustomerByID(Long id){
-        return customerDAO.getCustomerById(id);
-    }
-
-    /*public Customer getExampleCustomer() {
-        customerDAO.addCustomer();
-    }*/
+    Optional<Customer> getCustomerByEmail(String email);
 }

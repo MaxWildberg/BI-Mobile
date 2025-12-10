@@ -1,30 +1,35 @@
 package bimobile.dao;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.Persistence;
+import jakarta.persistence.*;
 import bimobile.model.Employee;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public class EmployeeDAO {
-    private EntityManagerFactory emf = Persistence.createEntityManagerFactory("carrentalPU");
-    private EntityManager em = emf.createEntityManager();
+
+    @PersistenceContext
+    private EntityManager em;
+
+    public EmployeeDAO() {
+    }
 
     public void addEmployee(Employee employee) {
-        em.getTransaction().begin();
-        em.persist(employee); // Save to database
-        em.getTransaction().commit();
+        em.persist(employee);
     }
 
     public List<Employee> getAllEmployees() {
-        return em.createQuery("SELECT c FROM Employee c", Employee.class).getResultList();
+        return em.createQuery("SELECT e FROM Employee e", Employee.class)
+                .getResultList();
     }
 
     public Employee getEmployeeById(Long id) {
         try {
-            return em.createQuery("SELECT e FROM Employee e WHERE e.id = :id", Employee.class)
+            return em.createQuery(
+                            "SELECT e FROM Employee e WHERE e.id = :id",
+                            Employee.class
+                    )
                     .setParameter("id", id)
                     .getSingleResult();
         } catch (NoResultException e) {
@@ -32,9 +37,16 @@ public class EmployeeDAO {
         }
     }
 
-    public void close() {
-        em.close();
-        emf.close();
+    public void updateEmployee(Employee employee) {
+        em.merge(employee);
     }
 
+    public List<Employee> getEmployeesByFacility(Long facilityId) {
+        return em.createQuery(
+                        "SELECT e FROM Employee e WHERE e.facility.id = :facilityId",
+                        Employee.class
+                )
+                .setParameter("facilityId", facilityId)
+                .getResultList();
+    }
 }

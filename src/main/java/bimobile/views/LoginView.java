@@ -1,7 +1,9 @@
 package bimobile.views;
 
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.login.LoginForm;
+import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -22,10 +24,33 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
+        LoginI18n i18n = LoginI18n.createDefault();
+        LoginI18n.Form i18nForm = i18n.getForm();
+        i18nForm.setTitle("Anmelden");
+        i18nForm.setUsername("E-Mail");
+        i18nForm.setPassword("Passwort");
+        i18nForm.setSubmit("Anmelden");
+        i18nForm.setForgotPassword("Passwort vergessen?");
+        i18n.setForm(i18nForm);
+
+        LoginI18n.ErrorMessage i18nErrorMessage = i18n.getErrorMessage();
+        i18nErrorMessage.setTitle("Anmeldung fehlgeschlagen");
+        i18nErrorMessage.setMessage("E-Mail oder Passwort ist falsch. Bitte versuchen Sie es erneut.");
+        i18n.setErrorMessage(i18nErrorMessage);
+
+        login.setI18n(i18n);
         login.setAction("login");
         login.setForgotPasswordButtonVisible(true);
 
-        add(new H1("Autovermietung"), login);
+        login.addForgotPasswordListener(event -> {
+            getUI().ifPresent(ui -> ui.navigate("forgot-password"));
+        });
+
+        add(
+                new H1("BI-Mobile"),
+                new Paragraph("Autovermietung"),
+                login
+        );
     }
 
     @Override

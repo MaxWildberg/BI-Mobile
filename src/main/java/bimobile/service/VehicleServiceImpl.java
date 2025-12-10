@@ -63,9 +63,9 @@ public class VehicleServiceImpl implements VehicleService {
         existing.setLicensePlate(vehicle.getLicensePlate());
         existing.setBrand(vehicle.getBrand());
         existing.setModel(vehicle.getModel());
-        existing.setPriceClass(vehicle.getPriceClass());
+        existing.setPriceCategory(vehicle.getPriceCategory());
         existing.setMileage(vehicle.getMileage());
-        existing.setInspectionDueDate(vehicle.getInspectionDueDate());
+        existing.setNextServiceDate(vehicle.getNextServiceDate());
         existing.setMaintenanceActive(vehicle.isMaintenanceActive());
 
         Vehicle saved = vehicleRepository.save(existing);
@@ -130,6 +130,11 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public List<Vehicle> findAllVehicles() {
         return vehicleRepository.findAll();
+    }
+
+    @Override
+    public Vehicle save(Vehicle vehicle) {
+        return vehicleRepository.save(vehicle);
     }
 
     @Override

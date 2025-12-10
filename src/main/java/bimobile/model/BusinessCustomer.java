@@ -4,9 +4,17 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
+import java.time.LocalDate;
+
+/**
+ * Description: Represents a business customer, extending the base
+ * Customer entity with additional fields such as company name and address attributes.
+ *
+ * @author Max Wildberg
+ */
 @Entity
 @Table(name = "business_customer") // optional: use underscore naming for DB
-public class BusinessCustomer extends Customer {
+public class BusinessCustomer extends Customer implements CustomerInterface {
 
     // Zusätzlich Felder für Business Customer
     @Column(nullable = true) // allow null for normal Customer rows
@@ -19,12 +27,28 @@ public class BusinessCustomer extends Customer {
     public BusinessCustomer() {}
 
     // Optional convenience constructor
-    public BusinessCustomer(String company, String companyAddress) {
+    public BusinessCustomer(String salutation,
+                            String firstname,
+                            String lastname,
+                            LocalDate birthday,
+                            String address,
+                            String zip,
+                            String residence,
+                            String country,
+                            String email,
+                            String telephone,
+                            String driverslicenseID,
+                            String idCardNumber,
+                            String company,
+                            String companyAddress) {
+        super(salutation, firstname, lastname, birthday, address, zip, residence, country, email, telephone, driverslicenseID, idCardNumber);
+
         this.company = company;
         this.companyAddress = companyAddress;
     }
 
-    // Getter/Setter
+
+        // Getter/Setter
     public String getCompany() {
         return company;
     }

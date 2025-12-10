@@ -15,6 +15,5 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     // Liefert ein Fahrzeug zu einem bestimmten Kennzeichen (falls vorhanden)
     Optional<Vehicle> findByLicensePlate(String licensePlate);
 
-    // Einfache Suchfunktion (Teilstring im Kennzeichen)
-    List<Vehicle> findByLicensePlateContainingIgnoreCase(String licensePlatePart);
+    boolean existsByLicensePlateIgnoreCase(String licensePlate);
 }

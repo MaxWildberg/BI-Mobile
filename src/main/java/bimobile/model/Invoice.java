@@ -30,6 +30,9 @@ public class Invoice {
     @OneToOne
     private Vehicle vehicle;
 
+    @ManyToOne
+    private Customer customer;
+
     public Invoice() {
         this.invoiceDate = LocalDateTime.now();
         this.sent = false;

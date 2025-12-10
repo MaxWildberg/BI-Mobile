@@ -6,4 +6,9 @@ public enum VehicleStatus {
     IN_MAINTENANCE,   // in Wartung / HU
     SCRAPPED,         // ausgemustert (Endzustand)
     SOLD              // verkauft
+    ;
+
+    public String getDisplayName() {
+        return this.name();
+    }
 }

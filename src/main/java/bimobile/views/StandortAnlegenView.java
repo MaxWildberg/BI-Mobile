@@ -1,6 +1,7 @@
-package bimobile.views;
+/* package bimobile.views;
 
 import bimobile.controller.FacilityController;
+import bimobile.enums.RentalStatus;
 import bimobile.model.Customer;
 import bimobile.model.Facility;
 import bimobile.model.Rental;
@@ -18,11 +19,14 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jdk.jshell.Snippet;
 import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.annotation.security.PermitAll;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import static bimobile.enums.RentalStatus.COMPLETED;
 
 @Route(value = "standort-anlegen", layout = MainLayout.class)
 @PageTitle("Neuen Standort anlegen")
@@ -34,24 +38,25 @@ public class StandortAnlegenView extends VerticalLayout {
     @Autowired
     public StandortAnlegenView(InvoiceService invoiceService, FacilityController controller) {
         this.controller = controller;
-        Customer customer = new Customer("Max",
+        Customer customer = new Customer("Herr",
+                "Max",
                 "Mustermann",
-                LocalDate.now(),
-                "",
+                LocalDate.of(2001, 11, 10),
+                "Interaktion 1, 33602 Bielefeld",
                 "33790",
-                "haus",
-                "de",
-                "tobias.ledwon@hsbi.de",
-                " ",
-                "",
-                "");
+                "Hochschule Bielefeld",
+                "Germany",
+                "leonard.koechling@hotmail.com",
+                "0521 123456",
+                "DL-NR 12345",
+                "L7KC124HT1");
         Vehicle vehicle = new Vehicle("BI-BI 126","mercedes","sclass","");
         Facility facility = new Facility("Bielefeld", "", 5200001);
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = LocalDate.now();
         double dailyRate = 1;
         double totalPrice = 2;
-        Rental rental = new Rental (customer, vehicle, facility, startDate, endDate, dailyRate, totalPrice);
+        Rental rental = new Rental (customer, vehicle, facility, startDate, endDate, dailyRate, totalPrice, COMPLETED);
         invoiceService.createInvoiceForRental(rental);
         buildUI();
     }
@@ -112,4 +117,4 @@ public class StandortAnlegenView extends VerticalLayout {
     private void clear(TextField a, EmailField e, TextField p) {
         a.clear(); e.clear(); p.clear();
     }
-}
+} */

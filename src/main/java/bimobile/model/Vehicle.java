@@ -1,6 +1,7 @@
 package bimobile.model;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
  * Repräsentiert ein Fahrzeug im System.
  */
 @Entity
-public class Vehicle {
+public class Vehicle  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,18 +23,11 @@ public class Vehicle {
     private String brand;
     private String model;
 
-    // Preisklasse A/B/C/D 
-    private String priceClass;
+    // Preisklassen
+    @Enumerated(EnumType.STRING)
+    private PriceCategory priceCategory;
 
     private int mileage;
-
-    public double getDailyRate() {
-        return dailyRate;
-    }
-
-    public void setDailyRate(double dailyRate) {
-        this.dailyRate = dailyRate;
-    }
 
     private double dailyRate;
 
@@ -41,6 +35,14 @@ public class Vehicle {
 
     @Enumerated(EnumType.STRING)
     private VehicleStatus status = VehicleStatus.AVAILABLE;
+
+    private LocalDate nextInspectionDate;
+
+    private LocalDate nextServiceDate;
+
+    private boolean maintenanceActive;
+
+    private boolean available;
 
     // Ein Fahrzeug kann mehrere Wartungstermine haben
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -55,11 +57,11 @@ public class Vehicle {
     public Vehicle() {
     }
 
-    public Vehicle(String licensePlate, String brand, String model, String priceClass) {
+    public Vehicle(String licensePlate, String brand, String model, PriceCategory priceCategory) {
         this.licensePlate = licensePlate;
         this.brand = brand;
         this.model = model;
-        this.priceClass = priceClass;
+        this.priceCategory = priceCategory;
         this.status = VehicleStatus.AVAILABLE;
     }
 
@@ -121,12 +123,12 @@ public class Vehicle {
         this.model = model;
     }
 
-    public String getPriceClass() {
-        return priceClass;
+    public PriceCategory getPriceCategory() {
+        return priceCategory;
     }
 
-    public void setPriceClass(String priceClass) {
-        this.priceClass = priceClass;
+    public void setPriceCategory(PriceCategory priceCategory) {
+        this.priceCategory = priceCategory;
     }
 
     public int getMileage() {
@@ -153,7 +155,52 @@ public class Vehicle {
         return maintenanceAppointments;
     }
 
+    public LocalDate getNextInspectionDate() {
+        return nextInspectionDate;
+    }
+
+    public void setNextInspectionDate(LocalDate nextInspectionDate) {
+        this.nextInspectionDate = nextInspectionDate;
+    }
+
+    public LocalDate getNextServiceDate() {
+        return nextServiceDate;
+    }
+
+    public void setNextServiceDate(LocalDate nextServiceDate) {
+        this.nextServiceDate = nextServiceDate;
+    }
+
+    public double getDailyRate() {
+        return dailyRate;
+    }
+
+    public void setDailyRate(double dailyRate) {
+        this.dailyRate = dailyRate;
+    }
+
+    public boolean isInspectionOverdue() {
+        return nextInspectionDate != null && !nextInspectionDate.isAfter(LocalDate.now());
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public boolean isMaintenanceActive() {
+        return maintenanceActive;
+    }
+
+    public void setMaintenanceActive(boolean maintenanceActive) {
+        this.maintenanceActive = maintenanceActive;
+    }
+
     public List<VehicleHistoryEntry> getHistoryEntries() {
         return historyEntries;
     }
 }
+

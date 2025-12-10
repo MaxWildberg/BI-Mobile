@@ -9,6 +9,14 @@ import org.springframework.stereotype.Service;
 
 import jakarta.mail.internet.MimeMessage;
 
+/**
+ * Geschäftslogik zur Erstellung der Mail, die die PDF enthält.
+ * Verantwortlichkeiten:
+ * - Setzen der Mailversand-Parameter
+ * - Wiedergabe der Fahrzeugdaten
+ * - Attachment des PDF-Dokuments
+ * @author Leonard Köchling
+ */
 
 @Service
 public class MailService {
@@ -47,30 +55,6 @@ public class MailService {
         }
     }
 
-    /* nur zu Testzwecken
-    private String buildMailBody(Invoice invoice) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Sehr geehrte/r ").append(invoice.getRental().getCustomer().getSalutation()).append(",\n\n");
-        sb.append("anbei erhalten Sie die Rechnung Nr. ").append(invoice.getId()).append(" für Ihre Fahrzeugmiete.\n\n");
-        sb.append("Rechnungsbetrag (brutto): ").append(String.format("%.2f", invoice.getGrossAmount())).append(" EUR\n\n");
-        sb.append("Mit freundlichen Grüßen\nBI-Mobile");
-        return sb.toString();
-    } */
-
-    /* @PostConstruct
-    public void testMail() {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("leonard.koechling@hsbi.de");
-            message.setTo("leonard.koechling@hotmail.com");
-            message.setSubject("Test – HSBI SMTP");
-            message.setText("Der Mailserver funzt.");
-            mailSender.send(message);
-            System.out.println("Mail wurde verschickt!");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    } */
 }
 
 

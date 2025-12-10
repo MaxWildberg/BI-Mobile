@@ -32,7 +32,5 @@ public class Main {
                 )
         );
 
-        // Close DAOs
-        employeeDAO.close();
     }
 }

@@ -8,9 +8,21 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Entity Klasse, welche einen Kunden mit grundsätzlichen Attributen darstellt.
+ *
+ * Grundklasse für weitere Kundenklassen, die darauf aufbauen.
+ *
+ * Ein Kunde hat eine Verknüpfung zu Ausleihe (Rental)
+ * Jedes Objekt kennt alle seine Ausleihen.
+ *
+ *
+ * @author Max Wildberg
+ */
 @Entity
 @Table(name = "customers")
-public class Customer {
+public class Customer implements CustomerInterface {
 
 
     @Id
@@ -18,7 +30,10 @@ public class Customer {
     private Long customerId;
 
     @Column(nullable = false)
-    private String name;
+    private String salutation;
+
+    @Column(nullable = false)
+    private String firstname;
 
     @Column(nullable = false)
     private String lastname;
@@ -50,13 +65,37 @@ public class Customer {
     @Column(nullable = false)
     private String idCardNumber;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Rental> rents = new ArrayList<>();
 
-    public Customer(){}
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Invoice> invoices = new ArrayList<>();
 
-    public Customer(String name, String lastname, LocalDate birthday, String address, String zip, String residence, String country, String email, String telephone, String driverslicenseID, String idCardNumber) {
-        this.name = name;
+    /**
+     * Parameterloser Standardkonstruktor für JPA.
+     */
+    public Customer(){
+
+    }
+
+    /**
+     * Konstruktor zum Anlegen eines neuen Kunden
+     * @param salutation Anrede
+     * @param name Name
+     * @param lastname Nachname
+     * @param birthday Geburtstag
+     * @param address Adresse
+     * @param zip Postleitzahl
+     * @param residence Wohnort
+     * @param email E-Mail Adresse
+     * @param telephone Telefonnummer
+     * @param driverslicenseID Führerscheinnummer
+     * @param idCardNumber Ausweisnummer
+     */
+
+    public Customer(String salutation, String name, String lastname, LocalDate birthday, String address, String zip, String residence, String country, String email, String telephone, String driverslicenseID, String idCardNumber) {
+        this.salutation = salutation;
+        this.firstname = name;
         this.lastname = lastname;
         this.birthday = birthday;
         this.address = address;
@@ -69,124 +108,170 @@ public class Customer {
         this.idCardNumber = idCardNumber;
     }
 
+    @Override
     public Long getCustomerId() {
         return customerId;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public String getFirstName() {
+        return firstname;
     }
 
-    public String getLastname() {
+    @Override
+    public String getLastName() {
         return lastname;
     }
 
+    @Override
     public LocalDate getBirthday() {
         return birthday;
     }
 
+    @Override
     public String getAddress() {
         return address;
     }
 
+    @Override
     public String getZip() {
         return zip;
     }
 
+    @Override
     public String getResidence() {
         return residence;
     }
 
+    @Override
     public String getCountry() {
         return country;
     }
 
+    @Override
     public String getEmail() {
         return email;
     }
 
+    @Override
     public String getTelephone() {
         return telephone;
     }
 
-    public String getDriverslicenseID() {
+    @Override
+    public String getDriversLicenseID() {
         return driverslicenseID;
     }
 
+    @Override
     public String getIdCardNumber() {
         return idCardNumber;
     }
 
+    @Override
     public int getAge() {
         return Period.between(getBirthday(), LocalDate.now()).getYears();
     }
 
+    @Override
     public List<Rental> getRents() {
         return rents;
     }
 
+    @Override
+    public String getFullName(){
+        return getFirstName() + " " + getLastName();
+    }
+
+    @Override
+    public List<Invoice> getInvoices() {
+        return rents.stream()
+                .map(Rental::getInvoice)
+                .filter(inv -> inv != null)
+                .toList();
+    }
+
+    @Override
     public void addRent(Rental rental) {
         this.rents.add(rental);
     }
 
-    public  String getRentCount() {
+    @Override
+    public String getRentCount() {
         return String.valueOf(rents.size());
     }
 
-    public String getTotalRevenue() {
-        int totalRevenue = 0;
+    @Override
+    public double getTotalRevenue() {
+        double totalRevenue = 0;
         for (Rental rent : rents){
             totalRevenue += rent.getTotalPrice();
         }
-        return String.valueOf(totalRevenue);
+        return totalRevenue;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public void setFirstName(String name) {
+        this.firstname = name;
     }
 
-    public void setLastname(String lastname) {
+    @Override
+    public void setLastName(String lastname) {
         this.lastname = lastname;
     }
 
+    @Override
     public void setAddress(String address) {
         this.address = address;
     }
 
+    @Override
     public void setZip(String zip) {
         this.zip = zip;
     }
 
+    @Override
     public void setResidence(String residence) {
         this.residence = residence;
     }
 
+    @Override
     public void setCountry(String country) {
         this.country = country;
     }
 
+    @Override
     public void setEmail(String email) {
         this.email = email;
     }
 
+    @Override
     public void setTelephone(String telephone) {
         this.telephone = telephone;
     }
 
+    @Override
     public void setDriverslicenseID(String driverslicenseID) {
         this.driverslicenseID = driverslicenseID;
     }
 
+    @Override
     public void setIdCardNumber(String idCardNumber) {
         this.idCardNumber = idCardNumber;
     }
 
+    @Override
     public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
     }
 
-    public String getSalutation () {
-        return this.name + " " + this.lastname;
+    @Override
+    public String getSalutation() {
+        return salutation;
     }
 
+    @Override
+    public void setSalutation(String salutation) {
+        this.salutation = salutation;
+    }
 }

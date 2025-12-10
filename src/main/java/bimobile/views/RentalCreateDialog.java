@@ -1,4 +1,4 @@
-/* package bimobile.views;
+package bimobile.views;
 
 import bimobile.model.Customer;
 import bimobile.model.Facility;
@@ -34,16 +34,16 @@ public class RentalCreateDialog extends Dialog {
         H3 title = new H3("Neue Ausleihe erstellen");
 
         ComboBox<Customer> customerBox = new ComboBox<>("Kunde");
-        customerBox.setItems(customerService.findAll());
+        customerBox.setItems(customerService.findAllCustomers());
         customerBox.setItemLabelGenerator(Customer::getFullName);
 
         ComboBox<Vehicle> vehicleBox = new ComboBox<>("Fahrzeug");
-        vehicleBox.setItems(vehicleService.findAll());
+        vehicleBox.setItems(vehicleService.findAllVehicles());
         vehicleBox.setItemLabelGenerator(v -> v.getLicensePlate() + " — " + v.getModel());
 
         ComboBox<Facility> facilityBox = new ComboBox<>("Standort");
-        facilityBox.setItems(facilityService.findAll());
-        facilityBox.setItemLabelGenerator(Facility::getName);
+        facilityBox.setItems(facilityService.getAllFacilities());
+        facilityBox.setItemLabelGenerator(Facility::getAddress);
 
         DatePicker start = new DatePicker("Startdatum");
         DatePicker end = new DatePicker("Enddatum");
@@ -78,4 +78,4 @@ public class RentalCreateDialog extends Dialog {
         VerticalLayout layout = new VerticalLayout(title, form, buttons);
         add(layout);
     }
-} */
+}
