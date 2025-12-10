@@ -27,7 +27,7 @@ public class Invoice {
     @ManyToOne
     private Facility facility;
 
-    @OneToOne
+    @ManyToOne
     private Vehicle vehicle;
 
     @ManyToOne

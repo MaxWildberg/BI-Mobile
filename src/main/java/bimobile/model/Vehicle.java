@@ -2,6 +2,7 @@ package bimobile.model;
 
 import bimobile.dao.VehicleRepository;
 import bimobile.service.VehicleService;
+import bimobile.enums.FuelType;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -13,198 +14,251 @@ import java.util.List;
  * Repräsentiert ein Fahrzeug im System.
  */
 @Entity
-public class Vehicle  {
+public class Vehicle {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    // Nummernschild (muss eindeutig sein)
-    @Column(nullable = false, unique = true)
-    private String licensePlate;
+	// Nummernschild (muss eindeutig sein)
+	@Column(nullable = false, unique = true)
+	private String licensePlate;
 
-    private String brand;
-    private String model;
+	private String brand;
+	private String model;
 
-    // Preisklasse A/B/C/D 
-    private String priceClass;
+	// Preisklassen
+	@Enumerated(EnumType.STRING)
+	private PriceCategory priceCategory;
 
-    private int mileage;
+	private int mileage;
 
+	private double dailyRate;
 
+	private LocalDate purchaseDate;
 
-    private double dailyRate;
+	@Enumerated(EnumType.STRING)
+	private VehicleStatus status = VehicleStatus.AVAILABLE;
 
-    private LocalDate purchaseDate;
+	private LocalDate nextInspectionDate;
 
-    @Enumerated(EnumType.STRING)
-    private VehicleStatus status = VehicleStatus.AVAILABLE;
+	private LocalDate nextServiceDate;
 
-    private LocalDate nextInspectionDate;
+	private boolean maintenanceActive;
 
-    private LocalDate nextServiceDate;
+	private Double acquisitionPrice;
 
-    private boolean maintenanceActive;
+	private FuelType fuelType;
 
-    private boolean available;
+	private boolean smokingAllowed;
 
-    // Ein Fahrzeug kann mehrere Wartungstermine haben
-    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MaintenanceAppointment> maintenanceAppointments = new ArrayList<>();
+	private boolean hasNavigationSystem;
 
-    // Ein Fahrzeug kann viele History-Einträge haben (Lebenslauf)
-    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VehicleHistoryEntry> historyEntries = new ArrayList<>();
+	private boolean hasAirCondition;
 
-    // --- Konstruktoren ---
+	private boolean hasWinterTires;
 
-    public Vehicle() {
-    }
+	// Ein Fahrzeug kann mehrere Wartungstermine haben
+	@OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<MaintenanceAppointment> maintenanceAppointments = new ArrayList<>();
 
-    public Vehicle(String licensePlate, String brand, String model, String priceClass) {
-        this.licensePlate = licensePlate;
-        this.brand = brand;
-        this.model = model;
-        this.priceClass = priceClass;
-        this.status = VehicleStatus.AVAILABLE;
-    }
+	// Ein Fahrzeug kann viele History-Einträge haben (Lebenslauf)
+	@OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<VehicleHistoryEntry> historyEntries = new ArrayList<>();
 
-    // --- Methoden ---
+	// --- Konstruktoren ---
 
-    /**
-     * Aktualisiert den Status des Fahrzeugs.
-     * Die eigentliche Fachlogik (z.B. ob der Statuswechsel erlaubt ist)
-     * wird im Service geprüft, hier wird nur gesetzt.
-     */
-    public void setStatus(VehicleStatus status) {
-        this.status = status;
-    }
+	public Vehicle() {
+	}
 
-    /**
-     * Fügt dem Fahrzeug einen Wartungstermin hinzu.
-     * Die Beziehung wird von beiden Seiten korrekt gesetzt.
-     */
-    public void addMaintenanceAppointment(MaintenanceAppointment appointment) {
-        appointment.setVehicle(this);
-        this.maintenanceAppointments.add(appointment);
-    }
+	public Vehicle(String licensePlate, String brand, String model, PriceCategory priceCategory) {
+		this.licensePlate = licensePlate;
+		this.brand = brand;
+		this.model = model;
+		this.priceCategory = priceCategory;
+		this.status = VehicleStatus.AVAILABLE;
+	}
 
-    /**
-     * Fügt einen neuen History-Eintrag (Lebenslauf) hinzu.
-     */
-    public void addHistoryEntry(VehicleHistoryEntry entry) {
-        entry.setVehicle(this);
-        this.historyEntries.add(entry);
-    }
+	// --- Methoden ---
 
-    // --- Getter & Setter ---
+	/**
+	 * Aktualisiert den Status des Fahrzeugs.
+	 * Die eigentliche Fachlogik (z.B. ob der Statuswechsel erlaubt ist)
+	 * wird im Service geprüft, hier wird nur gesetzt.
+	 */
+	public void setStatus(VehicleStatus status) {
+		this.status = status;
+	}
 
-    public Long getId() {
-        return id;
-    }
+	/**
+	 * Fügt dem Fahrzeug einen Wartungstermin hinzu.
+	 * Die Beziehung wird von beiden Seiten korrekt gesetzt.
+	 */
+	public void addMaintenanceAppointment(MaintenanceAppointment appointment) {
+		appointment.setVehicle(this);
+		this.maintenanceAppointments.add(appointment);
+	}
 
-    public String getLicensePlate() {
-        return licensePlate;
-    }
+	/**
+	 * Fügt einen neuen History-Eintrag (Lebenslauf) hinzu.
+	 */
+	public void addHistoryEntry(VehicleHistoryEntry entry) {
+		entry.setVehicle(this);
+		this.historyEntries.add(entry);
+	}
 
-    public void setLicensePlate(String licensePlate) {
-        this.licensePlate = licensePlate;
-    }
+	// --- Getter & Setter ---
 
-    public String getBrand() {
-        return brand;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
+	public String getLicensePlate() {
+		return licensePlate;
+	}
 
-    public String getModel() {
-        return model;
-    }
+	public void setLicensePlate(String licensePlate) {
+		this.licensePlate = licensePlate;
+	}
 
-    public void setModel(String model) {
-        this.model = model;
-    }
+	public String getBrand() {
+		return brand;
+	}
 
-    public String getPriceClass() {
-        return priceClass;
-    }
+	public void setBrand(String brand) {
+		this.brand = brand;
+	}
 
-    public void setPriceClass(String priceClass) {
-        this.priceClass = priceClass;
-    }
+	public String getModel() {
+		return model;
+	}
 
-    public int getMileage() {
-        return mileage;
-    }
+	public void setModel(String model) {
+		this.model = model;
+	}
 
-    public void setMileage(int mileage) {
-        this.mileage = mileage;
-    }
+	public PriceCategory getPriceCategory() {
+		return priceCategory;
+	}
 
-    public LocalDate getPurchaseDate() {
-        return purchaseDate;
-    }
+	public void setPriceCategory(PriceCategory priceCategory) {
+		this.priceCategory = priceCategory;
+	}
 
-    public void setPurchaseDate(LocalDate purchaseDate) {
-        this.purchaseDate = purchaseDate;
-    }
+	public int getMileage() {
+		return mileage;
+	}
 
-    public VehicleStatus getStatus() {
-        return status;
-    }
+	public void setMileage(int mileage) {
+		this.mileage = mileage;
+	}
 
-    public List<MaintenanceAppointment> getMaintenanceAppointments() {
-        return maintenanceAppointments;
-    }
+	public LocalDate getPurchaseDate() {
+		return purchaseDate;
+	}
 
-    public LocalDate getNextInspectionDate() {
-        return nextInspectionDate;
-    }
+	public void setPurchaseDate(LocalDate purchaseDate) {
+		this.purchaseDate = purchaseDate;
+	}
 
-    public void setNextInspectionDate(LocalDate nextInspectionDate) {
-        this.nextInspectionDate = nextInspectionDate;
-    }
+	public VehicleStatus getStatus() {
+		return status;
+	}
 
-    public LocalDate getNextServiceDate() {
-        return nextServiceDate;
-    }
+	public List<MaintenanceAppointment> getMaintenanceAppointments() {
+		return maintenanceAppointments;
+	}
 
-    public void setNextServiceDate(LocalDate nextServiceDate) {
-        this.nextServiceDate = nextServiceDate;
-    }
+	public LocalDate getNextInspectionDate() {
+		return nextInspectionDate;
+	}
 
-    public double getDailyRate() {
-        return dailyRate;
-    }
+	public void setNextInspectionDate(LocalDate nextInspectionDate) {
+		this.nextInspectionDate = nextInspectionDate;
+	}
 
-    public void setDailyRate(double dailyRate) {
-        this.dailyRate = dailyRate;
-    }
+	public LocalDate getNextServiceDate() {
+		return nextServiceDate;
+	}
 
-    public boolean isInspectionOverdue() {
-        return nextInspectionDate != null && !nextInspectionDate.isAfter(LocalDate.now());
-    }
+	public void setNextServiceDate(LocalDate nextServiceDate) {
+		this.nextServiceDate = nextServiceDate;
+	}
 
-    public boolean isAvailable() {
-        return available;
-    }
+	public double getDailyRate() {
+		return dailyRate;
+	}
 
-    public void setAvailable(boolean available) {
-        this.available = available;
-    }
+	public void setDailyRate(double dailyRate) {
+		this.dailyRate = dailyRate;
+	}
 
-    public boolean isMaintenanceActive() {
-        return maintenanceActive;
-    }
+	public boolean isInspectionOverdue() {
+		return nextInspectionDate != null && !nextInspectionDate.isAfter(LocalDate.now());
+	}
 
-    public void setMaintenanceActive(boolean maintenanceActive) {
-        this.maintenanceActive = maintenanceActive;
-    }
+	public boolean isAvailable() {
+		return status == VehicleStatus.AVAILABLE;
+	}
 
-    public List<VehicleHistoryEntry> getHistoryEntries() {
-        return historyEntries;
-    }
+	public boolean isMaintenanceActive() {
+		return maintenanceActive;
+	}
+
+	public void setMaintenanceActive(boolean maintenanceActive) {
+		this.maintenanceActive = maintenanceActive;
+	}
+
+	public List<VehicleHistoryEntry> getHistoryEntries() {
+		return historyEntries;
+	}
+
+	public FuelType getFuelType() {
+		return fuelType;
+	}
+
+	public void setFuelType(FuelType fuelType) {
+		this.fuelType = fuelType;
+	}
+
+	public Double getAcquisitionPrice() {
+		return acquisitionPrice;
+	}
+
+	public void setAcquisitionPrice(Double acquisitionPrice) {
+		this.acquisitionPrice = acquisitionPrice;
+	}
+
+	public boolean isSmokingAllowed() {
+		return smokingAllowed;
+	}
+
+	public void setSmokingAllowed(boolean smokingAllowed) {
+		this.smokingAllowed = smokingAllowed;
+	}
+
+	public boolean isHasNavigationSystem() {
+		return hasNavigationSystem;
+	}
+
+	public void setHasNavigationSystem(boolean hasNavigationSystem) {
+		this.hasNavigationSystem = hasNavigationSystem;
+	}
+
+	public boolean isHasAirCondition() {
+		return hasAirCondition;
+	}
+
+	public void setHasAirCondition(boolean hasAirCondition) {
+		this.hasAirCondition = hasAirCondition;
+	}
+
+	public boolean isHasWinterTires() {
+		return hasWinterTires;
+	}
+
+	public void setHasWinterTires(boolean hasWinterTires) {
+		this.hasWinterTires = hasWinterTires;
+	}
+
 }
-

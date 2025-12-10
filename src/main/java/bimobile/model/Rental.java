@@ -61,12 +61,6 @@ public class Rental {
     private LocalDate endDate;
 
     /**
-     * Tagespreis zum Zeitpunkt der Ausleihe.
-     */
-    @Column(nullable = false)
-    private double dailyRate;
-
-    /**
      * Gesamtpreis der Ausleihe.
      */
     @Column(nullable = false)
@@ -108,13 +102,11 @@ public class Rental {
      * @param facility Standort der Ausleihe
      * @param startDate Startdatum
      * @param endDate Enddatum
-     * @param dailyRate Tagespreis
      * @param totalPrice Gesamtprei
      * @param status Status der Ausleihe
      */
     public Rental(Customer customer, Vehicle vehicle, Facility facility,
-                  LocalDate startDate, LocalDate endDate,
-                  double dailyRate, double totalPrice,
+                  LocalDate startDate, LocalDate endDate, double totalPrice,
                   RentalStatus status) {
 
         this.customer = customer;
@@ -122,7 +114,6 @@ public class Rental {
         this.facility = facility;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.dailyRate = dailyRate;
         this.totalPrice = totalPrice;
         this.status = status != null ? status : RentalStatus.CREATED;
         this.createdAt = LocalDateTime.now();
@@ -180,15 +171,6 @@ public class Rental {
         touch();
     }
 
-    public double getDailyRate() {
-        return dailyRate;
-    }
-
-    public void setDailyRate(double dailyRate) {
-        this.dailyRate = dailyRate;
-        touch();
-    }
-
     public double getTotalPrice() {
         return totalPrice;
     }
@@ -230,4 +212,14 @@ public class Rental {
     public void setInvoice(Invoice invoice) {
         this.invoice = invoice;
     }
+	public double pullDailyRateFromVehicle() {
+		return vehicle.getPriceCategory().getBaseRate();
+	}
+
+	public double calculateTotalPrice() {
+		long days = startDate.until(endDate).getDays();
+		double dailyRate = pullDailyRateFromVehicle();
+
+		return dailyRate * days;
+	}
 }

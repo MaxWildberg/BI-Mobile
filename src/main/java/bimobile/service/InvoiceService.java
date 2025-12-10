@@ -23,72 +23,59 @@ import java.time.LocalDateTime;
 @Service
 public class InvoiceService {
 
-    private final InvoiceRepository invoiceRepository;
-    private final PdfGeneratorService pdfGeneratorService;
-    private final MailService mailService;
-    private final RentalRepository rentalRepository;
+	private final InvoiceRepository invoiceRepository;
+	private final PdfGeneratorService pdfGeneratorService;
+	private final MailService mailService;
+	private final RentalRepository rentalRepository;
 
-    public InvoiceService(InvoiceRepository invoiceRepository,
-                          PdfGeneratorService pdfGeneratorService,
-                          MailService mailService,
-                          RentalRepository rentalRepository) {
-        this.invoiceRepository = invoiceRepository;
-        this.pdfGeneratorService = pdfGeneratorService;
-        this.mailService = mailService;
-        this.rentalRepository = rentalRepository;
-    }
+	public InvoiceService(InvoiceRepository invoiceRepository,
+	                      PdfGeneratorService pdfGeneratorService,
+	                      MailService mailService,
+	                      RentalRepository rentalRepository) {
+		this.invoiceRepository = invoiceRepository;
+		this.pdfGeneratorService = pdfGeneratorService;
+		this.mailService = mailService;
+		this.rentalRepository = rentalRepository;
+	}
 
-    /**
-     * @param rental aus confirmCarReturn und der Rückgabemethode aus der View
-     * Speichert die Invoice in der Datenbank
-     * @return invoice
-     */
-    @Transactional
-    public Invoice createInvoiceForRental(Rental rental) {
+	/**
+	 * @param rental aus confirmCarReturn und der Rückgabemethode aus der View
+	 * speichert die Invoice in der Datenbank
+	 * @return invoice
+	 */
+	@Transactional
+	public Invoice createInvoiceForRental(Rental rental, int kmStart, int kmEnd) {
 
-        Rental loaded = rentalRepository.findByIdWithAllAttributes(rental.getId());
-        Invoice invoice = new Invoice();
-        invoice.setRental(loaded);
-        invoice.setInvoiceDate(LocalDateTime.now());
+		Rental loaded = rentalRepository.findByIdWithAllAttributes(rental.getId());
+		Invoice invoice = new Invoice();
+		invoice.setRental(loaded);
+		invoice.setInvoiceDate(LocalDateTime.now());
 
-        double netto = loaded.getDailyRate() *
-                (loaded.getStartDate().until(loaded.getEndDate()).getDays());
+		double netto = loaded.calculateTotalPrice();
+		double tax = netto * 0.19;
+		double gross = netto + tax;
 
-        double tax = netto * 0.19;
-        double gross = netto + tax;
+		invoice.setKilometersBefore(kmStart);
+		invoice.setKilometersAfter(kmEnd);
 
-        invoice.setNetAmount(netto);
-        invoice.setTaxAmount(tax);
-        invoice.setGrossAmount(gross);
-        invoice.setVehicle(loaded.getVehicle());
+		invoice.setNetAmount(netto);
+		invoice.setTaxAmount(tax);
+		invoice.setGrossAmount(gross);
+		invoice.setVehicle(loaded.getVehicle());
 
-        invoiceRepository.save(invoice);
+		invoiceRepository.save(invoice);
 
-        // PDF erzeugen
-        byte[] pdf = pdfGeneratorService.generateInvoicePdf(invoice);
+		// PDF erzeugen
+		byte[] pdf = pdfGeneratorService.generateInvoicePdf(invoice);
 
-        // Mail verschicken
-        mailService.sendInvoiceMail(
-                invoice,
-                loaded.getCustomer().getEmail(),
-                pdf,
-                "Rechnung-" + invoice.getId() + ".pdf"
-        );
+		// Mail verschicken
+		mailService.sendInvoiceMail(
+				invoice,
+				loaded.getCustomer().getEmail(),
+				pdf,
+				"Rechnung-" + invoice.getId() + ".pdf"
+		);
 
-        return invoice;
-    }
-
-
-    /**
-     * Kreiert Rental-Daten für die createInvocieForRental-Methode
-     *
-     * @param rentalId übergebene Rental, die gerade abgeschlossen wurde
-     */
-    @Transactional
-    public void confirmCarReturn(Long rentalId) {
-        Rental rental = rentalRepository.findById(rentalId).orElseThrow();
-        rentalRepository.save(rental);
-        createInvoiceForRental(rental);
-    }
-
+		return invoice;
+	}
 }
