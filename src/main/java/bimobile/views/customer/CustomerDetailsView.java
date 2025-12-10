@@ -422,13 +422,11 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         content.add(customer.getPersonalData().getFirstname() + " " + customer.getPersonalData().getLastname() + ", Kunden-ID: " + customer.getCustomerId());
 
         Button confirmButton = new Button("Löschen", e -> {
-            String result = service.deleteCustomer(customer.getCustomerId());
-
-            Notification notification = Notification.show(result);
-            if (result.startsWith("Erfolg")) {
-                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-            } else {
-                notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
+            try {
+                service.deleteCustomer(customer.getCustomerId());
+                Notification.show("Kunde wurde erfolgreich gelöscht");
+            } catch (IllegalArgumentException ex) {
+                Notification.show("Fehler: " + ex.getMessage());
             }
 
             dialog.close();

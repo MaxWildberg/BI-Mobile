@@ -1,7 +1,9 @@
 package bimobile.views.customer;
 
 import bimobile.model.customer.*;
+import bimobile.service.CustomerNotFoundException;
 import bimobile.service.CustomerService;
+import bimobile.service.DuplicateCustomerException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -243,19 +245,25 @@ public class EditCreateCustomerDialog extends Dialog {
     private void onSave() {
     CustomerFormDTO dto = new CustomerFormDTO();
         if (binder.writeBeanIfValid(dto)) {
-            Customer updatedCustomer = mapDtoToCustomer(dto, customer);
-            String msg;
-            if (editMode) {
-                msg = service.updateCustomer(updatedCustomer);
-            } else {
-                msg = service.registerCustomer(updatedCustomer);
-            }
+            try {
+                Customer updatedCustomer = mapDtoToCustomer(dto, customer);
+                if (editMode) {
+                    service.updateCustomer(updatedCustomer);
+                    Notification.show("Kunde erfolgreich aktualisiert.");
+                } else {
+                    service.registerCustomer(updatedCustomer);
+                    Notification.show("Kunde erfolgreich angelegt.");
+                }
 
-            Notification.show(msg);
-
-            if (msg.startsWith("Erfolg")) {
                 onSaveSuccess.run(); // refresh grid
                 close();
+
+            } catch (CustomerNotFoundException ex) {
+                Notification.show("Fehler: Der Kunde konnte nicht gefunden werden.");
+            } catch (DuplicateCustomerException ex) {
+                Notification.show("Fehler: Ein Kunde mit diesen Daten existieren bereits.");
+            } catch (Exception ex) {
+                Notification.show("Unerwarteter Fehler: " + ex.getMessage());
             }
         }
     }
