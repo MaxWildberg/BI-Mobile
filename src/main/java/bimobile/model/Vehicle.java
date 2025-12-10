@@ -3,9 +3,7 @@ package bimobile.model;
 import bimobile.dao.VehicleRepository;
 import bimobile.service.VehicleService;
 import bimobile.enums.FuelType;
-
 import jakarta.persistence.*;
-
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -16,7 +14,7 @@ import java.util.List;
  * Repräsentiert ein Fahrzeug im System.
  */
 @Entity
-public class Vehicle  {
+public class Vehicle {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,8 +27,9 @@ public class Vehicle  {
     private String brand;
     private String model;
 
-    // Preisklasse A/B/C/D 
-    private String priceClass;
+    // Preisklassen
+    @Enumerated(EnumType.STRING)
+    private PriceCategory priceCategory;
 
     private int mileage;
 
@@ -47,9 +46,6 @@ public class Vehicle  {
 
     private boolean maintenanceActive;
 
-
-    // AB HIER NEU HINZUGEFÜGT:
-
     private Double acquisitionPrice;
 
     private FuelType fuelType;
@@ -61,9 +57,6 @@ public class Vehicle  {
     private boolean hasAirCondition;
 
     private boolean hasWinterTires;
-
-
-
 
     // Ein Fahrzeug kann mehrere Wartungstermine haben
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -78,11 +71,11 @@ public class Vehicle  {
     public Vehicle() {
     }
 
-    public Vehicle(String licensePlate, String brand, String model, String priceClass) {
+    public Vehicle(String licensePlate, String brand, String model, PriceCategory priceCategory) {
         this.licensePlate = licensePlate;
         this.brand = brand;
         this.model = model;
-        this.priceClass = priceClass;
+        this.priceCategory = priceCategory;
         this.status = VehicleStatus.AVAILABLE;
     }
 
@@ -144,12 +137,12 @@ public class Vehicle  {
         this.model = model;
     }
 
-    public String getPriceClass() {
-        return priceClass;
+    public PriceCategory getPriceCategory() {
+        return priceCategory;
     }
 
-    public void setPriceClass(String priceClass) {
-        this.priceClass = priceClass;
+    public void setPriceCategory(PriceCategory priceCategory) {
+        this.priceCategory = priceCategory;
     }
 
     public int getMileage() {
@@ -204,6 +197,9 @@ public class Vehicle  {
         return nextInspectionDate != null && !nextInspectionDate.isAfter(LocalDate.now());
     }
 
+    public boolean isAvailable() {
+        return status == VehicleStatus.AVAILABLE;
+    }
 
     public boolean isMaintenanceActive() {
         return maintenanceActive;
@@ -216,8 +212,6 @@ public class Vehicle  {
     public List<VehicleHistoryEntry> getHistoryEntries() {
         return historyEntries;
     }
-
-    // AB HIER NEU:
 
     public FuelType getFuelType() {
         return fuelType;
@@ -267,7 +261,5 @@ public class Vehicle  {
         this.hasWinterTires = hasWinterTires;
     }
 
-    public boolean isAvailable() {
-        return status == VehicleStatus.AVAILABLE;
-    }
 }
+
