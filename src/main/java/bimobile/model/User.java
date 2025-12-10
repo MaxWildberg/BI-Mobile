@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 @Table(name = "users")
 public class User {
 
+    // Author: Lasse
+    // Description: User entity for login and role assignment.
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,7 +27,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private RoleType role;
 
     @Column(nullable = false)
     private boolean enabled = true;
@@ -35,7 +38,7 @@ public class User {
 
     public User() {}
 
-    public User(String firstName, String lastName, String email, String password, Role role) {
+    public User(String firstName, String lastName, String email, String password, RoleType role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -44,7 +47,6 @@ public class User {
     }
 
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public String getLastName() { return lastName; }
@@ -53,11 +55,14 @@ public class User {
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-    public Role getRole() { return role; }
-    public void setRole(Role role) { this.role = role; }
+    public RoleType getRole() { return role; }
+    public void setRole(RoleType role) { this.role = role; }
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public Facility getFacility() { return facility; }
     public void setFacility(Facility facility) { this.facility = facility; }
-    public String getFullName() { return firstName + " " + lastName; }
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }

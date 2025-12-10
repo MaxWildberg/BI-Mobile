@@ -1,7 +1,7 @@
 package bimobile.config;
 
 import bimobile.dao.UserRepository;
-import bimobile.model.Role;
+import bimobile.model.RoleType;
 import bimobile.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ public class DataInitializer {
                         "Mustermann",
                         "director@bimobile.de",
                         passwordEncoder.encode("director123"),
-                        Role.MANAGING_DIRECTOR
+                        RoleType.MANAGEMENT
                 );
                 userRepository.save(director);
                 logger.info("Testbenutzer erstellt: director@bimobile.de / director123");
@@ -39,7 +39,7 @@ public class DataInitializer {
                         "Musterfrau",
                         "manager@bimobile.de",
                         passwordEncoder.encode("manager123"),
-                        Role.GENERAL_MANAGER
+                        RoleType.BRANCH_MANAGER
                 );
                 userRepository.save(manager);
                 logger.info("Testbenutzer erstellt: manager@bimobile.de / manager123");
@@ -49,7 +49,7 @@ public class DataInitializer {
                         "Müller",
                         "employee@bimobile.de",
                         passwordEncoder.encode("employee123"),
-                        Role.EMPLOYEE
+                        RoleType.EMPLOYEE
                 );
                 userRepository.save(employee);
                 logger.info("Testbenutzer erstellt: employee@bimobile.de / employee123");

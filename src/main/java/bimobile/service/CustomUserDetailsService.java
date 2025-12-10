@@ -2,6 +2,7 @@ package bimobile.service;
 
 import bimobile.dao.UserRepository;
 import bimobile.model.User;
+import bimobile.model.RoleType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,6 +14,9 @@ import java.util.Collections;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
+    // Author: Lasse
+    // Description: Loads user from DB.
+
     private final UserRepository userRepository;
 
     public CustomUserDetailsService(UserRepository userRepository) {
@@ -21,12 +25,15 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Benutzer nicht gefunden: " + email));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
         if (!user.isEnabled()) {
-            throw new UsernameNotFoundException("Benutzer ist deaktiviert: " + email);
+            throw new UsernameNotFoundException("User disabled: " + email);
         }
+
+        String authority = "ROLE_" + user.getRole().name();
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
@@ -35,7 +42,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 true,
                 true,
                 true,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                Collections.singletonList(new SimpleGrantedAuthority(authority))
         );
     }
 }
