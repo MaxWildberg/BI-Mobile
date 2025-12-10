@@ -2,11 +2,12 @@ package bimobile.sevice;
 
 import bimobile.dao.RentalRepository;
 import bimobile.enums.RentalStatus;
-import bimobile.model.Customer;
+import bimobile.model.customer.Customer;
 import bimobile.model.Facility;
 import bimobile.model.Rental;
 import bimobile.model.Vehicle;
 
+import bimobile.model.customer.PrivateCustomer;
 import bimobile.service.RentalService;
 import bimobile.service.VehicleService;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ public class RentalServiceEquivalenceTest {
 	// Erwartung: IllegalArgumentException
 	@Test
 	void ek_invalidDateRange_throwsIllegalArgumentException() {
-		Customer customer = new Customer();
+		Customer customer = new PrivateCustomer();
 		Vehicle vehicle = mock(Vehicle.class);
 		Facility facility = new Facility();
 
@@ -60,7 +61,7 @@ public class RentalServiceEquivalenceTest {
 	// Erwartung: IllegalStateException
 	@Test
 	void ek_vehicleAlreadyActive_throwsIllegalStateException() {
-		Customer customer = new Customer();
+		Customer customer = new PrivateCustomer();
 		Vehicle vehicle = mock(Vehicle.class);
 		Facility facility = new Facility();
 
@@ -81,7 +82,7 @@ public class RentalServiceEquivalenceTest {
 	// (Repräsentiert die gültige Äquivalenzklasse)
 	@Test
 	void validRental_createsRentalSuccessfully() {
-		Customer customer = new Customer();
+		Customer customer = new PrivateCustomer();
 		Vehicle vehicle = mock(Vehicle.class);
 		Facility facility = new Facility();
 
@@ -115,7 +116,7 @@ public class RentalServiceEquivalenceTest {
 	// (Weitere ungültige Äquivalenzklasse)
 	@Test
 	void vehicleBlockedDueToInspection_throwsIllegalStateException() {
-		Customer customer = new Customer();
+		Customer customer = new PrivateCustomer();
 		Vehicle vehicle = mock(Vehicle.class);
 		Facility facility = new Facility();
 

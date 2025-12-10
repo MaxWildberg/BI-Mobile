@@ -1,7 +1,7 @@
 package bimobile.views;
 
 import bimobile.dao.UserRepository;
-import bimobile.model.Customer;
+import bimobile.model.customer.Customer;
 import bimobile.model.Facility;
 import bimobile.model.Rental;
 import bimobile.model.RentalChangeLog;
@@ -574,10 +574,10 @@ public class RentalsOverviewView extends VerticalLayout {
 
 		// Kunde: Vorname, Nachname, Vollname
 		if (rental.getCustomer() != null) {
-			String first = rental.getCustomer().getFirstName() != null
-					? rental.getCustomer().getFirstName().toLowerCase() : "";
-			String last = rental.getCustomer().getLastName() != null
-					? rental.getCustomer().getLastName().toLowerCase() : "";
+			String first = rental.getCustomer().getPersonalData().getFirstname() != null
+					? rental.getCustomer().getPersonalData().getFirstname().toLowerCase() : "";
+			String last = rental.getCustomer().getPersonalData().getLastname() != null
+					? rental.getCustomer().getPersonalData().getLastname().toLowerCase() : "";
 			String fullName = (first + " " + last).trim();
 
 			if (first.contains(lowered) || last.contains(lowered) || fullName.contains(lowered)) {

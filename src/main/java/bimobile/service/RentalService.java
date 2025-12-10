@@ -1,6 +1,6 @@
 package bimobile.service;
 import bimobile.enums.RentalStatus;
-import bimobile.model.Customer;
+import bimobile.model.customer.Customer;
 import bimobile.model.EventType;
 import bimobile.model.Facility;
 import bimobile.model.Rental;

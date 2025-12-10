@@ -1,11 +1,8 @@
 package bimobile.service;
 
-import bimobile.dao.VehicleRepository;
-import bimobile.model.Customer;
 import bimobile.model.Vehicle;
 import bimobile.model.VehicleHistoryEntry;
 import bimobile.model.VehicleStatus;
-import jakarta.persistence.EntityManager;
 
 import java.util.List;
 

@@ -71,7 +71,7 @@ public class InvoiceService {
 		// Mail verschicken
 		mailService.sendInvoiceMail(
 				invoice,
-				loaded.getCustomer().getEmail(),
+				loaded.getCustomer().getContactInfo().getMail(),
 				pdf,
 				"Rechnung-" + invoice.getId() + ".pdf"
 		);

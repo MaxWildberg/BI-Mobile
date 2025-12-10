@@ -2,6 +2,7 @@ package bimobile.views;
 
 import bimobile.dao.UserRepository;
 import bimobile.model.User;
+import bimobile.views.customer.CustomerOverview;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;

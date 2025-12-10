@@ -82,4 +82,9 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
            WHERE r.id = :id
            """)
 	Rental findByIdWithAllAttributes(@Param("id") Long id);
+
+    @Query("SELECT r FROM Rental r " +
+            "JOIN FETCH r.customer c " +
+            "JOIN FETCH r.vehicle v")
+    List<Rental> findAllWithCustomerAndVehicle();
 }
