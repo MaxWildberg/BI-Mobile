@@ -341,33 +341,29 @@ public class RentalService {
 	                           Facility facility,
 	                           LocalDate start,
 	                           LocalDate end) {
-		if (rental == null) {
+		if (rental == null){
 			throw new IllegalArgumentException("Ausleihe darf nicht null sein.");
 		}
-		if (rental == null || end == null || !end.isAfter(start)) {
-			throw new IllegalArgumentException("Bitte gültigen Zeitraum angeben.");
+		if (start == null || end == null) {
+			throw new IllegalArgumentException("Bitte Start- und Enddatum angeben.");
+		}
+		if (end.isBefore(start)) {
+			throw new IllegalArgumentException("Enddatum muss am selben Tag oder nach dem Startdatum liegen.");
 		}
 
-		// Wartung prüfen
-		if (isVehicleBlockedByMaintenance(rental.getVehicle(), start, end)) {
-			throw new IllegalStateException("Änderung nicht möglich: Fahrzeug hat in diesem Zeitraum HU oder Wartung.");
-		}
-		if (!end.isAfter(start)) {
-			throw new IllegalArgumentException("Das Enddatum muss nach dem Startdatum liegen.");
+		Rental managedRental = rentalRepository.findByIdWithAllAttributes(rental.getId());
+		if (managedRental == null) {
+			throw new IllegalArgumentException("Ausleihe konnte nicht gefunden werden.");
 		}
 
-		if (isVehicleBlockedByMaintenance(rental.getVehicle(), start, end)) {
-			throw new IllegalStateException("Die geplante Änderung kollidiert mit Wartung oder HU des Fahrzeugs.");
-		}
+		managedRental.setFacility(facility);
+		managedRental.setStartDate(start);
+		managedRental.setEndDate(end);
 
-		rental.setFacility(facility);
-		rental.setStartDate(start);
-		rental.setEndDate(end);
+		double totalPrice = calculateTotalPrice(managedRental.getVehicle(), start, end);
+		managedRental.setTotalPrice(totalPrice);
 
-		double totalPrice = calculateTotalPrice(rental.getVehicle(), start, end);
-		rental.setTotalPrice(totalPrice);
-
-		return rentalRepository.save(rental);
+		return rentalRepository.save(managedRental);
 	}
 
 	/**

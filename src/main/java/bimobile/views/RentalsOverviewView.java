@@ -131,7 +131,7 @@ public class RentalsOverviewView extends VerticalLayout {
 		grid.addColumn(r -> r.getVehicle().getLicensePlate()).setHeader("Fahrzeug").setAutoWidth(true);
 		grid.addColumn(Rental::getStartDate).setHeader("Startdatum").setAutoWidth(true);
 		grid.addColumn(Rental::getEndDate).setHeader("Enddatum").setAutoWidth(true);
-		grid.addColumn(Rental::getTotalPrice).setHeader("Gesamtpreis (€)").setAutoWidth(true);
+		grid.addColumn(Rental::calculateTotalPrice).setHeader("Gesamtpreis (€)").setAutoWidth(true);
 		grid.addColumn(r -> r.getStatus().name()).setHeader("Status").setAutoWidth(true);
 
 		// Aktionsspalte (Bearbeiten / Löschen / Zurückgeben)
@@ -207,17 +207,14 @@ public class RentalsOverviewView extends VerticalLayout {
 			LocalDate end = endDate.getValue();
 			if (v != null && start != null && end != null) {
 				long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
-				if (days <= 0) {
-					days = 1; // Mindestdauer 1 Tag
-				}
-				double dailyRate = v.getDailyRate();
-				double total = dailyRate * days;
-				totalRateField.setValue(String.format("%.2f", total));
+				double dailyRate = v.getPriceCategory().getBaseRate();
+				totalRateField.setValue(String.valueOf(dailyRate * days));
 			} else {
 				totalRateField.clear();
 			}
 		};
 
+		// Listener für Änderungen
 		vehicleBox.addValueChangeListener(e -> recalcTotal.run());
 		startDate.addValueChangeListener(e -> recalcTotal.run());
 		endDate.addValueChangeListener(e -> recalcTotal.run());
@@ -333,6 +330,7 @@ public class RentalsOverviewView extends VerticalLayout {
 	// Dialog: Ausleihe bearbeiten
 	// ------------------------------------------------------------------------------------
 	private void openEditDialog(Rental rental) {
+		double oldPrice = rental.calculateTotalPrice();
 		Dialog dialog = new Dialog();
 		dialog.setWidth("600px");
 		dialog.setModal(true);
@@ -374,17 +372,14 @@ public class RentalsOverviewView extends VerticalLayout {
 			LocalDate end = endDate.getValue();
 			if (v != null && start != null && end != null) {
 				long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
-				if (days <= 0) {
-					days = 1;
-				}
-				double dailyRate = v.getDailyRate();
-				double total = dailyRate * days;
-				totalRateField.setValue(String.format("%.2f", total));
+				double dailyRate = v.getPriceCategory().getBaseRate();
+				totalRateField.setValue(String.valueOf(dailyRate * days));
 			} else {
 				totalRateField.clear();
 			}
 		};
 
+		vehicleBox.addValueChangeListener(e -> recalcTotal.run());
 		startDate.addValueChangeListener(e -> recalcTotal.run());
 		endDate.addValueChangeListener(e -> recalcTotal.run());
 		// Initiale Anzeige
@@ -395,23 +390,20 @@ public class RentalsOverviewView extends VerticalLayout {
 
 		Button save = new Button("Speichern", e -> {
 			try {
-				double oldPrice = rental.getTotalPrice();
-
 				Rental updated = rentalService.updateRental(
 						rental,
 						facilityBox.getValue(),
 						startDate.getValue(),
 						endDate.getValue()
 				);
-				double newPrice = updated.getTotalPrice();
+				double newPrice = updated.calculateTotalPrice();
 
 				Notification.show("Ausleihe #" + updated.getId() + " erfolgreich aktualisiert.")
 						.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 				logChange(updated,
 						"Ausleihe aktualisiert",
-						"Ausleihe #" + updated.getId() + " angepasst (Preis: "
-								+ String.format("%.2f", oldPrice) + " € -> "
-								+ String.format("%.2f", newPrice) + " €)");
+						"Ausleihe #" + updated.getId() + " angepasst (Preis: " + oldPrice + " € -> " + newPrice + " €)"
+				);
 				updateGrid();
 				dialog.close();
 
@@ -422,6 +414,7 @@ public class RentalsOverviewView extends VerticalLayout {
 				Notification.show("Fehler: " + ex.getMessage())
 						.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			} catch (Exception ex) {
+				ex.printStackTrace();
 				Notification.show("Unerwarteter Fehler bei der Aktualisierung.")
 						.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			}
