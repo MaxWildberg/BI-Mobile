@@ -2,6 +2,7 @@ package bimobile.views;
 
 import bimobile.service.CustomerService;
 import bimobile.model.Customer;
+import bimobile.security.AuthorizationUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -39,6 +40,14 @@ public class CustomerOverview extends VerticalLayout {
     private final CustomerService service;
     private final Grid<Customer> grid = new Grid<>();
 
+	// MANAGEMENT + BRANCH_MANAGER -> dürfen löschen
+	private final boolean canDelete =
+			AuthorizationUtils.isManagement() || AuthorizationUtils.isBranchManager();
+
+	// Edit und Create -> für alle erlaubt
+	private final boolean canEdit = true;
+	private final boolean canCreate = true;
+
     public CustomerOverview(CustomerService service){
         this.service = service;
 
@@ -52,6 +61,7 @@ public class CustomerOverview extends VerticalLayout {
 
         Button registerCustomerButton = new Button("Neuen Kunden anlegen", new Icon(VaadinIcon.PLUS));
         registerCustomerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		registerCustomerButton.setEnabled(canCreate);
         registerCustomerButton.addClickListener(e -> {
             EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(null, false, service, this::updateGrid);
             dialog.open();
@@ -73,6 +83,7 @@ public class CustomerOverview extends VerticalLayout {
         grid.addComponentColumn(customer -> {
             Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
             bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+	        bearbeiten.setEnabled(canEdit);
             bearbeiten.addClickListener(e -> {
                 EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, true, service, this::updateGrid);
                 dialog.open();
@@ -80,6 +91,7 @@ public class CustomerOverview extends VerticalLayout {
 
             Button loeschen = new Button(new Icon(VaadinIcon.TRASH));
             loeschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
+	        loeschen.setEnabled(canDelete);
             loeschen.addClickListener(e -> openDeleteDialog(customer));
 
             Button details = new Button(new Icon(VaadinIcon.INFO));
@@ -108,6 +120,11 @@ public class CustomerOverview extends VerticalLayout {
 
     // Öffnet Dialog welches dem Nutzer den Kunden anzeigt und die Wahl gibt zu löschen
     private void openDeleteDialog(Customer customer) {
+	    if (!canDelete) {
+		    Notification.show("Sie haben keine Berechtigung, Kunden zu löschen.")
+				    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+		    return;
+	    }
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");
 

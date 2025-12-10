@@ -3,6 +3,7 @@ package bimobile.views;
 import bimobile.controller.EmployeeController;
 import bimobile.dao.FacilityDAO;
 import bimobile.model.Employee;
+import bimobile.security.AuthorizationUtils;
 import bimobile.model.Facility;
 import bimobile.model.RoleType;
 import bimobile.service.FacilityService;
@@ -10,6 +11,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,6 +21,7 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Route(value = "employees", layout = MainLayout.class)
 @PermitAll
@@ -42,10 +45,24 @@ public class EmployeeView extends VerticalLayout {
 
     private Employee selectedEmployee;
 
+	// Final roles: MANAGEMENT, BRANCH_MANAGER, EMPLOYEE
+	private final boolean isManagement = AuthorizationUtils.isManagement();
+	private final boolean isBranchManager = AuthorizationUtils.isBranchManager();
+
+	private final Facility currentFacility = AuthorizationUtils.getCurrentUserFacility();
+
     public EmployeeView(EmployeeController controller,
                         FacilityService facilityService) {
         this.controller = controller;
         this.facilityService = facilityService;
+
+	    // Employees haben keinen Zugriff
+	    if (!isManagement && !isBranchManager) {
+		    removeAll();
+		    Span info = new Span("Sie haben keine Berechtigung für diesen Bereich.");
+		    add(info);
+		    return;
+	    }
 
         add("Employee Management");
 
@@ -61,20 +78,30 @@ public class EmployeeView extends VerticalLayout {
         grid.addColumn(Employee::getBirthday).setHeader("Birthday");
         grid.addColumn(Employee::getEmail).setHeader("Email");
         grid.addColumn(Employee::getPhoneNumber).setHeader("Phone");
-        grid.addColumn(e -> e.getRole() != null ? e.getRole().name() : "-")
-                .setHeader("Role");
+	    grid.addColumn(e -> e.getRole() != null ? e.getRole().name() : "-").setHeader("Role");
 
-        grid.addColumn(e -> {
-            Facility f = e.getFacility();
-            return f != null ? f.getAddress() : "-";
-        }).setHeader("Facility");
+	    grid.addColumn(e -> e.getFacility() != null ? e.getFacility().getAddress() : "-")
+			    .setHeader("Facility");
 
         grid.addColumn(e -> e.isActive() ? "Active" : "Inactive")
                 .setHeader("Status");
 
         grid.asSingleSelect().addValueChangeListener(event -> {
-            selectedEmployee = event.getValue();
-            populateForm(selectedEmployee);
+	        Employee employee = event.getValue();
+
+	        // Branch Manager darf NUR Mitarbeiter aus eigener Filiale bearbeiten
+	        if (employee != null && isBranchManager) {
+		        if (employee.getFacility() != null &&
+				        !employee.getFacility().getId().equals(currentFacility.getId())) {
+
+			        Notification.show("Sie können nur Mitarbeiter aus Ihrem eigenen Standort bearbeiten.");
+			        grid.deselectAll();
+			        return;
+		        }
+	        }
+
+	        selectedEmployee = employee;
+	        populateForm(employee);
         });
     }
 
@@ -82,70 +109,42 @@ public class EmployeeView extends VerticalLayout {
         Button saveButton = new Button("Save", e -> saveEmployee());
         Button deactivateButton = new Button("Deactivate", e -> deactivateSelected());
 
-        HorizontalLayout buttons = new HorizontalLayout(saveButton, deactivateButton);
+	    // Branch Manager darf Facility NICHT ändern
+	    if (isBranchManager) {
+		    facility.setEnabled(false);
+	    }
 
-        FormLayout form = new FormLayout();
-        form.add(name, lastname, birthday, email, phone, loginName, password, role, facility);
+	    FormLayout form = new FormLayout(
+			    name, lastname, birthday, email, phone,
+			    loginName, password, role, facility
+	    );
 
-        return new HorizontalLayout(form, buttons);
+	    return new HorizontalLayout(form, new HorizontalLayout(saveButton, deactivateButton));
     }
 
     private void configureForm() {
         role.setItems(RoleType.values());
 
         List<Facility> facilities = facilityService.getAllFacilities();
-        facility.setItems(facilities);
-        facility.setItemLabelGenerator(Facility::getAddress);
 
-        name.setRequired(true);
-        lastname.setRequired(true);
-        loginName.setRequired(true);
-        password.setRequired(true);
+	    if (isBranchManager) {
+		    facility.setItems(currentFacility);
+	    } else {
+		    facility.setItems(facilities);
+	    }
+	    facility.setItemLabelGenerator(Facility::getAddress);
     }
+	private void refreshGrid() {
+		List<Employee> employees = controller.getAllEmployees();
+		if (isBranchManager) {
+			employees = employees.stream()
+					.filter(e -> e.getFacility() != null &&
+							e.getFacility().getId().equals(currentFacility.getId()))
+					.collect(Collectors.toList());
+		}
 
-    private boolean validateForm() {
-        if (name.getValue() == null || name.getValue().trim().isEmpty()) {
-            Notification.show("Name is required");
-            return false;
-        }
-
-        if (lastname.getValue() == null || lastname.getValue().trim().isEmpty()) {
-            Notification.show("Lastname is required");
-            return false;
-        }
-
-        if (loginName.getValue() == null || loginName.getValue().trim().isEmpty()) {
-            Notification.show("Login name is required");
-            return false;
-        }
-
-        if (password.getValue() == null || password.getValue().trim().isEmpty()) {
-            Notification.show("Password is required");
-            return false;
-        }
-
-        String emailValue = email.getValue();
-        if (emailValue != null && !emailValue.trim().isEmpty() && !emailValue.contains("@")) {
-            Notification.show("Email is not valid");
-            return false;
-        }
-
-        if (role.getValue() == null) {
-            Notification.show("Role is required");
-            return false;
-        }
-
-        if (role.getValue() == RoleType.BRANCH_MANAGER && facility.getValue() == null) {
-            Notification.show("Branch manager must be assigned to a facility");
-            return false;
-        }
-
-        return true;
-    }
-
-    private void refreshGrid() {
-        grid.setItems(controller.getAllEmployees());
-    }
+		grid.setItems(employees);
+	}
 
     private void populateForm(Employee employee) {
         if (employee == null) {
@@ -167,13 +166,16 @@ public class EmployeeView extends VerticalLayout {
         email.setValue(employee.getEmail());
         phone.setValue(employee.getPhoneNumber());
         loginName.setValue(employee.getLoginName());
+		password.clear();
         password.setValue(employee.getPasswordHash());
         role.setValue(employee.getRole());
         facility.setValue(employee.getFacility());
     }
 
     private void saveEmployee() {
-        if (!validateForm()) {
+	    // Branch Manager darf nur eigenes Facility setzen
+	    if (isBranchManager && facility.getValue() != currentFacility) {
+		    Notification.show("Manager dürfen Mitarbeiter nur dem eigenen Standort zuordnen.");
             return;
         }
 
@@ -201,6 +203,9 @@ public class EmployeeView extends VerticalLayout {
                 selectedEmployee.setEmail(email.getValue());
                 selectedEmployee.setPhoneNumber(phone.getValue());
                 selectedEmployee.setLoginName(loginName.getValue());
+	            if (!password.isEmpty()) {
+		            selectedEmployee.setPasswordHash(password.getValue());
+	            }
                 selectedEmployee.setPasswordHash(password.getValue());
                 selectedEmployee.setRole(role.getValue());
                 selectedEmployee.setFacility(facility.getValue());
@@ -214,7 +219,7 @@ public class EmployeeView extends VerticalLayout {
             refreshGrid();
 
         } catch (Exception ex) {
-            Notification.show("Error: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            Notification.show("Error: " + ex.getMessage());
         }
     }
 
@@ -223,6 +228,12 @@ public class EmployeeView extends VerticalLayout {
             Notification.show("Please select an employee first.");
             return;
         }
+	    if (isBranchManager &&
+			    !selectedEmployee.getFacility().getId().equals(currentFacility.getId())) {
+
+		    Notification.show("Sie können nur Mitarbeiter aus Ihrem eigenen Standort deaktivieren.");
+		    return;
+	    }
 
         boolean success = controller.deactivateEmployee(selectedEmployee.getId());
         if (success) {
