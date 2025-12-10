@@ -38,46 +38,72 @@ public class VehicleServiceImpl implements VehicleService {
 
         Vehicle saved = vehicleRepository.save(vehicle);
 
-        // Lebenslauf: Fahrzeug angelegt
-        VehicleHistoryEntry entry = new VehicleHistoryEntry(
-                saved,
-                LocalDate.now(),
-                EventType.CREATED,
-                "Fahrzeug angelegt (Kennzeichen: " + saved.getLicensePlate() + ")"
-        );
-        historyRepository.save(entry);
+        // Anforderung 1: Kauf mit Preis und Start KM
+        String info = String.format("Fahrzeug angelegt. Start-KM: %d, Beschaffungspreis: %.2f €",
+                saved.getMileage(),
+                (saved.getAcquisitionPrice() != null ? saved.getAcquisitionPrice() : 0.0));
+
+        createHistoryEntry(saved, EventType.CREATED, info, null);
 
         return saved;
     }
 
     @Override
     public Vehicle updateVehicle(Vehicle vehicle) {
+        Vehicle existing = vehicleRepository.findById(vehicle.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Fahrzeug wurde nicht gefunden."));
+
+        // --- ANFORDERUNG 2: Wartung/HU nur bei Änderungen protokollieren ---
+
+        // Check: Hat sich das HU-Datum geändert?
+        if (hasDateChanged(existing.getNextInspectionDate(), vehicle.getNextInspectionDate())) {
+            createHistoryEntry(existing, EventType.MAINTENANCE,
+                    "HU-Termin aktualisiert auf: " + vehicle.getNextInspectionDate(), null);
+        }
+
+        // Check: Hat sich das Service-Datum geändert?
+        if (hasDateChanged(existing.getNextServiceDate(), vehicle.getNextServiceDate())) {
+            createHistoryEntry(existing, EventType.MAINTENANCE,
+                    "Service-Termin aktualisiert auf: " + vehicle.getNextServiceDate(), null);
+        }
+
+        // Check: Wurde Wartungsmodus aktiviert/deaktiviert?
+        if (existing.isMaintenanceActive() != vehicle.isMaintenanceActive()) {
+            String status = vehicle.isMaintenanceActive() ? "aktiviert" : "beendet";
+            createHistoryEntry(existing, EventType.MAINTENANCE,
+                    "Wartungsstatus wurde " + status, null);
+        }
+
         if (vehicle.getId() == null) {
             throw new IllegalArgumentException("Fahrzeug-ID fehlt für die Aktualisierung.");
         }
 
-        Vehicle existing = vehicleRepository.findById(vehicle.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Fahrzeug wurde nicht gefunden."));
 
         // Basisdaten übertragen
         existing.setLicensePlate(vehicle.getLicensePlate());
         existing.setBrand(vehicle.getBrand());
         existing.setModel(vehicle.getModel());
-        existing.setPriceCategory(vehicle.getPriceCategory());
+        existing.setPriceClass(vehicle.getPriceClass());
         existing.setMileage(vehicle.getMileage());
+
+        // HU / Inspektion / Wartung
         existing.setNextServiceDate(vehicle.getNextServiceDate());
         existing.setMaintenanceActive(vehicle.isMaintenanceActive());
+        existing.setNextInspectionDate(vehicle.getNextInspectionDate());
+
+        // Beschaffungspreis & Antriebsart:
+        existing.setAcquisitionPrice(vehicle.getAcquisitionPrice());
+        existing.setFuelType(vehicle.getFuelType());
+
+        // Ausstattung:
+        existing.setSmokingAllowed(vehicle.isSmokingAllowed());
+        existing.setHasNavigationSystem(vehicle.isHasNavigationSystem());
+        existing.setHasAirCondition(vehicle.isHasAirCondition());
+        existing.setHasWinterTires(vehicle.isHasWinterTires());
+
 
         Vehicle saved = vehicleRepository.save(existing);
 
-        // Optionaler Lebenslauf-Eintrag
-        VehicleHistoryEntry entry = new VehicleHistoryEntry(
-                saved,
-                LocalDate.now(),
-                EventType.UPDATED,
-                "Fahrzeugdaten aktualisiert."
-        );
-        historyRepository.save(entry);
 
         return saved;
     }
@@ -107,22 +133,10 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setStatus(newStatus);
         Vehicle saved = vehicleRepository.save(vehicle);
 
-        // Lebenslauf-Eintrag
-        String description = "Status geändert von " +
-                (oldStatus != null ? oldStatus.getDisplayName() : "unbekannt") +
-                " zu " + newStatus.getDisplayName();
+        String desc = "Status: " + oldStatus + " -> " + newStatus;
+        if (reason != null && !reason.isBlank()) desc += " (" + reason + ")";
 
-        if (reason != null && !reason.isBlank()) {
-            description += " (Begründung: " + reason + ")";
-        }
-
-        VehicleHistoryEntry entry = new VehicleHistoryEntry(
-                saved,
-                LocalDate.now(),
-                EventType.STATUS_CHANGED,
-                description
-        );
-        historyRepository.save(entry);
+        createHistoryEntry(saved, EventType.STATUS_CHANGED, desc, null);
 
         return saved;
     }
@@ -134,6 +148,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public Vehicle save(Vehicle vehicle) {
+        updateVehicleStatusBasedOnCondition(vehicle);
         return vehicleRepository.save(vehicle);
     }
 
@@ -142,4 +157,61 @@ public class VehicleServiceImpl implements VehicleService {
         return vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Fahrzeug wurde nicht gefunden."));
     }
+
+    // --- ANFORDERUNG 5: Verkauf mit Preis und KM ---
+    @Override
+    public Vehicle sellVehicle(Long vehicleId, double salePrice, int finalMileage, String buyerName) {
+        Vehicle vehicle = findById(vehicleId);
+
+        // Status ändern
+        vehicle.setStatus(VehicleStatus.SOLD);
+        vehicle.setMileage(finalMileage);
+
+        Vehicle saved = vehicleRepository.save(vehicle);
+
+        String info = "Fahrzeug verkauft an: " + buyerName + ". End-KM: " + finalMileage;
+        createHistoryEntry(saved, EventType.SOLD, info, salePrice);
+
+        return saved;
+    }
+
+    private void createHistoryEntry(Vehicle v, EventType type, String desc, Double salePrice) {
+        VehicleHistoryEntry entry = new VehicleHistoryEntry(v, LocalDate.now(), type, desc);
+        if (salePrice != null) entry.setSalePrice(salePrice);
+        historyRepository.save(entry);
+    }
+    private boolean hasDateChanged(LocalDate d1, LocalDate d2) {
+        if (d1 == null && d2 == null) return false;
+        if (d1 == null || d2 == null) return true;
+        return !d1.equals(d2);
+    }
+
+    @Override
+    public List<VehicleHistoryEntry> getHistoryForVehicle(Long vehicleId) {
+        Vehicle vehicle = findById(vehicleId); // Prüft, ob Fahrzeug existiert
+        return historyRepository.findByVehicleOrderByDateDesc(vehicle);
+    }
+
+    private void updateVehicleStatusBasedOnCondition(Vehicle vehicle) {
+        LocalDate today = LocalDate.now();
+
+        // Prüfung: Ist Wartung angekreuzt ODER HU abgelaufen ODER Service abgelaufen?
+        boolean needsMaintenance = vehicle.isMaintenanceActive() ||
+                (vehicle.getNextInspectionDate() != null && vehicle.getNextInspectionDate().isBefore(today)) ||
+                (vehicle.getNextServiceDate() != null && vehicle.getNextServiceDate().isBefore(today));
+
+        if (needsMaintenance) {
+            // Wenn einer der Fälle zutrifft -> Status auf WARTUNG setzen
+            vehicle.setStatus(VehicleStatus.IN_MAINTENANCE);
+        } else {
+            // Logik: Nur auf AVAILABLE setzen, wenn es vorher IN_MAINTENANCE war.
+            // Wir wollen ja nicht versehentlich ein 'RENTED' Auto auf 'AVAILABLE' setzen,
+            // nur weil die HU noch gut ist.
+            if (vehicle.getStatus() == VehicleStatus.IN_MAINTENANCE) {
+                vehicle.setStatus(VehicleStatus.AVAILABLE);
+            }
+        }
+    }
+
+
 }
