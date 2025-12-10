@@ -2,7 +2,10 @@ package bimobile.model;
 
 import bimobile.dao.VehicleRepository;
 import bimobile.service.VehicleService;
+import bimobile.enums.FuelType;
+
 import jakarta.persistence.*;
+
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -31,8 +34,6 @@ public class Vehicle  {
 
     private int mileage;
 
-
-
     private double dailyRate;
 
     private LocalDate purchaseDate;
@@ -46,7 +47,23 @@ public class Vehicle  {
 
     private boolean maintenanceActive;
 
-    private boolean available;
+
+    // AB HIER NEU HINZUGEFÜGT:
+
+    private Double acquisitionPrice;
+
+    private FuelType fuelType;
+
+    private boolean smokingAllowed;
+
+    private boolean hasNavigationSystem;
+
+    private boolean hasAirCondition;
+
+    private boolean hasWinterTires;
+
+
+
 
     // Ein Fahrzeug kann mehrere Wartungstermine haben
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -187,13 +204,6 @@ public class Vehicle  {
         return nextInspectionDate != null && !nextInspectionDate.isAfter(LocalDate.now());
     }
 
-    public boolean isAvailable() {
-        return available;
-    }
-
-    public void setAvailable(boolean available) {
-        this.available = available;
-    }
 
     public boolean isMaintenanceActive() {
         return maintenanceActive;
@@ -205,6 +215,60 @@ public class Vehicle  {
 
     public List<VehicleHistoryEntry> getHistoryEntries() {
         return historyEntries;
+    }
+
+    // AB HIER NEU:
+
+    public FuelType getFuelType() {
+        return fuelType;
+    }
+
+    public void setFuelType(FuelType fuelType) {
+        this.fuelType = fuelType;
+    }
+
+    public Double getAcquisitionPrice() {
+        return acquisitionPrice;
+    }
+
+    public void setAcquisitionPrice(Double acquisitionPrice) {
+        this.acquisitionPrice = acquisitionPrice;
+    }
+
+    public boolean isSmokingAllowed() {
+        return smokingAllowed;
+    }
+
+    public void setSmokingAllowed(boolean smokingAllowed) {
+        this.smokingAllowed = smokingAllowed;
+    }
+
+    public boolean isHasNavigationSystem() {
+        return hasNavigationSystem;
+    }
+
+    public void setHasNavigationSystem(boolean hasNavigationSystem) {
+        this.hasNavigationSystem = hasNavigationSystem;
+    }
+
+    public boolean isHasAirCondition() {
+        return hasAirCondition;
+    }
+
+    public void setHasAirCondition(boolean hasAirCondition) {
+        this.hasAirCondition = hasAirCondition;
+    }
+
+    public boolean isHasWinterTires() {
+        return hasWinterTires;
+    }
+
+    public void setHasWinterTires(boolean hasWinterTires) {
+        this.hasWinterTires = hasWinterTires;
+    }
+
+    public boolean isAvailable() {
+        return status == VehicleStatus.AVAILABLE;
     }
 }
 

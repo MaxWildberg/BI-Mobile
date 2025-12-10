@@ -57,7 +57,7 @@ public class StandortAnlegenView extends VerticalLayout {
         double dailyRate = 1;
         double totalPrice = 2;
         Rental rental = new Rental (customer, vehicle, facility, startDate, endDate, dailyRate, totalPrice, COMPLETED);
-        invoiceService.createInvoiceForRental(rental);
+        invoiceService.createInvoiceForRental(rental, 0, 0);
         buildUI();
     }
 

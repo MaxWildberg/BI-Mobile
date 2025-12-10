@@ -3,6 +3,7 @@ package bimobile.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
+
 /**
  * Entity für einen Eintrag im Fahrzeuglebenslauf.
  * Dokumentiert Ereignisse (Anlage, Statusänderung, Wartung, Verkauf etc.).

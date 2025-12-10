@@ -3,6 +3,7 @@ package bimobile.service;
 import bimobile.dao.VehicleRepository;
 import bimobile.model.Customer;
 import bimobile.model.Vehicle;
+import bimobile.model.VehicleHistoryEntry;
 import bimobile.model.VehicleStatus;
 import jakarta.persistence.EntityManager;
 
@@ -24,4 +25,8 @@ public interface VehicleService {
     Vehicle save (Vehicle vehicle);
 
     Vehicle findById(Long id);
+
+    Vehicle sellVehicle(Long vehicleId, double salePrice, int finalMileage, String buyerName);
+
+    List<VehicleHistoryEntry> getHistoryForVehicle(Long vehicleId);
 }

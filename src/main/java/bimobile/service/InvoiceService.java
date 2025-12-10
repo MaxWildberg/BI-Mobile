@@ -44,12 +44,17 @@ public class InvoiceService {
      * @return invoice
      */
     @Transactional
-    public Invoice createInvoiceForRental(Rental rental) {
+    public Invoice createInvoiceForRental(Rental rental, int kmStart, int kmEnd) {
 
         Rental loaded = rentalRepository.findByIdWithAllAttributes(rental.getId());
         Invoice invoice = new Invoice();
         invoice.setRental(loaded);
         invoice.setInvoiceDate(LocalDateTime.now());
+
+        // NEU AB HIER:
+        invoice.setKilometersBefore(kmStart);
+        invoice.setKilometersAfter(kmEnd);
+        //
 
         double netto = loaded.getDailyRate() *
                 (loaded.getStartDate().until(loaded.getEndDate()).getDays());
@@ -78,17 +83,5 @@ public class InvoiceService {
         return invoice;
     }
 
-
-    /**
-     * Kreiert Rental-Daten für die createInvocieForRental-Methode
-     *
-     * @param rentalId übergebene Rental, die gerade abgeschlossen wurde
-     */
-    @Transactional
-    public void confirmCarReturn(Long rentalId) {
-        Rental rental = rentalRepository.findById(rentalId).orElseThrow();
-        rentalRepository.save(rental);
-        createInvoiceForRental(rental);
-    }
 
 }

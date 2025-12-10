@@ -1,11 +1,8 @@
 package bimobile.service;
 
-import bimobile.model.Customer;
-import bimobile.model.Facility;
-import bimobile.model.Rental;
+import bimobile.dao.VehicleHistoryRepository;
+import bimobile.model.*;
 import bimobile.enums.RentalStatus;
-import bimobile.model.Vehicle;
-import bimobile.model.VehicleStatus;
 import bimobile.dao.RentalRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +36,8 @@ public class RentalService {
     private final RentalRepository rentalRepository;
     private final VehicleService vehicleService;
     private final InvoiceService invoiceService;
+    // NEU:
+    private final VehicleHistoryRepository historyRepository;
 
     /**
      * Konstruktor-Injektion der Abhängigkeiten.
@@ -48,10 +47,12 @@ public class RentalService {
      */
     public RentalService(RentalRepository rentalRepository,
                          VehicleService vehicleService,
-                         InvoiceService invoiceService) {
+                         InvoiceService invoiceService, VehicleHistoryRepository historyRepository) {
         this.rentalRepository = rentalRepository;
         this.vehicleService = vehicleService;
         this.invoiceService = invoiceService;
+        this.historyRepository = historyRepository;
+
     }
 
     /**
@@ -91,6 +92,12 @@ public class RentalService {
             throw new IllegalArgumentException("Start- und Enddatum dürfen nicht null sein.");
         }
 
+        // NEU: Check auf Fahrzeugstatus
+        // verhindert, dass verkaufte oder ausgemusterte Autos verliehen werden
+        if(vehicle.getStatus() == VehicleStatus.SOLD || vehicle.getStatus() == VehicleStatus.SCRAPPED){
+            throw new IllegalStateException("Das Fahrzeug ist verkauft oder ausgemustert und kann nicht mehr verliehen werden.");
+        }
+
         // Datumslogik
         if (endDate.isBefore(startDate)) {
             throw new IllegalArgumentException("Enddatum muss am selben Tag oder nach dem Startdatum liegen.");
@@ -100,8 +107,18 @@ public class RentalService {
         if (days <= 0) {
             days = 1; // Mindestdauer: 1 Tag
         }
-        //Logik, ob das Fahrzeug verfügbar ist.
-        validateVehicleAvailability(vehicle, startDate, endDate);
+
+        // Logik für Wartung / HU sperrt Ausleihe
+        if (isVehicleBlockedByMaintenance(vehicle, startDate, endDate)) {
+            throw new IllegalStateException(
+                    "Fahrzeug ist aufgrund fälliger oder in den Zeitraum fallender HU/Wartung gesperrt."
+            );
+        }
+
+        // Prüfung, ob bereits eine aktive Ausleihe für dieses Fahrzeug existiert
+        if (rentalRepository.existsByVehicleAndStatusIn(vehicle, ACTIVE_STATES)) {
+            throw new IllegalStateException("Fahrzeug ist bereits verliehen.");
+        }
 
         // Preisberechnung
         double dailyRate = vehicle.getDailyRate();
@@ -120,8 +137,18 @@ public class RentalService {
         );
 
         // Fahrzeug auf nicht verfügbar setzen
-        vehicle.setAvailable(false);
+        vehicle.setStatus(VehicleStatus.RENTED);
         vehicleService.save(vehicle);
+
+        // --- ANFORDERUNG 3: History Eintrag für Ausleihe ---
+        VehicleHistoryEntry entry = new VehicleHistoryEntry(
+                vehicle,
+                LocalDate.now(),
+                EventType.RENTAL_START,
+                "Ausleihe gestartet. Kunde: " + customer.getFullName() +
+                        " (" + startDate + " bis " + endDate + ")"
+        );
+        historyRepository.save(entry);
 
         //Speichern der Ausleihe
         return rentalRepository.save(rental);
@@ -147,7 +174,6 @@ public class RentalService {
         rental.setStatus(RentalStatus.COMPLETED);
 
         Vehicle vehicle = rental.getVehicle();
-        vehicle.setAvailable(true);
         vehicleService.save(vehicle);
 
         return rentalRepository.save(rental);
@@ -200,49 +226,16 @@ public class RentalService {
         return false;
     }
 
-    /**
-     * Prüft, ob das ausgewählte Fahrzeug für den gewünschten Zeitraum ausgeliehen werden darf.
-     *
-     * Validiert Status, Wartungsfenster, parallele Ausleihen und Verfügbarkeitsflag.
-     * Liefert für jede Verletzung eine sprechende Fehlermeldung.
-     *
-     * @param vehicle    Fahrzeug, das geprüft werden soll
-     * @param rentalStart Startdatum der geplanten Ausleihe
-     * @param rentalEnd   Enddatum der geplanten Ausleihe
-     */
-    private void validateVehicleAvailability(Vehicle vehicle, LocalDate rentalStart, LocalDate rentalEnd) {
-        if (vehicle.getStatus() == VehicleStatus.SCRAPPED || vehicle.getStatus() == VehicleStatus.SOLD) {
-            throw new IllegalStateException("Das Fahrzeug ist aus dem Bestand entfernt und kann nicht ausgeliehen werden.");
-        }
-
-        if (vehicle.getStatus() == VehicleStatus.IN_MAINTENANCE || vehicle.isMaintenanceActive()) {
-            throw new IllegalStateException("Das Fahrzeug befindet sich aktuell in der Wartung und steht nicht zur Verfügung.");
-        }
-
-        if (vehicle.getStatus() == VehicleStatus.RENTED) {
-            throw new IllegalStateException("Das Fahrzeug ist momentan nicht verfügbar oder bereits vermietet.");
-        }
-
-        if (!vehicle.isAvailable() && vehicle.getStatus() != VehicleStatus.AVAILABLE) {
-            throw new IllegalStateException("Das Fahrzeug ist aktuell blockiert und nicht als verfügbar markiert.");
-        }
-
-        if (isVehicleBlockedByMaintenance(vehicle, rentalStart, rentalEnd)) {
-            throw new IllegalStateException(
-                    "Fahrzeug ist aufgrund fälliger oder in den Zeitraum fallender HU/Wartung gesperrt."
-            );
-        }
-
-        if (rentalRepository.existsByVehicleAndStatusIn(vehicle, ACTIVE_STATES)) {
-            throw new IllegalStateException("Für dieses Fahrzeug existiert bereits eine aktive Ausleihe im System.");
-        }
-    }
-
-
     public void deleteRental(Rental rental) {
         if(rental == null || rental.getId() == null){
             throw new IllegalArgumentException("Ungültige Ausleihe.");
         }
+
+        Vehicle v = rental.getVehicle();
+        v.setStatus(VehicleStatus.AVAILABLE);
+        vehicleService.save(v);
+
+
         rentalRepository.delete(rental);
     }
 
@@ -254,13 +247,42 @@ public class RentalService {
      * @return Rentalobjekt für welches die Rechnung erstellt wird
      * @author Leonard Köchling
      */
-    public Rental returnRental(Rental rental) {
+    public Rental returnRental(Rental rental, int endMileage) {
         Rental loaded = rentalRepository.findByIdWithAllAttributes(rental.getId());
+
+        // Fahrzeug wieder freigeben
+        Vehicle v = loaded.getVehicle();
+
+        // 1. Validierung: Neuer KM Stand darf nicht kleiner sein als der alte
+        if(endMileage < v.getMileage()){
+            throw new IllegalArgumentException("Neuer Kilometerstand darf nicht kleiner sein als der alte.");
+        }
+
+        // Alten Stand merken für die Rechnung
+        int startMileage = v.getMileage();
+
         loaded.setStatus(RentalStatus.COMPLETED);
+
+        // 2. Fahrzeug Status & Kilometer updaten
+        v.setStatus(VehicleStatus.AVAILABLE);
+        v.setMileage(endMileage); // NEU Kilometer setzen
+        vehicleService.save(v);
+
+        // 3. History Eintrag mit Kilometer Info
+                VehicleHistoryEntry entry = new VehicleHistoryEntry(
+                v,
+                LocalDate.now(),
+                EventType.RENTAL_END,
+                        "Fahrzeug zurückgegeben. Kunde: " + loaded.getCustomer().getFullName() +
+                                ". Gefahren: " + (endMileage - startMileage) + " km. (Stand: " + endMileage + ")"
+        );
+        historyRepository.save(entry);
+        // ---------------------------------------------------
+
         Rental saved = rentalRepository.save(loaded);
 
         // Rechnung erzeugen
-        invoiceService.createInvoiceForRental(saved);
+        invoiceService.createInvoiceForRental(saved, startMileage, endMileage );
 
         return saved;
     }
@@ -282,15 +304,15 @@ public class RentalService {
         if (rental == null){
             throw new IllegalArgumentException("Ausleihe darf nicht null sein.");
         }
-        if (start == null || end == null) {
-            throw new IllegalArgumentException("Bitte Start- und Enddatum auswählen.");
-        }
-        if (!end.isAfter(start)) {
-            throw new IllegalArgumentException("Das Enddatum muss nach dem Startdatum liegen.");
+        if(rental == null || end == null || !end.isAfter(start)) {
+            throw new IllegalArgumentException("Bitte gültigen Zeitraum angeben.");
         }
 
-        if (isVehicleBlockedByMaintenance(rental.getVehicle(), start, end)) {
-            throw new IllegalStateException("Die geplante Änderung kollidiert mit Wartung oder HU des Fahrzeugs.");
+        // AB HIER NEU:
+
+        // 1. Wartung prüfen:
+        if(isVehicleBlockedByMaintenance(rental.getVehicle(), start, end)){
+            throw new IllegalStateException("Änderung nicht möglich: Fahrzeug hat in diesem Zeitraum HU oder Wartung.");
         }
 
         rental.setFacility(facility);

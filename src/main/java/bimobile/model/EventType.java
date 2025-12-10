@@ -6,6 +6,8 @@ public enum EventType {
     UPDATED,          // Fahrzeugdaten geändert
     STATUS_CHANGED,   // Status geändert
     MAINTENANCE,      // Wartung / HU
+    RENTAL_START,     // Ausleihe starten
+    RENTAL_END,       // Ausleihe beenden
     SOLD,             // Verkauf
     SCRAPPED          // Ausmusterung
 
