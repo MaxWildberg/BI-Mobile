@@ -83,6 +83,10 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
            """)
 	Rental findByIdWithAllAttributes(@Param("id") Long id);
 
+    /**
+     * @return Gibt eine Liste aller Ausleihen passend zum Kunden und Fahrzeug zurück
+     * @author Max Wildberg
+     */
     @Query("SELECT r FROM Rental r " +
             "JOIN FETCH r.customer c " +
             "JOIN FETCH r.vehicle v")
