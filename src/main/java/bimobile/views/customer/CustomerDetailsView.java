@@ -97,9 +97,6 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         left.setSpacing(true);
         left.setAlignItems(Alignment.CENTER);
 
-        Button export = new Button("Exportieren", new Icon(VaadinIcon.DOWNLOAD));
-        export.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-
         Button edit = new Button("Bearbeiten", new Icon(VaadinIcon.EDIT));
         edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         edit.addClickListener(event -> {
@@ -113,7 +110,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
             openDeleteDialog(this.customer);
         });
 
-        HorizontalLayout actions = new HorizontalLayout(export, edit, delete);
+        HorizontalLayout actions = new HorizontalLayout(edit, delete);
         HorizontalLayout right = new HorizontalLayout(actions);
         right.setSpacing(true);
         right.getStyle().set("margin-left", "auto");
@@ -189,39 +186,40 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
      * @return gefülltes Flexlayout an CustomerDetailsView
      */
     private FlexLayout createOverviewContent() {
-        // Hauptlayout
-        FlexLayout twoCols = new FlexLayout();
-        twoCols.setWidthFull();
-        twoCols.setFlexWrap(FlexLayout.FlexWrap.WRAP);
-        twoCols.setJustifyContentMode(FlexLayout.JustifyContentMode.START);
-        twoCols.setAlignItems(FlexLayout.Alignment.START);
-        twoCols.getStyle().set("gap", "var(--lumo-space-m)"); // Abstand zwischen den Spalten
+        // Hauptlayout: flexibler Container für alle Cards
+        FlexLayout container = new FlexLayout();
+        container.setWidthFull();
+        container.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        container.setJustifyContentMode(FlexLayout.JustifyContentMode.START);
+        container.setAlignItems(FlexLayout.Alignment.START);
+        container.getStyle().set("gap", "clamp(8px, 1vw, 16px)"); // dynamischer Abstand
 
-        // Linke Spalte
-        VerticalLayout leftCol = new VerticalLayout();
-        leftCol.setPadding(false);
-        leftCol.setSpacing(false);
-        leftCol.setWidth("65%"); // Maximalbreite
-        leftCol.add(createCard("Persönliche Daten", createPersonalData()));
-        leftCol.add(createCard("Adresse", createAddressData()));
-        leftCol.add(createCard("Kontakt", createContactData()));
+        // Persönliche Daten
+        container.add(createCard("Persönliche Daten", createPersonalData()));
+
+        // Adresse
+        container.add(createCard("Adresse", createAddressData()));
+
+        // Kontakt
+        container.add(createCard("Kontakt", createContactData()));
+
+        // Gewerbeanschrift (nur bei BusinessCustomer)
         if (customer instanceof BusinessCustomer) {
-            leftCol.add(createCard("Gewerbeanschrift", createEmployerData()));
+            container.add(createCard("Gewerbeanschrift", createEmployerData()));
         }
 
-        // Rechte Spalte
-        VerticalLayout rightCol = new VerticalLayout();
-        rightCol.setPadding(false);
-        rightCol.setSpacing(false);
-        rightCol.setWidth("30%"); // Maximalbreite
-        rightCol.add(createCard("Statistiken", createStatisticsData()));
-        rightCol.add(createCard("Dokumente", createDocumentsSummary()));
+        // Statistiken
+        container.add(createCard("Statistiken", createStatisticsData()));
 
-        // Spalten hinzufügen
-        twoCols.add(leftCol, rightCol);
+        // Dokumente
+        container.add(createCard("Dokumente", createDocumentsSummary()));
 
-        return twoCols;
+        // Optional: Breite der Cards festlegen oder max-width für responsive Layout
+        container.getChildren().forEach(c -> c.getElement().getStyle().set("flex", "1 1 300px"));
+
+        return container;
     }
+
 
     /**
      * Hilfsmethode zur mehrfach wiederkehrenden erzeugung einer Overview Card

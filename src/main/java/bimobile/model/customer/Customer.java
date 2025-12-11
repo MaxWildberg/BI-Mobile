@@ -49,9 +49,8 @@ public abstract class Customer {
         this.identification = identification;
     }
 
-    // ----------------------
+
     // Getter & Setter
-    // ----------------------
 
     public Long getCustomerId() {
         return customerId;
@@ -85,9 +84,15 @@ public abstract class Customer {
         this.identification = identification;
     }
 
-    // ----------------------
-    // Helper methods
-    // ----------------------
+    public List<Rental> getRents(){
+        return rents;
+    }
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+
+
+    // Helfermethoden
 
     @Transient
     public int getAge() {
@@ -112,13 +117,5 @@ public abstract class Customer {
         return rents.stream()
                 .mapToDouble(Rental::calculateTotalPrice)
                 .sum();
-    }
-
-    public List<Rental> getRents(){
-        return rents;
-    }
-
-    public List<Invoice> getInvoices() {
-        return invoices;
     }
 }
