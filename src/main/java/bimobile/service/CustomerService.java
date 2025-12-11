@@ -1,6 +1,6 @@
 package bimobile.service;
 
-import bimobile.dao.CompanyRepositoriy;
+import bimobile.dao.CompanyRepository;
 import bimobile.dao.RentalRepository;
 import bimobile.dao.CustomerRepository;
 
@@ -18,11 +18,11 @@ import java.util.Optional;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
-    private final CompanyRepositoriy companyRepositoriy;
+    private final CompanyRepository companyRepositoriy;
     private final RentalRepository rentalRepository;
 
     public CustomerService(CustomerRepository customerRepository,
-                           CompanyRepositoriy companyRepositoriy,
+                           CompanyRepository companyRepositoriy,
                            RentalRepository rentalRepository) {
         this.customerRepository = customerRepository;
         this.companyRepositoriy = companyRepositoriy;
