@@ -129,7 +129,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     private VerticalLayout createTabs() {
         Tab uebersicht = new Tab("Übersicht");
         Tab historie = new Tab("Miethistorie");
-        Tab dokumente = new Tab("Dokumente");
+        Tab dokumente = new Tab("Rechnungen");
         tabs = new Tabs(uebersicht, historie, dokumente);
 
         content = new Div();
@@ -223,7 +223,6 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return twoCols;
     }
 
-
     /**
      * Hilfsmethode zur mehrfach wiederkehrenden erzeugung einer Overview Card
      * @param title Titel der Karte
@@ -314,7 +313,10 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return d;
     }
 
-    // Füllt ein Grid mit Mieten des Kunden
+    /**
+     * Bei Auswahl des Tabs "Miethistorie" werden alle Mieten des Kunden in einem Grid gesammelt.
+     * @return Div befüllt mit Grid zur Übersicht der Mieten des Kunden
+     */
     private Div createHistoryContent() {
 
         Div container = new Div();
@@ -363,7 +365,8 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     }
 
     /**
-     * Bei Auswahl des Tabs "Rechnungen" wird ein Grid mit allen Rechnungen zugehörig zum Kunden gefüllt
+     * Bei Auswahl des Tabs "Rechnungen" werden entsprechende Rechnungen des Kunden in einer "Karte" dargestellt.
+     * Jede Karte bietet die Funktion zum Download der Rechnung.
      * @return Div mit Grid als Übersicht aller Rechnungen
      */
     private Div createInvoiceContent() {
@@ -407,21 +410,6 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return container;
     }
 
-
-    /*private void downloadInvoice(Invoice invoice) {
-        StreamResource resource = new StreamResource(
-                "rechnung-" + invoice.getId() + ".pdf",
-                () -> new ByteArrayInputStream(pdfGeneratorService.generateInvoicePdf(invoice))
-        );
-
-        Anchor downloadLink = new Anchor(resource, "");
-        downloadLink.getElement().setAttribute("download", true);
-
-        downloadLink.clickInClient(); // Startet sofort den Download
-    }*/
-
-
-
     /**
      * Liest die Initiale des Kunden aus zur Darstellung in der Detail Übersicht
      * @param first Initial des Vornamens
@@ -457,7 +445,10 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         add(createTabs());
     }
 
-    // Öffnet ein Dialog welches dem Nutzer die Wahl gibt, ob der Kunde gelöscht werden soll
+    /**
+     * Öffnet ein Dialog welches dem Nutzer die Wahl gibt, ob der Kunde gelöscht werden soll
+     * @param customer Kunde der gelöscht werden soll
+     */
     private void openDeleteDialog(Customer customer) {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");

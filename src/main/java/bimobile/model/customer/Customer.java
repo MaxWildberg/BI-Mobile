@@ -104,10 +104,13 @@ public abstract class Customer {
         return rents.size();
     }
 
+    /**
+     * @return totalRevenue gibt Summe aus allen Preisen aller Mieten zurück
+     */
     @Transient
     public double getTotalRevenue() {
         return rents.stream()
-                .mapToDouble(Rental::getTotalPrice)
+                .mapToDouble(Rental::calculateTotalPrice)
                 .sum();
     }
 
