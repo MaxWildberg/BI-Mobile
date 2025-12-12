@@ -12,15 +12,20 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Repository für den Zugriff auf Ausleihen (Ausleihe).
+ * Repository für alle Datenbankzugriffe rund um {@link bimobile.model.Rental} Entitäten.
+ * <p>
+ * Das Interface nutzt Spring Data JPA und bündelt typische Ausleihfragen an einer Stelle,
+ * damit Service- und View-Layer ausschließlich mit klar benannten Methoden arbeiten können.
+ * Aus studentischer Sicht ist das Repository somit die zentrale "Datenquelle" für alle
+ * Ausleihvorgänge.
+ * <ul>
+ *     <li>Standardisierte CRUD-Operationen werden vom {@link JpaRepository} geerbt.</li>
+ *     <li>Spezialabfragen stellen sicher, dass ein Fahrzeug immer nur einmal gleichzeitig
+ *         aktiv verliehen werden kann.</li>
+ *     <li>Fetch-Join-Queries liefern vollständige Objekte für UI-Ansichten, um Lazy Loading
+ *         zu vermeiden.</li>
+ * </ul>
  *
- * Stellt die CRUD-Operationen bereit und es wird eine Methode zur Prüfung,
- * ob ein Fahrzeug schon ausgeliehen ist mit der Hilfe des Status eines Fahrzeugs.
- *
- * Es wird eine Methode bereitgestellt die das Auflisten aller Ausleihen zu einem Fahrzeug
- * ermöglicht.
- *
- * Das Interface nutzt Spring Data JPA.
  * @author Ben Berlin
  */
 @Repository

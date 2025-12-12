@@ -7,9 +7,19 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+/**
+ * Service-Layer für das Änderungsprotokoll von Ausleihen.
+ * <p>
+ * Die Klasse kapselt alle Zugriffe auf das {@link RentalChangeLogRepository} und erläutert
+ * damit klar, wann und warum Log-Einträge geschrieben oder getrennt werden. Aus
+ * didaktischer Sicht zeigt der Service, wie Audit-Informationen losgelöst von der eigentlichen
+ * Fachlogik verwaltet werden können.
+ *
+ * @author Ben Berlin
+ */
 @Service
 public class RentalChangeLogService {
+
 
     private final RentalChangeLogRepository repository;
 
@@ -22,6 +32,11 @@ public class RentalChangeLogService {
      *
      * Die Rental-ID wird im Konstruktor von RentalChangeLog zusätzlich
      * als Snapshot (rentalIdSnapshot) gespeichert.
+     *
+
+     * Dieser Helfer wird überall dort aufgerufen, wo aus Sicht der Anwendung ein
+     * fachlich bedeutsamer Zustand erreicht wird (z.B. Erstellen, Aktualisieren, Löschen).
+     * So bleibt die Historie reproduzierbar, auch wenn andere Tabellen Einträge verlieren.
      */
     public RentalChangeLog logChange(Rental rental,
                                      String userIdentifier,
@@ -35,6 +50,8 @@ public class RentalChangeLogService {
     /**
      * Liefert alle Protokolleinträge in absteigender Reihenfolge
      * nach Zeitstempel.
+     * Praktisch für die UI, weil die jüngsten Aktionen direkt oben stehen und
+     * Studierende den zeitlichen Ablauf intuitiv nachvollziehen können.
      */
     public List<RentalChangeLog> getAllEntries() {
         return repository.findAllByOrderByTimestampDesc();

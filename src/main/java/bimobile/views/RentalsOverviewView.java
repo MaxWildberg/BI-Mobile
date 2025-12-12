@@ -49,12 +49,17 @@ import java.util.stream.Collectors;
 
 /**
  * Übersicht aller Ausleihen im BI-Mobile System.
- *
+ * <p>
+ * Diese View fungiert als Schaltzentrale für die Mietvorgänge: hier werden Datensätze
+ * angelegt, angepasst, zurückgegeben oder gelöscht. Um den Lerncharakter zu unterstreichen,
+ * sind alle Komponenten klar strukturiert und nachvollziehbar kommentiert.
  * Funktionen:
- *  - Anlegen, Bearbeiten, Löschen von Ausleihen
- *  - Zurückgeben inkl. Rechnungs-Erstellung (über RentalService)
- *  - Suchfeld für Kunde (Vor-/Nachname, Vollname) und Kennzeichen
- *  - Persistentes Änderungsprotokoll über RentalChangeLog
+ *  <ul>
+ *      <li>Anlegen, Bearbeiten, Löschen von Ausleihen</li>
+ *      <li>Zurückgeben inkl. Rechnungs-Erstellung (über RentalService)</li>
+ *      <li>Suchfeld für Kunde (Vor-/Nachname, Vollname) und Kennzeichen</li>
+ *      <li>Persistentes Änderungsprotokoll über RentalChangeLog</li>
+ *  </ul>
  *
  * @author Ben Berlin
  */

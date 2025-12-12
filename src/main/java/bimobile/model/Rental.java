@@ -8,15 +8,19 @@ import java.time.LocalDateTime;
 
 /**
  * Entity-Klasse für eine Fahrzeugausleihe (Rental) im BI-Mobile-System.
- *
+ * <p>
  * Eine Ausleihe verknüpft:
- * - einen Kunden (Customer),
- * - ein Fahrzeug (Vehicle),
- * - optional einen Standort (Facility)
+ * <ul>
+ *     <li>einen Kunden (Customer),</li>
+ *     <li>ein Fahrzeug (Vehicle),</li>
+ *     <li>optional einen Standort (Facility)</li>
+ * </ul>
  * für einen bestimmten Zeitraum.
- *
- * Zusätzlich werden der Tagespreis, der Gesamtpreis sowie der Status der Ausleihe
- * gespeichert, damit die Geschäftshistorie nachvollziehbar bleibt.
+ * <p>
+ * Die Klasse speichert zusätzlich Tagespreis, Gesamtpreis sowie den Status der Ausleihe,
+ * damit die Geschäftshistorie vollständig nachvollzogen werden kann. Für Studierende ist sie
+ * das Kernobjekt, an dem Lifecycle-Übergänge (erstellt → aktiv → abgeschlossen) beobachtet
+ * werden können.
  *
  * @author Ben
  */

@@ -6,6 +6,14 @@ import java.time.LocalDateTime;
 
 /**
  * Persistentes Änderungsprotokoll für Ausleihvorgänge.
+ * <p>
+ * Jeder Eintrag hält fest, welcher Benutzer welche Aktion zu welchem Zeitpunkt ausgelöst hat.
+ * Zusätzlich wird eine textuelle Beschreibung gespeichert, damit spätere Analysen auch ohne
+ * Domänenwissen nachvollziehbar bleiben. Im Gegensatz zu einem flüchtigen Audit loggen wir
+ * hier bewusst die {@code rentalIdSnapshot}, damit ein Zusammenhang selbst nach dem Löschen
+ * einer Ausleihe sichtbar bleibt.
+ *
+ * @author Ben Berlin
  */
 @Entity
 @Table(name = "rental_change_log")
@@ -35,7 +43,7 @@ public class RentalChangeLog {
     private LocalDateTime timestamp = LocalDateTime.now();
 
     protected RentalChangeLog() {
-        // for JPA
+	    // für JPA. Der geschützte Konstruktor verhindert versehentliche Nutzung im Code.
     }
 
     public RentalChangeLog(Rental rental, String userIdentifier, String action, String details) {
@@ -45,7 +53,8 @@ public class RentalChangeLog {
         this.details = details;
         this.timestamp = LocalDateTime.now();
 
-        //Snapshot der Rental-ID speichern, falls rental beim Löschen NULL wird
+	    // Snapshot der Rental-ID speichern, falls rental beim Löschen NULL wird.
+	    // So bleibt auch nach Cascade-Löschungen eine referenzierbare Spur erhalten.
         if(rental != null){
             this.rentalIdSnapshot = rental.getId();
         }

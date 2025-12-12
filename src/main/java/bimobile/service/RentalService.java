@@ -19,14 +19,21 @@ import java.util.Set;
 
 /**
  * Geschäftslogik zur Verwaltung des Ausleihprozesses.
+ *<p>
+ *  Der Service bündelt alle Schritte, die notwendig sind, um einen vollständigen
+ *  Lebenszyklus einer Ausleihe abzubilden. Dadurch lässt sich in Übungen und Projekten
+ *  nachvollziehen, welche Prüfungen in welcher Reihenfolge greifen müssen, bevor ein
+ *  Fahrzeug tatsächlich ausgeliehen oder zurückgegeben wird.
  *
- * Verantwortlichkeiten:
- * - Validierung von Ausleihanfragen (Datenvollständigkeit, Datumslogik)
- * - Prüfung der Fahrzeugverfügbarkeit
- * - Berechnung des Gesamtpreises
- * - Anlegen und Speichern von Ausleihen
- * - Aktualisierung des Fahrzeugstatus
- * - Abschluss von Ausleihen
+ *  Verantwortlichkeiten:
+ *  <ul>
+ *      <li>Validierung von Ausleihanfragen (Datenvollständigkeit, Datumslogik)</li>
+ *      <li>Prüfung der Fahrzeugverfügbarkeit</li>
+ *      <li>Berechnung des Gesamtpreises</li>
+ *      <li>Anlegen und Speichern von Ausleihen</li>
+ *      <li>Aktualisierung des Fahrzeugstatus</li>
+ *      <li>Abschluss von Ausleihen</li>
+ *  </ul>
  * @author Ben Berlin
  */
 @Service
@@ -97,8 +104,9 @@ public class RentalService {
 		}
 
 		// Datumslogik
-		// NEU: Check auf Fahrzeugstatus
+		// Check auf Fahrzeugstatus
 		// verhindert, dass verkaufte oder ausgemusterte Autos verliehen werden
+		// (wichtige Regel für die tägliche Disposition)
 		if (vehicle.getStatus() == VehicleStatus.SOLD || vehicle.getStatus() == VehicleStatus.SCRAPPED) {
 			throw new IllegalStateException(
 					"Das Fahrzeug ist verkauft oder ausgemustert und kann nicht mehr verliehen werden.");
@@ -113,7 +121,8 @@ public class RentalService {
 		if (days <= 0) {
 			days = 1; // Mindestdauer: 1 Tag
 		}
-		//Logik, ob das Fahrzeug verfügbar ist.
+		// Logik, ob das Fahrzeug verfügbar ist.
+		// Der Aufruf kapselt alle Wartungs- und Statusprüfungen, damit createRental übersichtlich bleibt
 		validateVehicleAvailability(vehicle, startDate, endDate);
 
 		// Preisberechnung
@@ -131,7 +140,9 @@ public class RentalService {
 				RentalStatus.ACTIVE
 		);
 
-		// Fahrzeug auf nicht verfügbar setzen
+		// Fahrzeug auf nicht verfügbar setzen.
+		// Der Statuswechsel ist bewusst vor dem Speichern platziert,
+		// damit Concurrent Requests das Fahrzeug nicht doppelt blocken können.
 		vehicle.setStatus(VehicleStatus.RENTED);
 		vehicleService.save(vehicle);
 
