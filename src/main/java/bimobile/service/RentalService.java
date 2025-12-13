@@ -367,6 +367,10 @@ public class RentalService {
 			throw new IllegalArgumentException("Ausleihe konnte nicht gefunden werden.");
 		}
 
+		//HU Prüfung nachträglich setzen mit abgeänderter Prüfmethode
+		Vehicle vehicle = managedRental.getVehicle();
+        validateVehicleAvailabilityWhileRented(vehicle, start, end);
+
 		managedRental.setFacility(facility);
 		managedRental.setStartDate(start);
 		managedRental.setEndDate(end);
@@ -397,4 +401,32 @@ public class RentalService {
 	public List<Rental> findAllWithCustomerVehicleFacility() {
 		return rentalRepository.findAllWithCustomerVehicleFacility();
 	}
+
+	private void validateVehicleAvailabilityWhileRented(Vehicle vehicle, LocalDate rentalStart, LocalDate rentalEnd) {
+        if (vehicle.getStatus() == VehicleStatus.SCRAPPED || vehicle.getStatus() == VehicleStatus.SOLD) {
+            throw new IllegalStateException("Das Fahrzeug ist aus dem Bestand entfernt und kann nicht ausgeliehen werden.");
+        }
+
+        if (vehicle.getStatus() == VehicleStatus.IN_MAINTENANCE || vehicle.isMaintenanceActive()) {
+            throw new IllegalStateException("Das Fahrzeug befindet sich aktuell in der Wartung und steht nicht zur Verfügung.");
+        }
+
+        if (isVehicleBlockedByMaintenance(vehicle, rentalStart, rentalEnd)) {
+            throw new IllegalStateException(
+                    "Fahrzeug ist aufgrund fälliger oder in den Zeitraum fallender HU/Wartung gesperrt."
+            );
+        }
+
+        if (vehicle.getStatus() == VehicleStatus.RENTED) {
+            throw new IllegalStateException("Das Fahrzeug ist momentan nicht verfügbar oder bereits vermietet.");
+        }
+
+        if (!vehicle.isAvailable() && vehicle.getStatus() != VehicleStatus.AVAILABLE) {
+            throw new IllegalStateException("Das Fahrzeug ist aktuell blockiert und nicht als verfügbar markiert.");
+        }
+
+        if (rentalRepository.existsByVehicleAndStatusIn(vehicle, ACTIVE_STATES)) {
+            throw new IllegalStateException("Für dieses Fahrzeug existiert bereits eine aktive Ausleihe im System.");
+        }
+    }
 }
