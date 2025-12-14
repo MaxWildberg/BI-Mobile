@@ -36,6 +36,9 @@ public class VehicleServiceImpl implements VehicleService {
 			vehicle.setStatus(VehicleStatus.AVAILABLE);
 		}
 
+        updateStatusBasedOnCondition(vehicle);
+
+
 		Vehicle saved = vehicleRepository.save(vehicle);
 
 		// Anforderung 1: Kauf mit Preis und Start KM
@@ -100,6 +103,8 @@ public class VehicleServiceImpl implements VehicleService {
 		existing.setHasNavigationSystem(vehicle.isHasNavigationSystem());
 		existing.setHasAirCondition(vehicle.isHasAirCondition());
 		existing.setHasWinterTires(vehicle.isHasWinterTires());
+
+        updateStatusBasedOnCondition(existing);
 
 
 		Vehicle saved = vehicleRepository.save(existing);
@@ -190,6 +195,27 @@ public class VehicleServiceImpl implements VehicleService {
 		Vehicle vehicle = findById(vehicleId); // Prüft, ob Fahrzeug existiert
 		return historyRepository.findByVehicleOrderByDateDesc(vehicle);
 	}
+
+    private void updateStatusBasedOnCondition(Vehicle vehicle) {
+        LocalDate today = LocalDate.now();
+
+        boolean needsMaintenance = vehicle.isMaintenanceActive() ||
+                (vehicle.getNextInspectionDate() != null && vehicle.getNextInspectionDate().isBefore(today)) ||
+                (vehicle.getNextServiceDate() != null && vehicle.getNextServiceDate().isBefore(today));
+
+        // Sicherheits-Check: Status NICHT ändern, wenn Auto vermietet/verkauft/ausgemustert ist
+        if (vehicle.getStatus() != VehicleStatus.RENTED &&
+                vehicle.getStatus() != VehicleStatus.SOLD &&
+                vehicle.getStatus() != VehicleStatus.SCRAPPED) {
+
+            if (needsMaintenance) {
+                vehicle.setStatus(VehicleStatus.IN_MAINTENANCE);
+            } else if (vehicle.getStatus() == VehicleStatus.IN_MAINTENANCE) {
+                // Nur freigeben, wenn es vorher "In Wartung" war
+                vehicle.setStatus(VehicleStatus.AVAILABLE);
+            }
+        }
+    }
 
 
 }
