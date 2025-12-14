@@ -37,6 +37,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Fahrzeugverwaltung:
@@ -49,7 +51,8 @@ import jakarta.annotation.security.PermitAll;
 @PermitAll
 public class VehicleView extends VerticalLayout {
 
-	private final VehicleService vehicleService;
+    private static final Logger log = LoggerFactory.getLogger(VehicleView.class);
+    private final VehicleService vehicleService;
 
 	// Tabelle
 	private final Grid<Vehicle> grid = new Grid<>(Vehicle.class, false);
@@ -577,7 +580,7 @@ public class VehicleView extends VerticalLayout {
 		}
 
 		Dialog dialog = new Dialog();
-		dialog.setWidth("800px");
+		dialog.setWidth("70%");
 		dialog.setModal(true);
 		dialog.setDraggable(true);
 
@@ -601,7 +604,9 @@ public class VehicleView extends VerticalLayout {
 
 		historyGrid.addColumn(VehicleHistoryEntry::getDescription)
 				.setHeader("Beschreibung")
-				.setFlexGrow(1);
+				.setFlexGrow(1)
+                .setAutoWidth(true);
+
 
 		historyGrid.addColumn(entry ->
 						entry.getSalePrice() != null ? entry.getSalePrice() + " €" : "")
