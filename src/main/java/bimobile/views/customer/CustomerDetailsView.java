@@ -61,11 +61,6 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         setPadding(true);
         setSpacing(true);
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-
-        if (customer == null) {
-            add(new H2("Kunde konnte nicht gefunden werden"));
-            return;
-        }
     }
 
     /**
@@ -107,7 +102,8 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         Button delete = new Button("Löschen", new Icon(VaadinIcon.TRASH));
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         delete.addClickListener(e -> {
-            openDeleteDialog(this.customer);
+            DeleteDialog deleteDialog = new DeleteDialog(customer, customerService, this::navigateBackToOverview);
+            deleteDialog.open();
         });
 
         HorizontalLayout actions = new HorizontalLayout(edit, delete);
@@ -248,7 +244,6 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return card;
     }
 
-
     /**
      * Methoden zur Füllung der Karten
      * Füllen ein Div mit Informationen über den spezifischen Kunden
@@ -266,7 +261,6 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
 
         return d;
     }
-
 
     /**
      * Helfermethoden, Übergabe von Daten an Methode createOverviewContent
@@ -437,7 +431,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
 
         if (tabs.getSelectedTab().getLabel().equals("Übersicht")) {
             content.add(createOverviewContent());
-        } if (tabs.getSelectedTab().getLabel().equals("Miethistore")) {
+        } if (tabs.getSelectedTab().getLabel().equals("Miethistorie")) {
             content.add(createHistoryContent());
         } else {
             content.add(createInvoiceContent());
@@ -448,40 +442,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         add(createTabs());
     }
 
-    /**
-     * Öffnet ein Dialog welches dem Nutzer die Wahl gibt, ob der Kunde gelöscht werden soll
-     * @param customer Kunde der gelöscht werden soll
-     */
-    private void openDeleteDialog(Customer customer) {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("400px");
-
-        H3 dialogTitle = new H3("Kunde löschen?");
-        VerticalLayout content = new VerticalLayout();
-        content.add("Möchten Sie den Kunden wirklich löschen?");
-        content.add(customer.getPersonalData().getFirstname() + " " + customer.getPersonalData().getLastname() + ", Kunden-ID: " + customer.getCustomerId());
-
-        Button confirmButton = new Button("Löschen", e -> {
-            try {
-                customerService.deleteCustomer(customer.getCustomerId());
-                Notification.show("Kunde wurde erfolgreich gelöscht");
-            } catch (IllegalArgumentException ex) {
-                Notification.show("Fehler: " + ex.getMessage());
-            }
-
-            dialog.close();
-            UI.getCurrent().navigate("kunden");
-        });
-        confirmButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
-
-        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-
-        HorizontalLayout actions = new HorizontalLayout(confirmButton, cancelButton);
-        actions.setJustifyContentMode(JustifyContentMode.END);
-
-        VerticalLayout dialogLayout = new VerticalLayout(dialogTitle, content, actions);
-        dialog.add(dialogLayout);
-        dialog.open();
+    private void navigateBackToOverview() {
+        getUI().ifPresent(ui -> ui.navigate(CustomerOverview.class));
     }
 }

@@ -53,13 +53,13 @@ public class CustomerServiceRegisterCustomerTest {
         Customer customer = createValidCustomer();
         customer.setContactInfo(null);
 
-        assertThrows(
-                InvalidCustomerDataException.class,
+        assertThrows(InvalidCustomerDataException.class,
                 () -> customerService.registerCustomer(customer)
         );
 
         verify(customerRepository, never()).save(any());
     }
+
 
 
     // JUNIT-TEST 1: Gültiger Kunde → Registrierung erfolgreich
@@ -90,7 +90,9 @@ public class CustomerServiceRegisterCustomerTest {
         verify(customerRepository, never()).save(any());
     }
 
-
+    /**
+     * @return Valides Kundenobjekt an alle Testmethoden
+     */
     private Customer createValidCustomer() {
         Customer customer = new PrivateCustomer();
 

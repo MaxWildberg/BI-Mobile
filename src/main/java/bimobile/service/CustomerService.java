@@ -4,6 +4,7 @@ import bimobile.dao.CompanyRepository;
 import bimobile.dao.RentalRepository;
 import bimobile.dao.CustomerRepository;
 
+import bimobile.enums.RentalStatus;
 import bimobile.model.Rental;
 import bimobile.model.customer.*;
 
@@ -81,11 +82,18 @@ public class CustomerService {
     }
 
     public void deleteCustomer(Long id) {
-
+        Customer customer = getCustomerByID(id);
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("Ungültige Kunden-ID");
         }
 
+        boolean hasOpenRents = customer.getRents().stream()
+                .filter(r -> r.getStatus() == RentalStatus.ACTIVE)
+                .count() > 0;
+
+        if (hasOpenRents) {
+            throw new IllegalStateException("Kunde kann nicht gelöscht werden: offene Mieten vorhanden");
+        }
         Customer existing = customerRepository.findById(id)
                 .orElseThrow(() -> new CustomerNotFoundException(id));
 
@@ -96,9 +104,17 @@ public class CustomerService {
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("Ungültige Kunden-ID");
         }
-        return customerRepository.findById(id)
-                .orElseThrow(() -> new CustomerNotFoundException(id));
+
+        Optional<Customer> optionalCustomer =
+                customerRepository.findByIdWithRentsAndVehicle(id);
+
+        if (!optionalCustomer.isPresent()) {
+            throw new CustomerNotFoundException(id);
+        }
+
+        return optionalCustomer.get();
     }
+
 
     public Optional<Customer> getCustomerByEmail(String email) {
         if (email == null) return Optional.empty();
