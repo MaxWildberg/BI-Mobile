@@ -1,4 +1,4 @@
-package bimobile.sevice;
+package bimobile.service;
 
 import bimobile.dao.RentalRepository;
 import bimobile.dao.VehicleHistoryRepository;
@@ -10,9 +10,6 @@ import bimobile.model.VehicleHistoryEntry;
 import bimobile.model.VehicleStatus;
 import bimobile.model.customer.Customer;
 
-import bimobile.service.InvoiceService;
-import bimobile.service.RentalService;
-import bimobile.service.VehicleService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

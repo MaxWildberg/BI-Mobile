@@ -12,6 +12,8 @@ import bimobile.model.customer.BusinessCustomer;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +38,12 @@ public class CustomerService {
         if (customerRepository.existsByContactInfo_Email(email)) {
             throw new DuplicateCustomerException(email);
         }
+        if (customer.getPersonalData().getBirthday() != null) {
+            int age = Period.between(customer.getPersonalData().getBirthday(), LocalDate.now()).getYears();
+            if (age < 18) {
+                throw new CustomerTooYoungException("Kunde muss mindestens 18 Jahre alt sein. Aktuelles Alter: " + age);
+            }
+        }
 
         return customerRepository.save(customer);
     }
@@ -47,6 +55,12 @@ public class CustomerService {
         }
         if (updated.getCustomerId() == null) {
             throw new InvalidCustomerDataException("Kunde-ID fehlt für update");
+        }
+        if (updated.getPersonalData().getBirthday() != null) {
+            int age = Period.between(updated.getPersonalData().getBirthday(), LocalDate.now()).getYears();
+            if (age < 18) {
+                throw new CustomerTooYoungException("Kunde muss mindestens 18 Jahre alt sein. Aktuelles Alter: " + age);
+            }
         }
         Customer existing = customerRepository.findById(updated.getCustomerId())
                 .orElseThrow(() -> new CustomerNotFoundException(updated.getCustomerId()));

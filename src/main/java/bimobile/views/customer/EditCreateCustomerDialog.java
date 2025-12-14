@@ -3,6 +3,7 @@ package bimobile.views.customer;
 import bimobile.model.customer.*;
 import bimobile.service.CustomerNotFoundException;
 import bimobile.service.CustomerService;
+import bimobile.service.CustomerTooYoungException;
 import bimobile.service.DuplicateCustomerException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -258,10 +259,8 @@ public class EditCreateCustomerDialog extends Dialog {
                 onSaveSuccess.run(); // refresh grid
                 close();
 
-            } catch (CustomerNotFoundException ex) {
-                Notification.show("Fehler: Der Kunde konnte nicht gefunden werden.");
-            } catch (DuplicateCustomerException ex) {
-                Notification.show("Fehler: Ein Kunde mit diesen Daten existieren bereits.");
+            } catch (CustomerNotFoundException | DuplicateCustomerException | CustomerTooYoungException ex) {
+                Notification.show(ex.getMessage(), 3000, Notification.Position.MIDDLE);
             } catch (Exception ex) {
                 Notification.show("Unerwarteter Fehler: " + ex.getMessage());
             }
