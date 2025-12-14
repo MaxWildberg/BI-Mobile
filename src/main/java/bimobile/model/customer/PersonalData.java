@@ -1,14 +1,23 @@
 package bimobile.model.customer;
 
 import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
 @Embeddable
 public class PersonalData {
+
+    @NotNull(message = "Titel darf nicht null sein")
     private String title;
+
+    @NotNull(message = "Vorname darf nicht null sein")
     private String firstname;
+
+    @NotNull(message = "Nachname darf nicht null sein")
     private String lastname;
+
+    @NotNull(message = "Geburtsdatum darf nicht null sein")
     private LocalDate birthday;
 
     public PersonalData(){}

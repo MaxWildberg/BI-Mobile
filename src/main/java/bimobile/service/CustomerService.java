@@ -9,6 +9,7 @@ import bimobile.model.customer.Company;
 import bimobile.model.customer.Customer;
 import bimobile.model.customer.BusinessCustomer;
 
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,25 +30,24 @@ public class CustomerService {
         this.rentalRepository = rentalRepository;
     }
 
-    public Customer registerCustomer(Customer customer) {
+    public Customer registerCustomer(@Valid Customer customer) {
 
-        String email = customer.getContactInfo() != null
-                ? customer.getContactInfo().getMail()
-                : null;
-
-        if (email != null && customerRepository.existsByContactInfo_Email(email)) {
+        String email = customer.getContactInfo().getMail();
+        if (customerRepository.existsByContactInfo_Email(email)) {
             throw new DuplicateCustomerException(email);
         }
 
         return customerRepository.save(customer);
     }
 
-    public void updateCustomer(Customer updated) {
 
-        if (updated.getCustomerId() == null) {
-            throw new IllegalArgumentException("Kunde-ID fehlt für das Update");
+    public void updateCustomer(@Valid Customer updated) {
+        if (updated == null) {
+            throw new InvalidCustomerDataException("Zu aktualisierender Kunde darf nicht null sein");
         }
-
+        if (updated.getCustomerId() == null) {
+            throw new InvalidCustomerDataException("Kunde-ID fehlt für update");
+        }
         Customer existing = customerRepository.findById(updated.getCustomerId())
                 .orElseThrow(() -> new CustomerNotFoundException(updated.getCustomerId()));
 
@@ -60,6 +60,9 @@ public class CustomerService {
         // Wenn BusinessCustomer → Firma aktualisieren
         if (updated instanceof BusinessCustomer ub &&
                 existing instanceof BusinessCustomer eb) {
+            if (ub.getCompany() == null) {
+                throw new InvalidCustomerDataException("Firma fehlt für update");
+            }
             eb.setCompany(ub.getCompany());
         }
 
@@ -100,7 +103,11 @@ public class CustomerService {
     }
 
     public Company getCompanyById(Long companyId) {
-        return companyRepositoriy.getCompanyByCompanyId(companyId);
+        if (companyId == null || companyId <= 0) {
+            throw new IllegalArgumentException("Ungültige Firmen-ID");
+        }
+        return companyRepositoriy.findById(companyId)
+                .orElseThrow(() -> new CompanyNotFoundException(companyId));
     }
 
     public boolean existsByContactInfoEmail(String email) {
@@ -112,7 +119,7 @@ public class CustomerService {
         String name = company.getName();
 
         if (name != null && companyRepositoriy.existsByName(name)) {
-            throw new CompanyNameExistsException(name);
+            throw new DuplicateCompanyException(name);
         }
 
         return companyRepositoriy.save(company);

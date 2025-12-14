@@ -2,10 +2,15 @@ package bimobile.model.customer;
 
 
 import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.NotNull;
 
 @Embeddable
 public class Identification {
+
+    @NotNull(message = "Führerscheinnummer darf nicht null sein")
     private String driverslicense;
+
+    @NotNull(message = "Ausweisnummer darf nicht null sein")
     private String idcard;
 
     public Identification() {}

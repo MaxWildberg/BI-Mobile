@@ -267,6 +267,11 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return d;
     }
 
+
+    /**
+     * Helfermethoden, Übergabe von Daten an Methode createOverviewContent
+     * @return Div gefüllt mit entsprechenden Daten des Kunden
+     */
     private Div createAddressData() {
         Div d = new Div();
         d.add(new Paragraph(customer.getAddress().getStreet()));

@@ -17,6 +17,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -91,19 +92,22 @@ public class CustomerOverview extends VerticalLayout {
             typeSelectionDialog.open();
         });
 
-        HorizontalLayout header = new HorizontalLayout(title, searchField, registerCustomerButton);
+        HorizontalLayout header = new HorizontalLayout();
+        HorizontalLayout right = new HorizontalLayout(searchField, registerCustomerButton);
         header.setWidthFull();
-        header.setAlignItems(Alignment.CENTER);
-        header.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        header.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        header.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+        header.add(title, right);
 
         grid.addColumn(c -> c.getCustomerId())
                 .setHeader("ID")
-                .setAutoWidth(true);
+                .setAutoWidth(true)
+                .setFlexGrow(0);
         grid.addColumn(c -> {
             if (c instanceof PrivateCustomer) return "Privatkunde";
             if (c instanceof BusinessCustomer) return "Firmenkunde";
             return "Unbekannt";
-        }).setHeader("Typ").setAutoWidth(true);
+        }).setHeader("Typ").setAutoWidth(true).setFlexGrow(0);
         grid.addColumn(c -> c.getFullName())
                 .setHeader("Name")
                 .setAutoWidth(true);
@@ -114,7 +118,7 @@ public class CustomerOverview extends VerticalLayout {
                 .setHeader("Telefonnummer")
                 .setAutoWidth(true);
 
-        // fügt buttons "Bearbeiten" und "Löschen" zum Grid hinzu
+        // fügt buttons "Bearbeiten", "Löschen" und "Details" zum Grid hinzu
         grid.addComponentColumn(customer -> {
             Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
             bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
@@ -136,7 +140,11 @@ public class CustomerOverview extends VerticalLayout {
             return new HorizontalLayout(bearbeiten, loeschen, details);
         }).setHeader("Aktionen");
 
+
         updateGrid();
+
+        grid.setWidthFull();
+        grid.getStyle().set("overflow-x", "auto");
 
         grid.addThemeVariants(GridVariant.LUMO_COLUMN_BORDERS);
         add(header, grid);

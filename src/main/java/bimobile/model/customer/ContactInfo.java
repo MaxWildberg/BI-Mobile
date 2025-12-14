@@ -1,10 +1,15 @@
 package bimobile.model.customer;
 
 import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.NotNull;
 
 @Embeddable
 public class ContactInfo {
+
+    @NotNull(message = "E-Mail darf nicht null sein")
     private String email;
+
+    @NotNull(message = "Telefonnummer darf nicht null sein")
     private String telephone;
 
     public ContactInfo(){}
