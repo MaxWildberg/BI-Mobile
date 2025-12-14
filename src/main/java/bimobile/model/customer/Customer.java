@@ -3,6 +3,9 @@ package bimobile.model.customer;
 import bimobile.model.Invoice;
 import bimobile.model.Rental;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
@@ -18,15 +21,23 @@ public abstract class Customer {
     private Long customerId;
 
     @Embedded
+    @Valid
+    @NotNull
     private PersonalData personalData;
 
     @Embedded
+    @Valid
+    @NotNull
     private Address address;
 
     @Embedded
+    @Valid
+    @NotNull
     private ContactInfo contactInfo;
 
     @Embedded
+    @Valid
+    @NotNull
     private Identification identification;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.EAGER)

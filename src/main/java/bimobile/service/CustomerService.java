@@ -5,9 +5,7 @@ import bimobile.dao.RentalRepository;
 import bimobile.dao.CustomerRepository;
 
 import bimobile.model.Rental;
-import bimobile.model.customer.Company;
-import bimobile.model.customer.Customer;
-import bimobile.model.customer.BusinessCustomer;
+import bimobile.model.customer.*;
 
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
@@ -33,16 +31,11 @@ public class CustomerService {
     }
 
     public Customer registerCustomer(@Valid Customer customer) {
+        validateCustomer(customer);
 
         String email = customer.getContactInfo().getMail();
         if (customerRepository.existsByContactInfo_Email(email)) {
             throw new DuplicateCustomerException(email);
-        }
-        if (customer.getPersonalData().getBirthday() != null) {
-            int age = Period.between(customer.getPersonalData().getBirthday(), LocalDate.now()).getYears();
-            if (age < 18) {
-                throw new CustomerTooYoungException("Kunde muss mindestens 18 Jahre alt sein. Aktuelles Alter: " + age);
-            }
         }
 
         return customerRepository.save(customer);
@@ -142,4 +135,58 @@ public class CustomerService {
     public List<Rental> findAllWithCustomerAndVehicle() {
         return rentalRepository.findAllWithCustomerAndVehicle();
     }
+
+    /**
+     *
+     * @param customer Kunde der vor speichern validiert werden soll
+     */
+    private void validateCustomer(Customer customer) {
+        if (customer == null) {
+            throw new InvalidCustomerDataException("Customer unvollständig");
+        }
+
+        // --- PersonalData ---
+        PersonalData pd = customer.getPersonalData();
+        if (pd == null
+                || pd.getFirstname() == null
+                || pd.getLastname() == null
+                || pd.getBirthday() == null) {
+            throw new InvalidCustomerDataException("PersonalData unvollständig");
+        }
+
+        // Alter prüfen
+        int age = Period.between(pd.getBirthday(), LocalDate.now()).getYears();
+        if (age < 18) {
+            throw new CustomerTooYoungException("Kunde muss mindestens 18 Jahre alt sein. Aktuelles Alter: " + age);
+        }
+
+        // --- Address ---
+        Address address = customer.getAddress();
+        if (address == null
+                || address.getStreet() == null
+                || address.getCity() == null) {
+            throw new InvalidCustomerDataException("Address unvollständig");
+        }
+
+        // --- ContactInfo ---
+        ContactInfo ci = customer.getContactInfo();
+        if (ci == null
+                || ci.getMail() == null) {
+            throw new InvalidCustomerDataException("ContactInfo unvollständig");
+        }
+
+        // --- Identification ---
+        Identification id = customer.getIdentification();
+        if (id == null
+                || id.getIdcard() == null) {
+            throw new InvalidCustomerDataException("Identification unvollständig");
+        }
+
+        // Optional: BusinessCustomer-Check
+        if (customer instanceof BusinessCustomer bc && bc.getCompany() == null) {
+            throw new InvalidCustomerDataException("Company unvollständig");
+        }
+    }
+
+
 }

@@ -1,8 +1,7 @@
 package bimobile.service;
 
 import bimobile.dao.CustomerRepository;
-import bimobile.model.customer.Customer;
-import bimobile.model.customer.ContactInfo;
+import bimobile.model.customer.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -36,10 +37,7 @@ public class CustomerServiceRegisterCustomerTest {
     // ÄQUIVALENZKLASSE 1: Kunde mit bereits vorhandener E-Mail → DuplicateCustomerException
     @Test
     void ek_duplicateEmail_throwsDuplicateCustomerException() {
-        Customer customer = mock(Customer.class);
-        ContactInfo contactInfo = mock(ContactInfo.class);
-        when(customer.getContactInfo()).thenReturn(contactInfo);
-        when(contactInfo.getMail()).thenReturn("test@mail.de");
+        Customer customer = createValidCustomer();
 
         when(customerRepository.existsByContactInfo_Email("test@mail.de")).thenReturn(true);
 
@@ -52,22 +50,22 @@ public class CustomerServiceRegisterCustomerTest {
     // ÄQUIVALENZKLASSE 2: Kunde mit null ContactInfo → InvalidCustomerDataException
     @Test
     void ek_nullContactInfo_throwsInvalidCustomerDataException() {
-        Customer customer = mock(Customer.class);
-        when(customer.getContactInfo()).thenReturn(null);
+        Customer customer = createValidCustomer();
+        customer.setContactInfo(null);
 
-        assertThrows(InvalidCustomerDataException.class,
-                () -> customerService.registerCustomer(customer));
+        assertThrows(
+                InvalidCustomerDataException.class,
+                () -> customerService.registerCustomer(customer)
+        );
 
         verify(customerRepository, never()).save(any());
     }
 
+
     // JUNIT-TEST 1: Gültiger Kunde → Registrierung erfolgreich
     @Test
     void validCustomer_registersSuccessfully() {
-        Customer customer = mock(Customer.class);
-        ContactInfo contactInfo = mock(ContactInfo.class);
-        when(customer.getContactInfo()).thenReturn(contactInfo);
-        when(contactInfo.getMail()).thenReturn("test@mail.de");
+        Customer customer = createValidCustomer();
 
         when(customerRepository.existsByContactInfo_Email("test@mail.de")).thenReturn(false);
         when(customerRepository.save(customer)).thenReturn(customer);
@@ -81,17 +79,48 @@ public class CustomerServiceRegisterCustomerTest {
     // JUNIT-TEST 2: Fehlende PersonalData → InvalidCustomerDataException
     @Test
     void missingPersonalData_throwsInvalidCustomerDataException() {
-        Customer customer = mock(Customer.class);
-        ContactInfo contactInfo = mock(ContactInfo.class);
-        when(customer.getContactInfo()).thenReturn(contactInfo);
-        when(contactInfo.getMail()).thenReturn("test@mail.de");
-        when(customer.getPersonalData()).thenReturn(null);
+        Customer customer = createValidCustomer();
+        customer.setPersonalData(null);
 
-        when(customerRepository.existsByContactInfo_Email("test@mail.de")).thenReturn(false);
-
-        assertThrows(InvalidCustomerDataException.class,
-                () -> customerService.registerCustomer(customer));
+        assertThrows(
+                InvalidCustomerDataException.class,
+                () -> customerService.registerCustomer(customer)
+        );
 
         verify(customerRepository, never()).save(any());
     }
+
+
+    private Customer createValidCustomer() {
+        Customer customer = new PrivateCustomer();
+
+        PersonalData pd = new PersonalData();
+        pd.setTitle("Herr");
+        pd.setFirstname("Max");
+        pd.setLastname("Mustermann");
+        pd.setBirthday(LocalDate.now().minusYears(25));
+
+        Address address = new Address();
+        address.setStreet("Musterstraße 1");
+        address.setCity("Berlin");
+        address.setZip("12345");
+        address.setCountry("Deutschland");
+
+        ContactInfo ci = new ContactInfo();
+        ci.setMail("test@mail.de");
+        ci.setTelephone("12345");
+
+        Identification id = new Identification();
+        id.setIdcard("ID123");
+        id.setDriverslicense("DL123");
+
+        customer.setPersonalData(pd);
+        customer.setAddress(address);
+        customer.setContactInfo(ci);
+        customer.setIdentification(id);
+
+        return customer;
+    }
+
+
 }
