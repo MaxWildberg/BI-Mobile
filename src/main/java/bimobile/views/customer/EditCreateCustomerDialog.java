@@ -121,8 +121,15 @@ public class EditCreateCustomerDialog extends Dialog {
         // --- Footer Buttons ---
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.setText(editMode ? "Speichern" : "Registrieren");
-        addCompanyButton.addClickListener(e -> {
-            AddCompanyDialog addCompanyDialog = new AddCompanyDialog(companyService, companyCombo);
+        addCompanyButton.addClickListener(addCompanyEvent -> {
+            AddCompanyDialog addCompanyDialog = new AddCompanyDialog(companyService);
+            addCompanyDialog.addDetachListener(comboEvent -> {
+                Company saved = addCompanyDialog.getSavedCompany();
+                if (saved != null) {
+                    companyCombo.setItems(companyService.getAllCompanies());
+                    companyCombo.setValue(addCompanyDialog.getSavedCompany());
+                }
+            });
             addCompanyDialog.open();
         });
         cancelButton.addClickListener(e -> close());
@@ -156,13 +163,13 @@ public class EditCreateCustomerDialog extends Dialog {
 
         binder.forField(firstName)
                 .asRequired("Vorname erforderlich")
-                .withValidator(s -> s != null && s.trim().matches("[A-Za-z]+"),
+                .withValidator(s -> s != null && s.trim().matches("[A-Za-z ]+"),
                         "Nur Buchstaben ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getFirstname, CustomerFormDTO::setFirstname);
 
         binder.forField(lastName)
                 .asRequired("Nachname erforderlich")
-                .withValidator(s -> s != null && s.trim().matches("[A-Za-z]+"),
+                .withValidator(s -> s != null && s.trim().matches("[A-Za-z ]+"),
                         "Nur Buchstaben ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getLastname, CustomerFormDTO::setLastname);
 

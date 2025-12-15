@@ -1,47 +1,57 @@
 package bimobile.views.customer;
 
-import bimobile.model.customer.Customer;
-import bimobile.service.customer.CustomerService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class DeleteDialog extends Dialog {
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-    public DeleteDialog(Customer customer, CustomerService service, Runnable onDelete) {
+public class DeleteDialog<T> extends Dialog {
 
+    public DeleteDialog(
+            T object,
+            Function<T, String> displayNameFunction,
+            Consumer<T> deleteFunction,
+            Runnable afterDelete // optional, z. B. Grid aktualisieren
+    ) {
         setWidth("auto");
-        setHeaderTitle("Kunde löschen?");
+        setHeaderTitle("Eintrag löschen?");
+
         VerticalLayout content = new VerticalLayout();
-        Span span = new Span("Möchten Sie den Kunden wirklich löschen?");
+        Span span = new Span("Möchten Sie den Eintrag wirklich löschen?");
         span.getStyle().setFontWeight("bold");
         content.add(span);
-        content.add(new Span(customer.getFullName()));
-        content.add(new Span("Kunden-ID: " + customer.getCustomerId() + ", E-Mail: " + customer.getContactInfo().getMail()));
 
+        // Anzeige des Objekts
+        content.add(new Span(displayNameFunction.apply(object)));
+
+        // Buttons
         Button confirmButton = new Button("Löschen", e -> {
             try {
-                service.deleteCustomer(customer.getCustomerId());
-                Notification.show("Kunde erfolgreich gelöscht.");
-                onDelete.run();
+                deleteFunction.accept(object); // Löschen
+                Notification.show("Eintrag erfolgreich gelöscht.");
+                if (afterDelete != null) {
+                    afterDelete.run();
+                }
                 close();
-            } catch (IllegalStateException ex) {
-                Notification.show(ex.getMessage(), 4000, Notification.Position.MIDDLE);
             } catch (Exception ex) {
                 Notification.show("Fehler: " + ex.getMessage());
             }
         });
-
         confirmButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
+
         Button cancelButton = new Button("Abbrechen", e -> close());
         cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
         HorizontalLayout actions = new HorizontalLayout(confirmButton, cancelButton);
         actions.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+
         VerticalLayout dialogLayout = new VerticalLayout(content, actions);
         add(dialogLayout);
     }

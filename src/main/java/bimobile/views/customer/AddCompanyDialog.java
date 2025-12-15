@@ -12,7 +12,10 @@ import com.vaadin.flow.data.binder.Binder;
 
 public class AddCompanyDialog extends Dialog {
 
-    public AddCompanyDialog(CompanyService service, ComboBox<Company> companyCombo) {
+    private Company savedCompany;
+    private boolean saved = false;
+
+    public AddCompanyDialog(CompanyService service) {
         setHeaderTitle("Neue Firma anlegen");
 
         TextField nameField = new TextField("Firmenname");
@@ -37,11 +40,8 @@ public class AddCompanyDialog extends Dialog {
         Button save = new Button("Speichern", e -> {
             if (binder.validate().isOk()) {
                 binder.writeBeanIfValid(newCompany);
-                Company saved = service.saveCompany(newCompany);
-
-                companyCombo.setItems(service.getAllCompanies());
-                companyCombo.setValue(saved);
-
+                this.savedCompany = service.saveCompany(newCompany);
+                saved = true;
                 close();
             }
         });
@@ -49,5 +49,13 @@ public class AddCompanyDialog extends Dialog {
         Button cancel = new Button("Abbrechen", e -> close());
         getFooter().add(cancel, save);
         add(form);
+    }
+
+    public Company getSavedCompany() {
+        return savedCompany;
+    }
+
+    public boolean wasSaved() {
+        return saved;
     }
 }

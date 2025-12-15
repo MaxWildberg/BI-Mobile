@@ -91,8 +91,15 @@ public class CustomerOverview extends VerticalLayout {
             typeSelectionDialog.open();
         });
 
+        Button companyOverview = new Button("Firmenübersicht");
+        companyOverview.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        companyOverview.addClickListener(e -> {
+            CompanyOverviewDialog companyOverviewDialog = new CompanyOverviewDialog(companyService);
+            companyOverviewDialog.open();
+        });
+
         HorizontalLayout header = new HorizontalLayout();
-        HorizontalLayout right = new HorizontalLayout(searchField, registerCustomerButton);
+        HorizontalLayout right = new HorizontalLayout(searchField, companyOverview, registerCustomerButton);
         header.setWidthFull();
         header.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         header.setDefaultVerticalComponentAlignment(Alignment.CENTER);
@@ -129,7 +136,10 @@ public class CustomerOverview extends VerticalLayout {
             Button loeschen = new Button(new Icon(VaadinIcon.TRASH));
             loeschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
             loeschen.addClickListener(e -> {
-                DeleteDialog deleteDialog = new DeleteDialog(customer, customerService, this::updateGrid);
+                DeleteDialog<Customer> deleteDialog = new DeleteDialog<>(customer, Customer::getFullName,
+                        c -> customerService.deleteCustomer(customer.getCustomerId()),
+                        this::updateGrid
+                );
                 deleteDialog.open();
             });
 

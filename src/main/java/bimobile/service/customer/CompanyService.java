@@ -1,8 +1,11 @@
 package bimobile.service.customer;
 
 import bimobile.dao.CompanyRepository;
+import bimobile.enums.RentalStatus;
 import bimobile.model.customer.Company;
+import bimobile.model.customer.Customer;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,4 +39,24 @@ public class CompanyService {
 
         return companyRepository.save(company);
     }
+
+    @Transactional
+    public void deleteCompany(Long companyId) {
+
+        if (companyId == null || companyId <= 0) {
+            throw new IllegalArgumentException("Ungültige Firmen-ID");
+        }
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new CompanyNotFoundException(companyId));
+
+        if (!company.getEmployees().isEmpty()) {
+            throw new IllegalStateException(
+                    "Firma kann nicht gelöscht werden: Es sind noch Mitarbeiter zugeordnet"
+            );
+        }
+
+        companyRepository.delete(company);
+    }
+
 }

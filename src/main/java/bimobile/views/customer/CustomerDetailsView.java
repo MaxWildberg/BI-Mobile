@@ -102,7 +102,12 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         Button delete = new Button("Löschen", new Icon(VaadinIcon.TRASH));
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         delete.addClickListener(e -> {
-            DeleteDialog deleteDialog = new DeleteDialog(customer, customerService, this::navigateBackToOverview);
+            DeleteDialog<Customer> deleteDialog = new DeleteDialog<>(
+                    customer,
+                    Customer::getFullName,
+                    c -> customerService.deleteCustomer(customer.getCustomerId()),
+                    this::navigateBackToOverview
+            );
             deleteDialog.open();
         });
 
