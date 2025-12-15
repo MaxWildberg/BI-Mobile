@@ -1,4 +1,4 @@
-package bimobile.service;
+package bimobile.service.customer;
 
 public class InvalidCustomerDataException extends RuntimeException {
     public InvalidCustomerDataException(String message) {

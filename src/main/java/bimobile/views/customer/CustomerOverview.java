@@ -2,7 +2,7 @@ package bimobile.views.customer;
 
 import bimobile.model.customer.BusinessCustomer;
 import bimobile.model.customer.PrivateCustomer;
-import bimobile.service.CustomerService;
+import bimobile.service.customer.CustomerService;
 import bimobile.model.customer.Customer;
 import bimobile.views.MainLayout;
 import com.vaadin.flow.component.UI;

@@ -1,4 +1,4 @@
-package bimobile.service;
+package bimobile.service.customer;
 
 public class DuplicateCompanyException extends RuntimeException{
     public DuplicateCompanyException(String name){

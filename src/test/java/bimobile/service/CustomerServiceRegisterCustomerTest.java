@@ -3,6 +3,9 @@ package bimobile.service;
 import bimobile.dao.CustomerRepository;
 import bimobile.model.customer.*;
 
+import bimobile.service.customer.CustomerService;
+import bimobile.service.customer.DuplicateCustomerException;
+import bimobile.service.customer.InvalidCustomerDataException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -17,7 +20,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * Äquivalenzklassentests + zugehörige JUnit-Tests
- * für die {@link bimobile.service.CustomerService#registerCustomer} Methode.
+ * für die {@link CustomerService#registerCustomer} Methode.
  * <p>
  * Die Tests dokumentieren die wichtigsten validierungsrelevanten Randfälle, sodass
  * nachvollziehbar bleibt, welche Eingaben akzeptiert oder abgelehnt werden. Sie dienen

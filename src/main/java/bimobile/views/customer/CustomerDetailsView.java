@@ -1,21 +1,18 @@
 package bimobile.views.customer;
 
 import bimobile.model.customer.Customer;
-import bimobile.service.CustomerService;
+import bimobile.service.customer.CustomerService;
 import bimobile.model.customer.BusinessCustomer;
 import bimobile.model.Invoice;
 import bimobile.model.Rental;
 import bimobile.service.PdfGeneratorService;
 import bimobile.views.MainLayout;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;

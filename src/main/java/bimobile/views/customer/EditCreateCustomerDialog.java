@@ -1,10 +1,10 @@
 package bimobile.views.customer;
 
 import bimobile.model.customer.*;
-import bimobile.service.CustomerNotFoundException;
-import bimobile.service.CustomerService;
-import bimobile.service.CustomerTooYoungException;
-import bimobile.service.DuplicateCustomerException;
+import bimobile.service.customer.CustomerNotFoundException;
+import bimobile.service.customer.CustomerService;
+import bimobile.service.customer.CustomerTooYoungException;
+import bimobile.service.customer.DuplicateCustomerException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;

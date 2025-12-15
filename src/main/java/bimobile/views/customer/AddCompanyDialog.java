@@ -1,8 +1,7 @@
 package bimobile.views.customer;
 
-import bimobile.model.customer.Address;
 import bimobile.model.customer.Company;
-import bimobile.service.CustomerService;
+import bimobile.service.customer.CustomerService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;

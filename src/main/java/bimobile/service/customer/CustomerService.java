@@ -1,4 +1,4 @@
-package bimobile.service;
+package bimobile.service.customer;
 
 import bimobile.dao.CompanyRepository;
 import bimobile.dao.RentalRepository;

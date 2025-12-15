@@ -1,4 +1,4 @@
-package bimobile.service;
+package bimobile.service.customer;
 
 public class CustomerNotFoundException extends RuntimeException {
     public CustomerNotFoundException(Long id) {
