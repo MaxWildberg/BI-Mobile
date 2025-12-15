@@ -2,6 +2,7 @@ package bimobile.views.customer;
 
 import bimobile.model.customer.BusinessCustomer;
 import bimobile.model.customer.PrivateCustomer;
+import bimobile.service.customer.CompanyService;
 import bimobile.service.customer.CustomerService;
 import bimobile.model.customer.Customer;
 import bimobile.views.MainLayout;
@@ -38,11 +39,13 @@ import java.util.stream.Collectors;
 @PermitAll
 public class CustomerOverview extends VerticalLayout {
 
-    private final CustomerService service;
+    private final CustomerService customerService;
+    private final CompanyService companyService;
     private final Grid<Customer> grid = new Grid<>();
 
-    public CustomerOverview(CustomerService service){
-        this.service = service;
+    public CustomerOverview(CustomerService customerService, CompanyService companyService){
+        this.customerService = customerService;
+        this.companyService = companyService;
 
         //Layout-Grundstruktur
         setPadding(true);
@@ -52,7 +55,7 @@ public class CustomerOverview extends VerticalLayout {
 
         H2 title = new H2("Kundenübersicht");
 
-        List<Customer> allCustomers = service.findAllCustomers();
+        List<Customer> allCustomers = customerService.findAllCustomers();
         TextField searchField = new TextField();
         searchField.setPlaceholder("Suchen...");
         searchField.setClearButtonVisible(true);
@@ -82,7 +85,7 @@ public class CustomerOverview extends VerticalLayout {
                     default -> throw new IllegalStateException("Unexpected value: " + type);
                 }
 
-                EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, false, service, this::updateGrid);
+                EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, false, customerService, companyService, this::updateGrid);
                 dialog.open();
             });
             typeSelectionDialog.open();
@@ -119,14 +122,14 @@ public class CustomerOverview extends VerticalLayout {
             Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
             bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
             bearbeiten.addClickListener(e -> {
-                EditCreateCustomerDialog editCreateCustomerDialog = new EditCreateCustomerDialog(customer, true, service, this::updateGrid);
+                EditCreateCustomerDialog editCreateCustomerDialog = new EditCreateCustomerDialog(customer, true, customerService, companyService, this::updateGrid);
                 editCreateCustomerDialog.open();
             });
 
             Button loeschen = new Button(new Icon(VaadinIcon.TRASH));
             loeschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
             loeschen.addClickListener(e -> {
-                DeleteDialog deleteDialog = new DeleteDialog(customer, service, this::updateGrid);
+                DeleteDialog deleteDialog = new DeleteDialog(customer, customerService, this::updateGrid);
                 deleteDialog.open();
             });
 
@@ -154,7 +157,7 @@ public class CustomerOverview extends VerticalLayout {
      * Aufruf nachdem mit {@link EditCreateCustomerDialog} ein Kunde erstellt oder bearbeitet wurde
      */
     private void updateGrid() {
-        List<Customer> customers = service.findAllCustomers();
+        List<Customer> customers = customerService.findAllCustomers();
         grid.setItems(customers);
     }
 }

@@ -1,6 +1,7 @@
 package bimobile.views.customer;
 
 import bimobile.model.customer.Company;
+import bimobile.service.customer.CompanyService;
 import bimobile.service.customer.CustomerService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -11,7 +12,7 @@ import com.vaadin.flow.data.binder.Binder;
 
 public class AddCompanyDialog extends Dialog {
 
-    public AddCompanyDialog(CustomerService service, ComboBox<Company> companyCombo) {
+    public AddCompanyDialog(CompanyService service, ComboBox<Company> companyCombo) {
         setHeaderTitle("Neue Firma anlegen");
 
         TextField nameField = new TextField("Firmenname");

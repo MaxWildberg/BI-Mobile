@@ -1,10 +1,7 @@
 package bimobile.views.customer;
 
 import bimobile.model.customer.*;
-import bimobile.service.customer.CustomerNotFoundException;
-import bimobile.service.customer.CustomerService;
-import bimobile.service.customer.CustomerTooYoungException;
-import bimobile.service.customer.DuplicateCustomerException;
+import bimobile.service.customer.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -34,7 +31,8 @@ import java.time.LocalDate;
 
 public class EditCreateCustomerDialog extends Dialog {
 
-    private final CustomerService service;
+    private final CustomerService customerService;
+    private final CompanyService companyService;
     private final Runnable onSaveSuccess;
     private Customer customer;
     private boolean editMode;
@@ -66,10 +64,15 @@ public class EditCreateCustomerDialog extends Dialog {
     private final Button cancelButton = new Button("Abbrechen");
 
     // Konstruktor für Formular, verwendet in CustomerOverview und CustomerDetailsView
-    public EditCreateCustomerDialog(Customer customer, boolean editMode, CustomerService service, Runnable onSaveSuccess) {
+    public EditCreateCustomerDialog(Customer customer,
+                                    boolean editMode,
+                                    CustomerService service,
+                                    CompanyService companyService,
+                                    Runnable onSaveSuccess) {
         this.customer = customer;
         this.editMode = editMode;
-        this.service = service;
+        this.customerService = service;
+        this.companyService = companyService;
         this.onSaveSuccess = onSaveSuccess;
 
         buildUI();
@@ -119,7 +122,7 @@ public class EditCreateCustomerDialog extends Dialog {
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.setText(editMode ? "Speichern" : "Registrieren");
         addCompanyButton.addClickListener(e -> {
-            AddCompanyDialog addCompanyDialog = new AddCompanyDialog(service, companyCombo);
+            AddCompanyDialog addCompanyDialog = new AddCompanyDialog(companyService, companyCombo);
             addCompanyDialog.open();
         });
         cancelButton.addClickListener(e -> close());
@@ -228,7 +231,7 @@ public class EditCreateCustomerDialog extends Dialog {
 
         // BusinessCustomer-spezifisch
         if (customer instanceof BusinessCustomer) {
-            companyCombo.setItems(service.getAllCompanies());
+            companyCombo.setItems(companyService.getAllCompanies());
             companyCombo.setItemLabelGenerator(Company::getName);
 
             binder.forField(companyCombo)
@@ -249,10 +252,10 @@ public class EditCreateCustomerDialog extends Dialog {
             try {
                 Customer updatedCustomer = mapDtoToCustomer(dto, customer);
                 if (editMode) {
-                    service.updateCustomer(updatedCustomer);
+                    customerService.updateCustomer(updatedCustomer);
                     Notification.show("Kunde erfolgreich aktualisiert.");
                 } else {
-                    service.registerCustomer(updatedCustomer);
+                    customerService.registerCustomer(updatedCustomer);
                     Notification.show("Kunde erfolgreich angelegt.");
                 }
 
@@ -273,7 +276,7 @@ public class EditCreateCustomerDialog extends Dialog {
         customer.setIdentification(new Identification(dto.getDriversLicense(), dto.getIdCardNum()));
 
         if (customer instanceof BusinessCustomer bc && dto.getCompany() != null) {
-            Company company = service.getCompanyById(dto.getCompanyId());
+            Company company = companyService.getCompanyById(dto.getCompanyId());
             bc.setCompany(company);
         }
 

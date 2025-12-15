@@ -1,6 +1,7 @@
 package bimobile.views.customer;
 
 import bimobile.model.customer.Customer;
+import bimobile.service.customer.CompanyService;
 import bimobile.service.customer.CustomerService;
 import bimobile.model.customer.BusinessCustomer;
 import bimobile.model.Invoice;
@@ -44,6 +45,7 @@ import java.util.List;
 public class CustomerDetailsView extends VerticalLayout implements BeforeEnterObserver {
 
     private final CustomerService customerService;
+    private final CompanyService companyService;
     private final PdfGeneratorService pdfGeneratorService;
     private Customer customer;
     private Long customerId;
@@ -51,8 +53,9 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     private Tabs tabs;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    public CustomerDetailsView(CustomerService customerService, PdfGeneratorService pdfGeneratorService) {
+    public CustomerDetailsView(CustomerService customerService, CompanyService companyService, PdfGeneratorService pdfGeneratorService) {
         this.customerService = customerService;
+        this.companyService = companyService;
         this.pdfGeneratorService = pdfGeneratorService;
         setSizeFull();
         setPadding(true);
@@ -92,7 +95,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         Button edit = new Button("Bearbeiten", new Icon(VaadinIcon.EDIT));
         edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         edit.addClickListener(event -> {
-            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, true, customerService, this::reloadCustomerData);
+            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, true, customerService, companyService, this::reloadCustomerData);
             dialog.open();
         });
 

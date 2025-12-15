@@ -20,14 +20,11 @@ import java.util.Optional;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
-    private final CompanyRepository companyRepositoriy;
     private final RentalRepository rentalRepository;
 
     public CustomerService(CustomerRepository customerRepository,
-                           CompanyRepository companyRepositoriy,
                            RentalRepository rentalRepository) {
         this.customerRepository = customerRepository;
-        this.companyRepositoriy = companyRepositoriy;
         this.rentalRepository = rentalRepository;
     }
 
@@ -113,39 +110,6 @@ public class CustomerService {
         }
 
         return optionalCustomer.get();
-    }
-
-
-    public Optional<Customer> getCustomerByEmail(String email) {
-        if (email == null) return Optional.empty();
-        return customerRepository.findByContactInfo_Email(email);
-    }
-
-    public List<Company> getAllCompanies() {
-        return companyRepositoriy.findAll();
-    }
-
-    public Company getCompanyById(Long companyId) {
-        if (companyId == null || companyId <= 0) {
-            throw new IllegalArgumentException("Ungültige Firmen-ID");
-        }
-        return companyRepositoriy.findById(companyId)
-                .orElseThrow(() -> new CompanyNotFoundException(companyId));
-    }
-
-    public boolean existsByContactInfoEmail(String email) {
-        return customerRepository.existsByContactInfo_Email(email);
-    }
-
-    public Company saveCompany(Company company) {
-
-        String name = company.getName();
-
-        if (name != null && companyRepositoriy.existsByName(name)) {
-            throw new DuplicateCompanyException(name);
-        }
-
-        return companyRepositoriy.save(company);
     }
 
     public List<Rental> findAllWithCustomerAndVehicle() {
