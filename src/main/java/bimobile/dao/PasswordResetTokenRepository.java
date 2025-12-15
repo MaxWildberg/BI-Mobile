@@ -7,6 +7,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * Spring-Data-JPA-Repository für Passwort-Reset-Tokens (Token finden, Tokens eines Users löschen).
+ *
+ * @author Jannick Braun
+ */
+
+
 @Repository
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
 

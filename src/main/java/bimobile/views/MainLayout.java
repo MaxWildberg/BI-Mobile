@@ -27,6 +27,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
+/**
+ * Zentrales Vaadin-AppLayout der Anwendung: stellt Topbar und Navigationsmenü bereit, lädt den aktuell
+ * angemeldeten Benutzer aus dem SecurityContext, zeigt ein Konto-Menü mit Benutzerinfos und bietet
+ * Funktionen zum Passwortwechsel sowie zum Logout.
+ *
+ * @author Jannick Braun, Ben Berlin
+ */
+
+
 @PermitAll
 public class MainLayout extends AppLayout {
 

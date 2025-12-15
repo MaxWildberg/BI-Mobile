@@ -10,9 +10,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Author: Lasse
- * Description: Security configuration (uses DB users from DataInitializer).
+ * Konfiguriert die Spring/Vaadin-Sicherheit der Anwendung: richtet Authentifizierung mit der Vaadin-LoginView ein,
+ * erlaubt den Zugriff auf die H2-Konsole (inkl. Frame-/CSRF-Anpassungen)
+ * und stellt einen BCrypt-PasswordEncoder als Bean bereit.
+ *
+ * @author Jannick Braun
  */
+
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends VaadinWebSecurity {

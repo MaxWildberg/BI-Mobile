@@ -6,6 +6,14 @@ import bimobile.dao.FacilityDAO;
 import org.springframework.stereotype.Controller;
 import java.util.List;
 
+/**
+ * Controller zur Verwaltung von Standorten (Anlegen, Bearbeiten, Löschen, Auflisten)
+ * mit grundlegender Eingabevalidierung und Delegation an Service/DAO.
+ *
+ * @author Jannick Braun
+ */
+
+
 @Controller
 public class FacilityController {
 

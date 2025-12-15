@@ -3,7 +3,6 @@ package bimobile.service;
 import bimobile.dao.PasswordResetTokenRepository;
 import bimobile.dao.UserRepository;
 import bimobile.model.PasswordResetToken;
-import bimobile.model.Role;
 import bimobile.model.RoleType;
 import bimobile.model.User;
 import org.junit.jupiter.api.BeforeEach;
