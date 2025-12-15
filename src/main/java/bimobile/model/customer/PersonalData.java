@@ -5,6 +5,15 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
+/**
+ * Eingebettetes Value-Objekt zur Speicherung persönlicher Kundendaten.
+ * Enthält Titel, Vorname, Nachname und Geburtsdatum eines Kunden.
+ * Durch die Verwendung von {@link Embeddable} werden die Felder direkt in der Tabelle
+ * der übergeordneten Entity gespeichert, es entsteht keine eigene Tabelle.
+ *
+ * @author Max Wildberg
+ */
+
 @Embeddable
 public class PersonalData {
 
@@ -29,6 +38,9 @@ public class PersonalData {
         this.birthday = birthday;
     }
 
+    /**
+     * Getter- und Setter-Methoden
+     */
     public String getTitle() {
         return title;
     }

@@ -1,26 +1,43 @@
 package bimobile.service.customer;
 
 import bimobile.dao.CompanyRepository;
-import bimobile.enums.RentalStatus;
 import bimobile.model.customer.Company;
-import bimobile.model.customer.Customer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Service zur Verwaltung von Firmenobjekten.
+ * Bietet Funktionen zum Abrufen, Speichern und Löschen von Firmen.
+ * Stellt sicher, dass Duplikate und ungültige Operationen abgefangen werden.
+ *
+ * @author Max Wildberg
+ */
 @Service
 public class CompanyService {
-    CompanyRepository companyRepository;
+
+    private final CompanyRepository companyRepository;
 
     public CompanyService(CompanyRepository companyRepository) {
         this.companyRepository = companyRepository;
     }
 
+    /**
+     * Liefert alle Firmen aus der Datenbank zurück.
+     * @return Liste aller Firmen
+     */
     public List<Company> getAllCompanies() {
         return companyRepository.findAll();
     }
 
+    /**
+     * Liefert eine Firma anhand ihrer ID.
+     * @param companyId ID der Firma
+     * @return Gefundene Firma
+     * @throws IllegalArgumentException bei null oder ungültiger ID
+     * @throws CompanyNotFoundException wenn keine Firma mit dieser ID existiert
+     */
     public Company getCompanyById(Long companyId) {
         if (companyId == null || companyId <= 0) {
             throw new IllegalArgumentException("Ungültige Firmen-ID");
@@ -29,8 +46,14 @@ public class CompanyService {
                 .orElseThrow(() -> new CompanyNotFoundException(companyId));
     }
 
+    /**
+     * Speichert eine neue Firma in der Datenbank.
+     * Prüft auf Namensduplikate.
+     * @param company Zu speichernde Firma
+     * @return Gespeicherte Firma
+     * @throws DuplicateCompanyException wenn der Firmenname bereits existiert
+     */
     public Company saveCompany(Company company) {
-
         String name = company.getName();
 
         if (name != null && companyRepository.existsByName(name)) {
@@ -40,9 +63,16 @@ public class CompanyService {
         return companyRepository.save(company);
     }
 
+    /**
+     * Löscht eine Firma anhand der ID.
+     * Es dürfen keine Mitarbeiter mehr der Firma zugeordnet sein.
+     * @param companyId ID der zu löschenden Firma
+     * @throws IllegalArgumentException bei null oder ungültiger ID
+     * @throws CompanyNotFoundException wenn die Firma nicht existiert
+     * @throws IllegalStateException wenn der Firma noch Mitarbeiter zugeordnet sind
+     */
     @Transactional
     public void deleteCompany(Long companyId) {
-
         if (companyId == null || companyId <= 0) {
             throw new IllegalArgumentException("Ungültige Firmen-ID");
         }
@@ -58,5 +88,4 @@ public class CompanyService {
 
         companyRepository.delete(company);
     }
-
 }

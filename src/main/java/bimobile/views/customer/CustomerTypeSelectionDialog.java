@@ -6,8 +6,17 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.function.Consumer;
 
+/**
+ * Dialog zur Auswahl des Kundentyps bei der Erstellung eines neuen Kunden.
+ * Bietet die Auswahl zwischen Privatkunde und Firmenkunde.
+ *
+ * @author Max Wildberg
+ */
 public class CustomerTypeSelectionDialog extends Dialog {
 
+    /**
+     * Enum für die Kundentypen mit Anzeigenamen.
+     */
     public enum CustomerType {
         PRIVATE("Privatkunde"),
         BUSINESS("Firmenkunde");
@@ -18,6 +27,10 @@ public class CustomerTypeSelectionDialog extends Dialog {
             this.displayName = displayName;
         }
 
+        /**
+         * Liefert den Anzeigenamen des Kundentyps.
+         * @return Anzeigename
+         */
         public String getDisplayName() {
             return displayName;
         }
@@ -28,6 +41,10 @@ public class CustomerTypeSelectionDialog extends Dialog {
         }
     }
 
+    /**
+     * Erstellt den Dialog zur Auswahl des Kundentyps.
+     * @param onTypeSelected Callback, der den ausgewählten Kundentyp verarbeitet
+     */
     public CustomerTypeSelectionDialog(Consumer<CustomerType> onTypeSelected) {
         setHeaderTitle("Kundentyp auswählen");
 

@@ -1,13 +1,12 @@
 package bimobile.views.customer;
 
-import bimobile.model.customer.Customer;
-import bimobile.service.customer.CompanyService;
-import bimobile.service.customer.CustomerService;
-import bimobile.model.customer.BusinessCustomer;
+import bimobile.model.customer.*;
+import bimobile.service.customer.*;
 import bimobile.model.Invoice;
 import bimobile.model.Rental;
 import bimobile.service.PdfGeneratorService;
 import bimobile.views.MainLayout;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
@@ -32,13 +31,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * User Interface zur Darstellung eines spezifischen Kunden mit sämtlichen Informationen.
- * Enthält Tabs zur gesonderten Darstellung zwischen Attributen, sämtlicher Ausleihen und Rechnungen des Kunden.
- * Enthält Funktionen wie bearbeiten und löschen eines Kunden.
+ * View zur Darstellung aller Details eines Kunden.
+ * Enthält Tabs für Übersicht, Miethistorie und Rechnungen.
+ * Bietet Funktionen zum Bearbeiten und Löschen des Kunden.
  *
  * @author Max Wildberg
  */
-
 @Route(value = "kunden/details/:customerId", layout = MainLayout.class)
 @PageTitle("Kunden Details")
 @PermitAll
@@ -51,7 +49,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     private Long customerId;
     private Div content;
     private Tabs tabs;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public CustomerDetailsView(CustomerService customerService, CompanyService companyService, PdfGeneratorService pdfGeneratorService) {
         this.customerService = customerService;
@@ -64,15 +62,14 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     }
 
     /**
-     *
-     * @return
+     * Erstellt den Header der Detailansicht inklusive Avatar in Form der Initiale des Kunden, Name, Kunden-ID und Aktionen.
+     * @return HorizontalLayout mit Header-Elementen
      */
     private HorizontalLayout createHeader() {
         HorizontalLayout header = new HorizontalLayout();
         header.setWidthFull();
         header.setAlignItems(Alignment.CENTER);
         header.setSpacing(true);
-
 
         Span avatar = new Span(getInitials(customer.getPersonalData().getFirstname(), customer.getPersonalData().getLastname()));
         avatar.getStyle().set("padding", "12px 16px");
@@ -121,8 +118,9 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     }
 
     /**
-     *
-     * @return
+     * Erstellt die Tabs für Übersicht, Miethistorie und Rechnungen.
+     * Registriert den Listener zum Wechseln des Inhalts.
+     * @return VerticalLayout mit Tabs und Inhalt
      */
     private VerticalLayout createTabs() {
         Tab uebersicht = new Tab("Übersicht");
@@ -149,9 +147,9 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     }
 
     /**
-     * Methode zur Kontrolle, ob ein Kunden-Objekt aus CustomerOverview übergeben wurde
-     * Baut bei Erfolg das UI oder erzeugt eine Fehlermeldung
-     * @param event
+     * Lädt die Kundendaten anhand der Route-Parameter.
+     * Baut die Detailansicht auf oder zeigt Fehlermeldungen an, wenn die ID ungültig ist.
+     * @param event BeforeEnterEvent der Route
      */
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
@@ -183,80 +181,65 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     }
 
     /**
-     * Hilfsmethode zur Darstellung der Kundendaten nach öffnen der DetailsView
-     * @return gefülltes Flexlayout an CustomerDetailsView
+     * Baut den Übersichts-Tab mit allen wichtigen Kundendaten.
+     * @return FlexLayout mit den einzelnen Übersichtskarten
      */
     private FlexLayout createOverviewContent() {
-        // Hauptlayout: flexibler Container für alle Cards
         FlexLayout container = new FlexLayout();
         container.setWidthFull();
         container.setFlexWrap(FlexLayout.FlexWrap.WRAP);
         container.setJustifyContentMode(FlexLayout.JustifyContentMode.START);
         container.setAlignItems(FlexLayout.Alignment.START);
-        container.getStyle().set("gap", "clamp(8px, 1vw, 16px)"); // dynamischer Abstand
+        container.getStyle().set("gap", "clamp(8px, 1vw, 16px)");
 
-        // Persönliche Daten
         container.add(createCard("Persönliche Daten", createPersonalData()));
-
-        // Adresse
         container.add(createCard("Adresse", createAddressData()));
-
-        // Kontakt
         container.add(createCard("Kontakt", createContactData()));
 
-        // Gewerbeanschrift (nur bei BusinessCustomer)
         if (customer instanceof BusinessCustomer) {
             container.add(createCard("Gewerbeanschrift", createEmployerData()));
         }
 
-        // Statistiken
         container.add(createCard("Statistiken", createStatisticsData()));
-
-        // Dokumente
         container.add(createCard("Dokumente", createDocumentsSummary()));
 
-        // Optional: Breite der Cards festlegen oder max-width für responsive Layout
         container.getChildren().forEach(c -> c.getElement().getStyle().set("flex", "1 1 300px"));
 
         return container;
     }
 
-
     /**
-     * Hilfsmethode zur mehrfach wiederkehrenden erzeugung einer Overview Card
+     * Hilfsmethode zur Erstellung einer Übersichtskarte
      * @param title Titel der Karte
-     * @param content
-     * @return
+     * @param content Inhalt der Karte
+     * @return Div als Karte
      */
     private Div createCard(String title, Div content) {
         Div card = new Div();
 
-        // Überschrift
         H3 h = new H3(title);
-        h.getStyle().set("margin", "0 0 12px 0"); // Abstand unter der Überschrift
+        h.getStyle().set("margin", "0 0 12px 0");
 
-        // Card Styling
-        card.getStyle().set("border", "1px solid #e0e0e0"); // leichterer Rahmen
+        card.getStyle().set("border", "1px solid #e0e0e0");
         card.getStyle().set("padding", "16px");
         card.getStyle().set("border-radius", "8px");
-        card.getStyle().set("box-shadow", "0 2px 5px rgba(0,0,0,0.1)"); // leichter Schatten
-        card.getStyle().set("background-color", "white"); // sicherstellen, dass Hintergrund weiß ist
+        card.getStyle().set("box-shadow", "0 2px 5px rgba(0,0,0,0.1)");
+        card.getStyle().set("background-color", "white");
         card.getStyle().set("display", "flex");
         card.getStyle().set("flex-direction", "column");
-        card.getStyle().set("gap", "8px"); // Abstand zwischen Überschrift und Inhalt
+        card.getStyle().set("gap", "8px");
 
         card.add(h, content);
         return card;
     }
 
     /**
-     * Methoden zur Füllung der Karten
-     * Füllen ein Div mit Informationen über den spezifischen Kunden
-     * @return div mit Informationen aus dem Kundenobjekt, übergeben an createCard zur Darstellung in UI
+     * Hilfsmethoden
+     * Baut die persönlichen Daten des Kunden für die Übersichtskarte.
+     * @return Div mit persönlichen Daten
      */
     private Div createPersonalData() {
         Div d = new Div();
-
         LocalDate birthday = customer.getPersonalData().getBirthday();
         String formattedDate = birthday.format(formatter);
 
@@ -267,10 +250,6 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         return d;
     }
 
-    /**
-     * Helfermethoden, Übergabe von Daten an Methode createOverviewContent
-     * @return Div gefüllt mit entsprechenden Daten des Kunden
-     */
     private Div createAddressData() {
         Div d = new Div();
         d.add(new Paragraph(customer.getAddress().getStreet()));
@@ -281,16 +260,13 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
 
     private Div createContactData() {
         Div d = new Div();
-
         d.add(new Paragraph("E-Mail: " + customer.getContactInfo().getMail()));
         d.add(new Paragraph("Telefon: " + customer.getContactInfo().getTelephone()));
-
         return d;
     }
 
     private Div createEmployerData() {
         Div d = new Div();
-
         if (customer instanceof BusinessCustomer businessCustomer) {
             d.add(new Paragraph("Unternehmen: " + businessCustomer.getCompany().getName()));
             d.add(new Paragraph("Anschrift: " + businessCustomer.getCompany().getAddress()));
@@ -300,11 +276,9 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
 
     private Div createStatisticsData() {
         Div d = new Div();
-
         d.add(new Paragraph("Anzahl Vermietungen: " + customer.getRentCount()));
         d.add(new Hr());
         d.add(new Paragraph("Gesamtumsatz: € " + String.format("%.2f", customer.getTotalRevenue())));
-
         return d;
     }
 
@@ -316,22 +290,20 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     }
 
     /**
-     * Bei Auswahl des Tabs "Miethistorie" werden alle Mieten des Kunden in einem Grid gesammelt.
-     * @return Div befüllt mit Grid zur Übersicht der Mieten des Kunden
+     * Baut die Miethistorie des Kunden als Grid auf.
+     * @return Div mit Grid
      */
     private Div createHistoryContent() {
-
         Div container = new Div();
 
         if (customer.getRents() == null || customer.getRents().isEmpty()) {
             container.add(new Paragraph("Dieser Kunde hat noch kein Fahrzeug gemietet."));
         } else {
-
             Grid<Rental> rentalGrid = new Grid<>(Rental.class, false);
 
             rentalGrid.addColumn(r -> r.getVehicle().getLicensePlate()
-                    + " - " + r.getVehicle().getBrand()
-                    + " " + r.getVehicle().getModel())
+                            + " - " + r.getVehicle().getBrand()
+                            + " " + r.getVehicle().getModel())
                     .setHeader("Fahrzeug")
                     .setAutoWidth(true);
 
@@ -367,9 +339,8 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     }
 
     /**
-     * Bei Auswahl des Tabs "Rechnungen" werden entsprechende Rechnungen des Kunden in einer "Karte" dargestellt.
-     * Jede Karte bietet die Funktion zum Download der Rechnung.
-     * @return Div mit Grid als Übersicht aller Rechnungen
+     * Baut die Rechnungsübersicht als Karten mit Download-Option.
+     * @return Div mit Rechnungsübersicht
      */
     private Div createInvoiceContent() {
         Div container = new Div();
@@ -394,7 +365,6 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
                         + " – " + invoice.getInvoiceDate());
                 Paragraph amount = new Paragraph("Brutto: " + invoice.getGrossAmount() + " €");
 
-                // Download-Button als Anchor
                 StreamResource resource = new StreamResource(
                         "rechnung-" + invoice.getId() + ".pdf",
                         () -> new ByteArrayInputStream(pdfGeneratorService.generateInvoicePdf(invoice))
@@ -413,10 +383,10 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     }
 
     /**
-     * Liest die Initiale des Kunden aus zur Darstellung in der Detail Übersicht
-     * @param first Initial des Vornamens
-     * @param last Initial des Nachnamens
-     * @return Rückgabe der Initiale an UI zur Darstellung
+     * Ermittelt die Initialen des Kunden für die Detailübersicht.
+     * @param first Vorname
+     * @param last Nachname
+     * @return Initialen
      */
     private String getInitials(String first, String last) {
         String f = first != null && !first.isBlank() ? first.substring(0, 1).toUpperCase() : "";
@@ -425,7 +395,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
     }
 
     /**
-     * Lädt die entsprechenden Seiten bei auswahl der Tabs -> Übersicht, Miethistorie, Rechnungshistorie
+     * Lädt die Kundendaten neu und aktualisiert die Tabs entsprechend.
      */
     private void reloadCustomerData(){
         if (customerId == null) return;
@@ -436,7 +406,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
 
         if (tabs.getSelectedTab().getLabel().equals("Übersicht")) {
             content.add(createOverviewContent());
-        } if (tabs.getSelectedTab().getLabel().equals("Miethistorie")) {
+        } else if (tabs.getSelectedTab().getLabel().equals("Miethistorie")) {
             content.add(createHistoryContent());
         } else {
             content.add(createInvoiceContent());
@@ -447,7 +417,10 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         add(createTabs());
     }
 
+    /**
+     * Navigiert zurück zur Kundenübersicht.
+     */
     private void navigateBackToOverview() {
-        getUI().ifPresent(ui -> ui.navigate(CustomerOverview.class));
+        UI.getCurrent().navigate("kunden");
     }
 }

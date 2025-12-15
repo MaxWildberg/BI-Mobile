@@ -11,6 +11,18 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Abstrakte Basisklasse für Kunden.
+ *
+ * Repräsentiert einen Kunden in der Anwendung, entweder Privat- oder Business-Kunde.
+ * Enthält persönliche Daten, Adresse, Kontaktinformationen und Identifikationsdaten.
+ * Verknüpft außerdem alle Mieten ({@link Rental}) und Rechnungen ({@link Invoice}) des Kunden.
+ * Bettet Value-Objekte ein.
+ *
+ * Helfermethoden liefern Altersangabe, vollständigen Namen, Anzahl Mieten und Gesamterlöse.
+ *
+ * @author Max Wildberg
+ */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "customer_type")
@@ -61,7 +73,7 @@ public abstract class Customer {
     }
 
 
-    // Getter & Setter
+    // Getter und Setter
 
     public Long getCustomerId() {
         return customerId;
@@ -105,23 +117,36 @@ public abstract class Customer {
 
     // Helfermethoden
 
+    /**
+     * Liefert das Alter des Kunden in Jahren basierend auf dem Geburtsdatum.
+     * @return Alter des Kunden
+     */
     @Transient
     public int getAge() {
         return Period.between(personalData.getBirthday(), LocalDate.now()).getYears();
     }
 
+    /**
+     * Liefert den vollständigen Namen des Kunden (Vorname + Nachname).
+     * @return vollständiger Name
+     */
     @Transient
     public String getFullName() {
         return personalData.getFirstname() + " " + personalData.getLastname();
     }
 
+    /**
+     * Liefert die Anzahl der Mieten des Kunden.
+     * @return Anzahl Mieten
+     */
     @Transient
     public int getRentCount() {
         return rents.size();
     }
 
     /**
-     * @return totalRevenue gibt Summe aus allen Preisen aller Mieten zurück
+     * Berechnet den Gesamtumsatz aus allen Mieten des Kunden.
+     * @return Gesamterlös in Euro
      */
     @Transient
     public double getTotalRevenue() {

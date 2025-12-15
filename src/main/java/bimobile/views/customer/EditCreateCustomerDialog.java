@@ -21,14 +21,13 @@ import com.vaadin.flow.data.binder.Binder;
 import java.time.LocalDate;
 
 /**
- * Beschreibung:
- * User Interface für Formular welches den Nutzer einen Kunden erstellen bzw. bearbeiten lässt.
- * Gleiches gilt für Business Kunden -> UI passt sich dementsprechend an.
- * Bekommt Kunden-Objekt von CustomerManager bzw. gibt es zum Speichern dahin weiter.
+ * Dialog zur Erstellung oder Bearbeitung eines Kunden.
+ * Unterstützt private und Business-Kunden.
+ * Übergibt Daten an den CustomerService zur Persistierung.
+ * Zeigt Validierungsergebnisse und Notifications im UI an.
  *
  * @author Max Wildberg
  */
-
 public class EditCreateCustomerDialog extends Dialog {
 
     private final CustomerService customerService;
@@ -63,7 +62,15 @@ public class EditCreateCustomerDialog extends Dialog {
     private final Button saveButton = new Button("Kunde registrieren");
     private final Button cancelButton = new Button("Abbrechen");
 
-    // Konstruktor für Formular, verwendet in CustomerOverview und CustomerDetailsView
+    /**
+     * Erstellt den Dialog für einen Kunden.
+     *
+     * @param customer der Kunde, der bearbeitet oder neu erstellt wird
+     * @param editMode true, wenn Bearbeitung eines bestehenden Kunden, false bei Neuanlage
+     * @param service Service zur Verwaltung von Kunden
+     * @param companyService Service zur Verwaltung von Unternehmen
+     * @param onSaveSuccess Callback, der nach erfolgreichem Speichern ausgeführt wird (z. B. Grid aktualisieren)
+     */
     public EditCreateCustomerDialog(Customer customer,
                                     boolean editMode,
                                     CustomerService service,
@@ -82,7 +89,11 @@ public class EditCreateCustomerDialog extends Dialog {
         binder.readBean(dto);
     }
 
-    // Baut das Fomular auf, je nach Use Case -> Kunde, Business Kunde? / Bearbeiten, neu erstellen?
+    /**
+     * Baut die Benutzeroberfläche des Dialogs auf,
+     * zeigt Felder je nach Kundentyp an
+     * und bindet die Button-Events.
+     */
     private void buildUI() {
 
         setHeaderTitle(editMode ? "Kunden Details bearbeiten" : "Neuen Kunden anlegen");
@@ -91,7 +102,7 @@ public class EditCreateCustomerDialog extends Dialog {
         subtitle.getStyle().set("font-size", "var(--lumo-font-size-m)");
         add(subtitle);
 
-        // --- Persönliche Daten ---
+        // Persönliche Daten
         birthday.setHelperText("Person muss mindestens 18 Jahre alt sein");
         birthday.setMax(LocalDate.now().minusYears(18));
         birthday.setMin(LocalDate.now().minusYears(120));
@@ -100,25 +111,24 @@ public class EditCreateCustomerDialog extends Dialog {
         add(sectionHeader("Persönliche Daten", VaadinIcon.USER));
         add(new FormLayout(title, firstName, lastName, birthday));
 
-        // --- Adresse ---
+        // Adresse
         add(sectionHeader("Adresse", VaadinIcon.HOME));
         add(new FormLayout(street, city, zip, country));
 
-        // --- Dokumente ---
+        // Ausweisdokumente
         add(sectionHeader("Ausweisdokumente", VaadinIcon.CREDIT_CARD));
         add(new FormLayout(idCardNum, driversLicense));
 
-        // --- Kontakt ---
+        // Kontakt
         add(sectionHeader("Kontaktdaten", VaadinIcon.ENVELOPE));
         add(new FormLayout(email, telephone));
 
-        // --- Unternehmen ----
+        // Unternehmen
         if (customer instanceof BusinessCustomer) {
             add(sectionHeader("Geschäftsinfo", VaadinIcon.BUILDING));
             add(new FormLayout(companyCombo, addCompanyButton));
         }
 
-        // --- Footer Buttons ---
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.setText(editMode ? "Speichern" : "Registrieren");
         addCompanyButton.addClickListener(addCompanyEvent -> {
@@ -127,19 +137,24 @@ public class EditCreateCustomerDialog extends Dialog {
                 Company saved = addCompanyDialog.getSavedCompany();
                 if (saved != null) {
                     companyCombo.setItems(companyService.getAllCompanies());
-                    companyCombo.setValue(addCompanyDialog.getSavedCompany());
+                    companyCombo.setValue(saved);
                 }
             });
             addCompanyDialog.open();
         });
         cancelButton.addClickListener(e -> close());
-
         saveButton.addClickListener(e -> onSave());
 
         getFooter().add(cancelButton, saveButton);
     }
 
-    // Hilfsmethode für mehrfach wiederkehrende Erstellung eines Absatzes in UI
+    /**
+     * Wiederverwendbare Hilfsmethode zum erstellen eines Abschnitts-Headers mit Icon.
+     *
+     * @param title Überschrift des Abschnitts
+     * @param iconType Icon, das vor der Überschrift angezeigt wird
+     * @return HorizontalLayout mit Icon und Label
+     */
     private HorizontalLayout sectionHeader(String title, VaadinIcon iconType) {
         Icon icon = iconType.create();
         icon.setColor("var(--lumo-primary-color)");
@@ -153,11 +168,14 @@ public class EditCreateCustomerDialog extends Dialog {
         return layout;
     }
 
+    /**
+     * Konfiguriert den Binder für Validierung und Datenbindung.
+     * Bindet alle Formularfelder an die DTO-Felder.
+     */
     private void configureBinder() {
-        // bindInstanceFields nutzt die Feldnamen der DTO-Felder
         binder.bindInstanceFields(this);
         String regex = "^[a-zA-Z0-9 ]+$";
-        // Basis-Felder
+
         binder.forField(title)
                 .bind(CustomerFormDTO::getTitle, CustomerFormDTO::setTitle);
 
@@ -185,13 +203,9 @@ public class EditCreateCustomerDialog extends Dialog {
 
         binder.forField(telephone)
                 .asRequired("Telefonnummer erforderlich")
-                .withValidator(
-                        tel -> tel.matches("\\d+"),
-                        "Nur Zahlen erlaubt"
-                )
+                .withValidator(tel -> tel.matches("\\d+"), "Nur Zahlen erlaubt")
                 .bind(CustomerFormDTO::getTelephone, CustomerFormDTO::setTelephone);
 
-        // Address
         binder.forField(street)
                 .asRequired("Straße erforderlich")
                 .withValidator(street -> street.matches(regex),
@@ -200,10 +214,8 @@ public class EditCreateCustomerDialog extends Dialog {
 
         binder.forField(zip)
                 .asRequired("PLZ erforderlich")
-                .withValidator(
-                        zip -> zip.matches("\\d{5}"),
-                        "PLZ muss genau 5 Ziffern enthalten"
-                )
+                .withValidator(zip -> zip.matches("\\d{5}"),
+                        "PLZ muss genau 5 Ziffern enthalten")
                 .bind(CustomerFormDTO::getZip, CustomerFormDTO::setZip);
 
         binder.forField(city)
@@ -218,25 +230,18 @@ public class EditCreateCustomerDialog extends Dialog {
                         "Nur Buchstaben ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getCountry, CustomerFormDTO::setCountry);
 
-        // Dokumente
         binder.forField(driversLicense)
                 .asRequired("Führerscheinnummer erforderlich")
-                .withValidator(
-                        s -> s.matches("[A-Z0-9]+"),
-                        "Nur Buchstaben und Zahlen ohne Leerzeichen erlaubt"
-                )
+                .withValidator(s -> s.matches("[A-Z0-9]+"),
+                        "Nur Buchstaben und Zahlen ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getDriversLicense, CustomerFormDTO::setDriversLicense);
 
         binder.forField(idCardNum)
                 .asRequired("Ausweis erforderlich")
-                .withValidator(
-                        s -> s.matches("[A-Z0-9]+"),
-                        "Nur Buchstaben und Zahlen ohne Leerzeichen erlaubt"
-                )
+                .withValidator(s -> s.matches("[A-Z0-9]+"),
+                        "Nur Buchstaben und Zahlen ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getIdCardNum, CustomerFormDTO::setIdCardNum);
 
-
-        // BusinessCustomer-spezifisch
         if (customer instanceof BusinessCustomer) {
             companyCombo.setItems(companyService.getAllCompanies());
             companyCombo.setItemLabelGenerator(Company::getName);
@@ -250,9 +255,11 @@ public class EditCreateCustomerDialog extends Dialog {
         }
     }
 
-    // Führt Binder aus sobald das Formular gespeichert wird
-    // Gibt Anweisung an CustomerManager für update oder neues Kunden-Objekt
-    // Gibt Erfolgsmeldung in UI, wenn erfolgreich
+    /**
+     * Führt die Speicherung des Formulars aus.
+     * Ruft CustomerService auf und zeigt Erfolgsmeldungen.
+     * Bei Fehlern werden Notifications angezeigt.
+     */
     private void onSave() {
         CustomerFormDTO dto = new CustomerFormDTO();
         if (binder.writeBeanIfValid(dto)) {
@@ -266,7 +273,7 @@ public class EditCreateCustomerDialog extends Dialog {
                     Notification.show("Kunde erfolgreich angelegt.");
                 }
 
-                onSaveSuccess.run(); // refresh grid
+                onSaveSuccess.run();
                 close();
 
             } catch (CustomerNotFoundException | DuplicateCustomerException | CustomerTooYoungException ex) {
@@ -276,6 +283,14 @@ public class EditCreateCustomerDialog extends Dialog {
             }
         }
     }
+
+    /**
+     * Überträgt die Daten aus dem DTO in das Customer-Objekt.
+     *
+     * @param dto das Formular-Datenobjekt
+     * @param customer das Ziel-Customer-Objekt
+     * @return das aktualisierte Customer-Objekt
+     */
     private Customer mapDtoToCustomer(CustomerFormDTO dto, Customer customer) {
         customer.setPersonalData(new PersonalData(dto.getTitle(), dto.getFirstname(), dto.getLastname(), dto.getBirthday()));
         customer.setAddress(new Address(dto.getStreet(), dto.getZip(), dto.getCity(), dto.getCountry()));

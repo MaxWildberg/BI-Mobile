@@ -10,11 +10,25 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
+/**
+ * Dialog zum Anlegen einer neuen {@link Company}.
+ * Stellt ein Formular zur Eingabe von Firmenname und Adresse bereit
+ * und speichert die Firma nach erfolgreicher Validierung.
+ *
+ * @author Max Wildberg
+ */
 public class AddCompanyDialog extends Dialog {
 
+    /**
+     * Die gespeicherte Firma nach erfolgreichem Speichervorgang.
+     */
     private Company savedCompany;
-    private boolean saved = false;
 
+    /**
+     * Erstellt einen Dialog zum Anlegen einer neuen Firma.
+     *
+     * @param service Service zum Speichern der Firma
+     */
     public AddCompanyDialog(CompanyService service) {
         setHeaderTitle("Neue Firma anlegen");
 
@@ -41,7 +55,6 @@ public class AddCompanyDialog extends Dialog {
             if (binder.validate().isOk()) {
                 binder.writeBeanIfValid(newCompany);
                 this.savedCompany = service.saveCompany(newCompany);
-                saved = true;
                 close();
             }
         });
@@ -51,11 +64,13 @@ public class AddCompanyDialog extends Dialog {
         add(form);
     }
 
+    /**
+     * Liefert die gespeicherte Firma zurück.
+     *
+     * @return die gespeicherte {@link Company} oder null,
+     *         falls nicht gespeichert wurde
+     */
     public Company getSavedCompany() {
         return savedCompany;
-    }
-
-    public boolean wasSaved() {
-        return saved;
     }
 }

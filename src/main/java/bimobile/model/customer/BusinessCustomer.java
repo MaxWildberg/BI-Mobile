@@ -5,12 +5,12 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 /**
- * Description: Represents a business customer, extending the base
- * Customer entity with additional fields such as company name and address attributes.
+ * Repräsentiert einen Firmen-Kunden.
+ * Erbt von {@link Customer} und speichert zusätzlich zu den typischen Kundendaten noch die Firma.
+ * Wird in der Datenbank mit Wert "BUSINESS" gespeichert.
  *
  * @author Max Wildberg
  */
-
 @Entity
 @DiscriminatorValue("BUSINESS")
 public class BusinessCustomer extends Customer {

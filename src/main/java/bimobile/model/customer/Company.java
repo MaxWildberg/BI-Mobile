@@ -5,7 +5,14 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Repräsentiert ein Unternehmen, das Business-Kunden zugeordnet sein kann.
+ *
+ * Enthält die grundlegenden Informationen eines Unternehmens wie Name und Adresse.
+ * Über die Liste employees werden alle zugeordneten {@link BusinessCustomer}-Objekte verwaltet.
+ *
+ * @author Max Wildberg
+ */
 @Entity
 public class Company {
 

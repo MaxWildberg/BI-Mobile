@@ -12,8 +12,26 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * Generischer Bestätigungsdialog zum Löschen eines Objekts.
+ * Der Dialog zeigt eine Warnmeldung sowie eine textuelle Repräsentation
+ * des zu löschenden Objekts an und bietet Aktionen zum Bestätigen
+ * oder Abbrechen des Löschvorgangs.
+ *
+ * @param <T> Typ des zu löschenden Objekts
+ * @author Max Wildberg
+ */
 public class DeleteDialog<T> extends Dialog {
 
+    /**
+     * Erstellt einen neuen Löschdialog für ein beliebiges Objekt.
+     *
+     * @param object das zu löschende Objekt
+     * @param displayNameFunction Funktion zur Ermittlung eines anzuzeigenden Namens oder Textes für das Objekt
+     * @param deleteFunction Funktion, die den eigentlichen Löschvorgang ausführt
+     * @param afterDelete optionale Aktion, die nach erfolgreichem Löschen ausgeführt wird,
+     *                    z. B. zum Aktualisieren eines Grids in {@link CompanyOverviewDialog}
+     */
     public DeleteDialog(
             T object,
             Function<T, String> displayNameFunction,
