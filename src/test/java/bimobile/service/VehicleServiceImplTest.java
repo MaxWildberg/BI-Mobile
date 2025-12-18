@@ -2,7 +2,7 @@ package bimobile.service;
 
 import bimobile.dao.VehicleHistoryRepository;
 import bimobile.dao.VehicleRepository;
-import bimobile.model.PriceCategory; // WICHTIG: Dieser Import muss vorhanden sein
+import bimobile.model.PriceCategory;
 import bimobile.model.Vehicle;
 import bimobile.model.VehicleHistoryEntry;
 import bimobile.model.VehicleStatus;
@@ -39,7 +39,6 @@ class VehicleServiceImplTest {
         // ARRANGE
         Long vehicleId = 1L;
 
-        // KORREKTUR: Hier muss PriceCategory.B (das Enum) übergeben werden, NICHT "B" (String)
         Vehicle mockVehicle = new Vehicle("BI-TEST 1", "Audi", "A4", PriceCategory.SALOON);
 
         mockVehicle.setStatus(VehicleStatus.IN_MAINTENANCE);
@@ -71,7 +70,6 @@ class VehicleServiceImplTest {
         // ARRANGE
         Long vehicleId = 2L;
 
-        // KORREKTUR: Auch hier PriceCategory.A (Enum) statt "A"
         Vehicle mockVehicle = new Vehicle("BI-OLD 99", "Opel", "Corsa", PriceCategory.SALOON);
 
         mockVehicle.setStatus(VehicleStatus.IN_MAINTENANCE);
