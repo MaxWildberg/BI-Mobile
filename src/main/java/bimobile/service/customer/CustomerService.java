@@ -109,10 +109,11 @@ public class CustomerService {
      * @throws CustomerNotFoundException wenn Kunde nicht existiert
      */
     public void deleteCustomer(Long id) {
-        Customer customer = getCustomerByID(id);
-        if (id == null || id <= 0) {
+        if (id == null || id < 0) {
             throw new IllegalArgumentException("Ungültige Kunden-ID");
         }
+
+        Customer customer = getCustomerByID(id);
 
         boolean hasOpenRents = customer.getRents().stream()
                 .filter(r -> r.getStatus() == RentalStatus.ACTIVE)
@@ -122,10 +123,9 @@ public class CustomerService {
             throw new IllegalStateException("Kunde kann nicht gelöscht werden: offene Mieten vorhanden");
         }
 
-        Customer existing = customerRepository.findById(id)
-                .orElseThrow(() -> new CustomerNotFoundException(id));
 
-        customerRepository.delete(existing);
+
+        customerRepository.delete(customer);
     }
 
     /**
