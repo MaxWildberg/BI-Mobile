@@ -21,10 +21,8 @@ import static org.mockito.Mockito.*;
 /**
  * Äquivalenzklassentests + zugehörige JUnit-Tests
  * für die {@link CustomerService#registerCustomer} Methode.
- * <p>
  * Die Tests dokumentieren die wichtigsten validierungsrelevanten Randfälle, sodass
- * nachvollziehbar bleibt, welche Eingaben akzeptiert oder abgelehnt werden. Sie dienen
- * damit gleichzeitig als lebendige Spezifikation für die Studienarbeit.
+ * nachvollziehbar bleibt, welche Eingaben akzeptiert oder abgelehnt werden.
  *
  * Autor: Max Wildberg
  */
