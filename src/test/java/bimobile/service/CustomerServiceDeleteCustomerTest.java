@@ -37,6 +37,7 @@ public class CustomerServiceDeleteCustomerTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    // uÄK1: id = null -> IllegalArgumentException
     @Test
     void testDeleteCustomer_idIsNull_throwsIllegalArgumentException() {
         IllegalArgumentException exception = assertThrows(
@@ -46,6 +47,7 @@ public class CustomerServiceDeleteCustomerTest {
         assertEquals("Ungültige Kunden-ID", exception.getMessage());
     }
 
+    // uÄK2: id < 0 -> IllegalArgumentException
     @Test
     void testDeleteCustomer_idIsNegative_throwsIllegalArgumentException() {
         IllegalArgumentException exception = assertThrows(
@@ -55,6 +57,7 @@ public class CustomerServiceDeleteCustomerTest {
         assertEquals("Ungültige Kunden-ID", exception.getMessage());
     }
 
+    // gÄK1: Valider Kunde ohne offene Mieten -> Kunde wird gelöscht, keine Exception
     @Test
     void testDeleteCustomer_validId_noOpenRents_deletesCustomer() {
         Customer customer = mock(Customer.class);
@@ -65,6 +68,7 @@ public class CustomerServiceDeleteCustomerTest {
         verify(customerRepository, times(1)).delete(customer);
     }
 
+    // uÄK3: Valider Kunde mit offenen Mieten -> IllegalStateException
     @Test
     void testDeleteCustomer_validId_withOpenRents_throwsIllegalStateException() {
         Customer customer = mock(Customer.class);
@@ -82,6 +86,7 @@ public class CustomerServiceDeleteCustomerTest {
         assertEquals("Kunde kann nicht gelöscht werden: offene Mieten vorhanden", exception.getMessage());
     }
 
+    // uÄK4: Valide id aber Kunde existiert nicht -> CustomerNotFoundException
     @Test
     void testDeleteCustomer_validId_customerNotFound_throwsCustomerNotFoundException() {
         when(customerRepository.findByIdWithRentsAndVehicle(999L)).thenReturn(Optional.empty());

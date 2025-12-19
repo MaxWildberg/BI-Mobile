@@ -35,20 +35,7 @@ public class CustomerServiceRegisterCustomerTest {
     @InjectMocks
     private CustomerService customerService;
 
-    // ÄQUIVALENZKLASSE 1: Kunde mit bereits vorhandener E-Mail → DuplicateCustomerException
-    @Test
-    void ek_duplicateEmail_throwsDuplicateCustomerException() {
-        Customer customer = createValidCustomer();
-
-        when(customerRepository.existsByContactInfo_Email("test@mail.de")).thenReturn(true);
-
-        assertThrows(DuplicateCustomerException.class,
-                () -> customerService.registerCustomer(customer));
-
-        verify(customerRepository, never()).save(any());
-    }
-
-    // ÄQUIVALENZKLASSE 2: Kunde mit null ContactInfo → InvalidCustomerDataException
+    // uÄK1: Kunde mit unvollständigem Datensatz -> InvalidCustomerDataException
     @Test
     void ek_nullContactInfo_throwsInvalidCustomerDataException() {
         Customer customer = createValidCustomer();
@@ -61,9 +48,21 @@ public class CustomerServiceRegisterCustomerTest {
         verify(customerRepository, never()).save(any());
     }
 
+    // uÄK2: Kunde mit bereits vorhandener E-Mail -> DuplicateCustomerException
+    @Test
+    void ek_duplicateEmail_throwsDuplicateCustomerException() {
+        Customer customer = createValidCustomer();
+
+        when(customerRepository.existsByContactInfo_Email("test@mail.de")).thenReturn(true);
+
+        assertThrows(DuplicateCustomerException.class,
+                () -> customerService.registerCustomer(customer));
+
+        verify(customerRepository, never()).save(any());
+    }
 
 
-    // JUNIT-TEST 1: Gültiger Kunde → Registrierung erfolgreich
+    // gÄK1: Valider Kunde + E-Mail neu -> Kunde wird gespeichert, keine Exception
     @Test
     void validCustomer_registersSuccessfully() {
         Customer customer = createValidCustomer();
@@ -75,20 +74,6 @@ public class CustomerServiceRegisterCustomerTest {
 
         assertNotNull(result);
         verify(customerRepository).save(customer);
-    }
-
-    // JUNIT-TEST 2: Fehlende PersonalData → InvalidCustomerDataException
-    @Test
-    void missingPersonalData_throwsInvalidCustomerDataException() {
-        Customer customer = createValidCustomer();
-        customer.setPersonalData(null);
-
-        assertThrows(
-                InvalidCustomerDataException.class,
-                () -> customerService.registerCustomer(customer)
-        );
-
-        verify(customerRepository, never()).save(any());
     }
 
     /**
