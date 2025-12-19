@@ -41,10 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Fahrzeugverwaltung:
- * - Zeigt alle Fahrzeuge in einer Tabelle
- * - Ermöglicht Anlegen und Bearbeiten von Fahrzeugen
- * - Bietet Buttons zum Ändern des Fahrzeugstatus, History und Verkauf
+ * UI-Komponente für die Fahrzeugverwaltung.
+ * @author Halil Sentürk
  */
 @Route(value = "vehicles", layout = MainLayout.class)
 @PageTitle("Fahrzeugverwaltung")

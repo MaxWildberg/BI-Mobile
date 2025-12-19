@@ -1,5 +1,10 @@
 package bimobile.model;
 
+/**
+ * Enum für die verschiedenen Zustände eines Fahrzeugs.
+ * @author Halil Sentürk
+ */
+
 public enum VehicleStatus {
     AVAILABLE,        // verfügbar
     RENTED,           // verliehen

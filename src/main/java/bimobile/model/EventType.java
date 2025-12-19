@@ -1,5 +1,11 @@
 package bimobile.model;
 
+/**
+ * Enum für die verschiedenen Ereignistypen im Fahrzeuglebenslauf.
+ * Definiert die Arten von Einträgen wie Anlage, Wartung oder Verkauf.
+ * * @author Halil Sentürk
+ */
+
 public enum EventType {
 
     CREATED,          // Fahrzeug angelegt

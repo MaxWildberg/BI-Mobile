@@ -199,6 +199,8 @@ public class RentalService {
 	/**
 	 * Prüft, ob ein Fahrzeug im angegebenen Zeitraum aufgrund von HU oder Wartung
 	 * gesperrt ist.
+     *
+     * @author Halil Sentürk
 	 *
 	 * @param vehicle     Fahrzeug, das geprüft werden soll
 	 * @param rentalStart Startdatum der Ausleihe
@@ -238,6 +240,8 @@ public class RentalService {
 	 * <p>
 	 * Validiert Status, Wartungsfenster, parallele Ausleihen und Verfügbarkeitsflag.
 	 * Liefert für jede Verletzung eine sprechende Fehlermeldung.
+     *
+     * @author Halil Sentürk
 	 *
 	 * @param vehicle     Fahrzeug, das geprüft werden soll
 	 * @param rentalStart Startdatum der geplanten Ausleihe
@@ -402,6 +406,10 @@ public class RentalService {
 		return rentalRepository.findAllWithCustomerVehicleFacility();
 	}
 
+    /**
+     * Validiert die Verfügbarkeit eines Fahrzeugs während der Ausleihe.
+     * @author Halil Sentürk
+     */
 	private void validateVehicleAvailabilityWhileRented(Vehicle vehicle, LocalDate rentalStart, LocalDate rentalEnd) {
         if (vehicle.getStatus() == VehicleStatus.SCRAPPED || vehicle.getStatus() == VehicleStatus.SOLD) {
             throw new IllegalStateException("Das Fahrzeug ist aus dem Bestand entfernt und kann nicht ausgeliehen werden.");

@@ -3,6 +3,7 @@ package bimobile.service;
 import bimobile.dao.EmployeeDAO;
 import bimobile.model.Employee;
 import bimobile.model.RoleType;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class EmployeeService implements EmployeeManagement {
         return null;
     }
 
+    @Transactional
     @Override
     public Employee createEmployee(Employee employee) {
 
@@ -61,11 +63,13 @@ public class EmployeeService implements EmployeeManagement {
         return employee;
     }
 
+    @Transactional
     @Override
     public Optional<Employee> getEmployeeById(Long id) {
         return Optional.ofNullable(employeeDAO.getEmployeeById(id));
     }
 
+    @Transactional
     @Override
     public Employee updateEmployee(Long id, Employee updatedEmployee) {
 
@@ -132,6 +136,7 @@ public class EmployeeService implements EmployeeManagement {
         return existing;
     }
 
+    @Transactional
     @Override
     public void deactivateEmployee(Long id) {
 
@@ -164,11 +169,13 @@ public class EmployeeService implements EmployeeManagement {
         employeeDAO.updateEmployee(existing);
     }
 
+    @Transactional
     @Override
     public List<Employee> getAllEmployees() {
         return employeeDAO.getAllEmployees();
     }
 
+    @Transactional
     @Override
     public List<Employee> getEmployeesByFacility(Long facilityId) {
         return employeeDAO.getEmployeesByFacility(facilityId);

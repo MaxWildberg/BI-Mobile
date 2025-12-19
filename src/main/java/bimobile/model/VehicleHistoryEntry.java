@@ -5,8 +5,9 @@ import java.time.LocalDate;
 
 /**
  * Entity für einen Eintrag im Fahrzeuglebenslauf.
- * Dokumentiert Ereignisse (Anlage, Statusänderung, Wartung, Verkauf etc.).
+ * @author Halil Sentürk
  */
+
 @Entity
 @Table(name = "vehicle_history_entry")
 public class VehicleHistoryEntry {
