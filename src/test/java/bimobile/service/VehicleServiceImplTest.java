@@ -19,6 +19,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit-Tests für den VehicleServiceImpl zur Überprüfung der Geschäftsregeln
+ * bei Statusänderungen und Fahrzeugverwaltung.
+ * * @author Halil Sentürk
+ */
+
 @ExtendWith(MockitoExtension.class)
 class VehicleServiceImplTest {
 
