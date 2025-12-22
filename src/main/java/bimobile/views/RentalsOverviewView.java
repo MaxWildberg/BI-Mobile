@@ -280,7 +280,7 @@ public class RentalsOverviewView extends VerticalLayout {
 		Button cancel = new Button("Abbrechen", e -> dialog.close());
 		cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
-		FormLayout form = new FormLayout(customerBox, vehicleBox, facilityBox, startDate, endDate, totalRateField);
+		FormLayout form = new FormLayout(customerSelection, vehicleBox, facilityBox, startDate, endDate, totalRateField);
 		form.setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1),
 				new FormLayout.ResponsiveStep("500px", 2)
