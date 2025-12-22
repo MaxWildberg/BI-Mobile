@@ -12,6 +12,7 @@ import bimobile.service.FacilityService;
 import bimobile.service.RentalChangeLogService;
 import bimobile.service.RentalService;
 import bimobile.service.VehicleService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -19,6 +20,7 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -85,6 +87,8 @@ public class RentalsOverviewView extends VerticalLayout {
 	private final List<Rental> allRentals = new ArrayList<>();
 	private TextField searchField;
 	private String currentFilter = "";
+	private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
 	public RentalsOverviewView(RentalService rentalService,
 	                           CustomerService customerService,
@@ -142,6 +146,11 @@ public class RentalsOverviewView extends VerticalLayout {
 			bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 			bearbeiten.addClickListener(e -> openEditDialog(rental));
 
+			Button info = new Button(new Icon(VaadinIcon.INFO_CIRCLE));
+			info.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+			info.getElement().setProperty("title", "Details anzeigen");
+			info.addClickListener(e -> openRentalInfoDialog(rental));
+
 			Button loeschen = new Button(new Icon(VaadinIcon.TRASH));
 			loeschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
 			loeschen.addClickListener(e -> openDeleteDialog(rental));
@@ -151,7 +160,7 @@ public class RentalsOverviewView extends VerticalLayout {
 			zurueckgeben.addClickListener(e -> {
 				openReturnDialog(rental);
 			});
-			return new HorizontalLayout(bearbeiten, loeschen, zurueckgeben);
+			return new HorizontalLayout(bearbeiten, info, loeschen, zurueckgeben);
 
 		}).setHeader("Aktionen");
 
@@ -187,6 +196,15 @@ public class RentalsOverviewView extends VerticalLayout {
 		ComboBox<Customer> customerBox = new ComboBox<>("Kunde");
 		customerBox.setItems(customerService.findAllCustomers());
 		customerBox.setItemLabelGenerator(Customer::getFullName);
+
+		// Quick-Link zur Kundenerstellung, falls der Kunde noch nicht angelegt ist.
+		Button createCustomerButton = new Button(new Icon(VaadinIcon.USER_CARD));
+		createCustomerButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+		createCustomerButton.getElement().setProperty("title", "Neuen Kunden anlegen");
+		createCustomerButton.addClickListener(click -> UI.getCurrent().navigate("kunden"));
+
+		HorizontalLayout customerSelection = new HorizontalLayout(customerBox, createCustomerButton);
+		customerSelection.setAlignItems(Alignment.END);
 
 		ComboBox<Vehicle> vehicleBox = new ComboBox<>("Fahrzeug");
 		vehicleBox.setItems(vehicleService.findAllVehicles());
@@ -267,6 +285,7 @@ public class RentalsOverviewView extends VerticalLayout {
 				new FormLayout.ResponsiveStep("0", 1),
 				new FormLayout.ResponsiveStep("500px", 2)
 		);
+		form.setColspan(customerSelection, 2);
 
 		HorizontalLayout actions = new HorizontalLayout(save, cancel);
 		actions.setJustifyContentMode(JustifyContentMode.END);
@@ -274,6 +293,58 @@ public class RentalsOverviewView extends VerticalLayout {
 		VerticalLayout layout = new VerticalLayout(dialogTitle, form, actions);
 		dialog.add(layout);
 		dialog.open();
+	}
+	// ------------------------------------------------------------------------------------
+	// Dialog: Ausleihe-Details (Übersicht)
+	// ------------------------------------------------------------------------------------
+	private void openRentalInfoDialog(Rental rental) {
+		Dialog dialog = new Dialog();
+		dialog.setWidth("540px");
+		dialog.setModal(true);
+		dialog.setDraggable(true);
+
+		H3 dialogTitle = new H3("Übersicht Ausleihe #" + rental.getId());
+
+		// Übersichtliche Darstellung aller Kerninformationen der Ausleihe.
+		FormLayout infoLayout = new FormLayout();
+		infoLayout.setResponsiveSteps(
+				new FormLayout.ResponsiveStep("0", 1),
+				new FormLayout.ResponsiveStep("450px", 2)
+		);
+
+		infoLayout.add(
+				buildInfoRow("Status", rental.getStatus().name()),
+				buildInfoRow("Kunde", rental.getCustomer() != null ? rental.getCustomer().getFullName() : "-"),
+				buildInfoRow("Fahrzeug", rental.getVehicle() != null ? rental.getVehicle().getLicensePlate() : "-"),
+				buildInfoRow("Standort", rental.getFacility() != null ? rental.getFacility().getAddress() : "–"),
+				buildInfoRow("Startdatum", rental.getStartDate() != null ? rental.getStartDate().format(dateFormatter) : "-"),
+				buildInfoRow("Enddatum", rental.getEndDate() != null ? rental.getEndDate().format(dateFormatter) : "-"),
+				buildInfoRow("Gesamtpreis", rental.getTotalPrice() + " €"),
+				buildInfoRow("Letzte Aktualisierung", rental.getUpdatedAt() != null ? rental.getUpdatedAt().format(dateTimeFormatter) : "-")
+		);
+
+		Button close = new Button("Schließen", e -> dialog.close());
+		close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+		VerticalLayout layout = new VerticalLayout(dialogTitle, infoLayout, close);
+		layout.setAlignItems(Alignment.STRETCH);
+		layout.setSpacing(true);
+
+		dialog.add(layout);
+		dialog.open();
+	}
+
+	private VerticalLayout buildInfoRow(String label, String value) {
+		Span headline = new Span(label);
+		headline.getStyle().set("font-weight", "600");
+
+		Span content = new Span(value != null ? value : "-");
+		content.getStyle().set("color", "var(--lumo-secondary-text-color)");
+
+		VerticalLayout row = new VerticalLayout(headline, content);
+		row.setPadding(false);
+		row.setSpacing(false);
+		return row;
 	}
 	private void openReturnDialog(Rental rental) {
 		Dialog dialog = new Dialog();
