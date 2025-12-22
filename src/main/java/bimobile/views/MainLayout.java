@@ -3,6 +3,7 @@ package bimobile.views;
 import bimobile.dao.UserRepository;
 import bimobile.model.User;
 import bimobile.views.customer.CustomerOverview;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
@@ -44,45 +45,46 @@ public class MainLayout extends AppLayout {
     private User currentUser;
 
     public MainLayout(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        loadCurrentUser();
+	    this.userRepository = userRepository;
+	    this.passwordEncoder = passwordEncoder;
+	    loadCurrentUser();
 
-        // TopBar
-        H3 brand = new H3("BI-Mobile · Verwaltung");
-        brand.getStyle().set("margin", "0");
+	    // TopBar
+	    H3 brand = new H3("BI-Mobile · Verwaltung");
+	    brand.getStyle().set("margin", "0");
 
-        // User Menu Button (oben rechts)
-        Button userMenuButton = createUserMenuButton();
+	    // User Menu Button (oben rechts)
+	    Button userMenuButton = createUserMenuButton();
 
-        HorizontalLayout top = new HorizontalLayout(brand, userMenuButton);
-        top.setWidthFull();
-        top.setPadding(true);
-        top.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        top.setAlignItems(FlexComponent.Alignment.CENTER);
-        addToNavbar(top);
+	    HorizontalLayout top = new HorizontalLayout(brand, userMenuButton);
+	    top.setWidthFull();
+	    top.setPadding(true);
+	    top.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+	    top.setAlignItems(FlexComponent.Alignment.CENTER);
+	    addToNavbar(top);
 
-        // Linke Navigationsleiste
-        VerticalLayout nav = new VerticalLayout();
-        nav.setWidth("240px");
-        nav.setPadding(false);
-        nav.setSpacing(false);
-        nav.getStyle().set("background", "#f9fafb");
-        nav.getStyle().set("border-right", "1px solid #e5e7eb");
-        nav.getStyle().set("box-shadow", "2px 0 6px rgba(0,0,0,0.05)");
+	    VerticalLayout nav = new VerticalLayout();
+	    nav.setWidth("240px");
+	    nav.setPadding(true);
+	    nav.setSpacing(false);
+	    nav.setAlignItems(FlexComponent.Alignment.STRETCH);
+	    nav.getStyle().set("background", "#f9fafb");
+	    nav.getStyle().set("border-right", "1px solid #e5e7eb");
+	    nav.getStyle().set("box-shadow", "2px 0 6px rgba(0,0,0,0.05)");
 
-        // Navigationseinträge
-        RouterLink dashboard = new RouterLink("Dashboard", DashboardView.class);
-        RouterLink facilities = new RouterLink("Standorte", LocationsOverviewView.class);
-        RouterLink vehicles = new RouterLink("Fahrzeuge", VehicleView.class);
-        RouterLink rentals = new RouterLink("Ausleihen", RentalsOverviewView.class);
-        RouterLink employees = new RouterLink("Mitarbeiter", EmployeeView.class);
-        RouterLink customers = new RouterLink("Kunden", CustomerOverview.class);
+	    H3 navHeader = new H3("Navigation");
+	    navHeader.getStyle().set("margin", "0 0 12px 0");
 
-        styleLinks(dashboard, facilities, vehicles, rentals, employees, customers);
+	    // Navigationseinträge mit Icons & Hover-Effekt
+	    RouterLink dashboard = createNavLink("Dashboard", VaadinIcon.HOME, DashboardView.class);
+	    RouterLink facilities = createNavLink("Standorte", VaadinIcon.OFFICE, LocationsOverviewView.class);
+	    RouterLink vehicles = createNavLink("Fahrzeuge", VaadinIcon.CAR, VehicleView.class);
+	    RouterLink rentals = createNavLink("Ausleihen", VaadinIcon.CLIPBOARD_TEXT, RentalsOverviewView.class);
+	    RouterLink employees = createNavLink("Mitarbeiter", VaadinIcon.GROUP, EmployeeView.class);
+	    RouterLink customers = createNavLink("Kunden", VaadinIcon.USER_CARD, CustomerOverview.class);
 
-        nav.add(new H3("Navigation"), dashboard, facilities, vehicles, rentals, employees, customers);
-        addToDrawer(nav);
+	    nav.add(navHeader, dashboard, facilities, vehicles, rentals, employees, customers);
+	    addToDrawer(nav);
     }
 
     private void loadCurrentUser() {
@@ -248,11 +250,38 @@ public class MainLayout extends AppLayout {
         };
     }
 
-    private void styleLinks(RouterLink... links) {
-        for (RouterLink link : links) {
-            link.getElement().getStyle().set("padding", "10px 16px");
-            link.getElement().getStyle().set("border-radius", "8px");
-            link.getElement().getStyle().set("margin", "4px 8px");
-        }
-    }
+	private RouterLink createNavLink(String label, VaadinIcon iconType, Class<? extends Component> navigationTarget) {
+		RouterLink link = new RouterLink("", navigationTarget);
+		link.getStyle().set("width", "100%");
+		link.getElement().getStyle().set("display", "flex");
+		link.getElement().getStyle().set("align-items", "center");
+		link.getElement().getStyle().set("gap", "10px");
+		link.getElement().getStyle().set("padding", "10px 14px");
+		link.getElement().getStyle().set("margin", "4px 0");
+		link.getElement().getStyle().set("border-radius", "10px");
+		link.getElement().getStyle().set("color", "#1f2937");
+		link.getElement().getStyle().set("text-decoration", "none");
+		link.getElement().getStyle().set("font-weight", "500");
+		link.getElement().getStyle().set("transition", "background-color 120ms ease, color 120ms ease");
+
+		Icon icon = iconType.create();
+		icon.setColor("var(--lumo-primary-color)");
+		icon.getStyle().set("width", "18px").set("height", "18px");
+
+		Span text = new Span(label);
+
+		link.add(icon, text);
+
+		link.getElement().addEventListener("mouseenter", e -> {
+		}).addEventData("event");
+		link.getElement().addEventListener("mouseleave", e -> {
+		}).addEventData("event");
+
+		link.getElement().getStyle().set("cursor", "pointer");
+		link.getElement().getStyle().set("background-color", "transparent");
+		link.getElement().setAttribute("onmouseenter", "this.style.backgroundColor='#eef2ff'; this.style.color='#111827';");
+		link.getElement().setAttribute("onmouseleave", "this.style.backgroundColor='transparent'; this.style.color='#1f2937';");
+
+		return link;
+	}
 }
