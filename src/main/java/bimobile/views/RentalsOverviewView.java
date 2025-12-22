@@ -198,8 +198,8 @@ public class RentalsOverviewView extends VerticalLayout {
 		customerBox.setItemLabelGenerator(Customer::getFullName);
 
 		// Quick-Link zur Kundenerstellung, falls der Kunde noch nicht angelegt ist.
-		Button createCustomerButton = new Button(new Icon(VaadinIcon.USER_CARD));
-		createCustomerButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+		Button createCustomerButton = new Button("Neuen Kunden anlegen", VaadinIcon.USER_CARD.create());
+		createCustomerButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
 		createCustomerButton.getElement().setProperty("title", "Neuen Kunden anlegen");
 		createCustomerButton.addClickListener(click -> UI.getCurrent().navigate("kunden"));
 
