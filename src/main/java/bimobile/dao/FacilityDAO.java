@@ -5,6 +5,12 @@ import bimobile.model.Facility;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
+/**
+ * DAO/Repository für Facility, das CRUD-Operationen über den JPA-EntityManager bereitstellt.
+ *
+ * @author Jannick Braun, Max
+ */
+
 @Repository
 public class FacilityDAO {
 

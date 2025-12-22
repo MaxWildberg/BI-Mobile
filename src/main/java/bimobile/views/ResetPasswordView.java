@@ -15,6 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Vaadin-View zum Zurücksetzen des Passworts: liest den Token aus den URL-Parametern, validiert ihn über den
+ * PasswordResetService und zeigt je nach Ergebnis Formular-, Fehler- oder Erfolgansicht; bei gültigem Token
+ * wird das neue Passwort (inkl. Mindestlänge und Bestätigung) gesetzt.
+ *
+ * @author Jannick Braun
+ */
+
+
 @Route("reset-password")
 @PageTitle("Passwort zurücksetzen | BI-Mobile")
 @AnonymousAllowed

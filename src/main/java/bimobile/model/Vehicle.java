@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Repräsentiert ein Fahrzeug im System.
+ * Entity für ein Fahrzeug.
+ * @author Halil Sentürk
  */
 @Entity
 public class Vehicle {

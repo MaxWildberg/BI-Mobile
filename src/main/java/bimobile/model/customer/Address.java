@@ -4,6 +4,14 @@ package bimobile.model.customer;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * Eingebettetes Value-Objekt zur Speicherung der Addressdaten eines Kunden.
+ * Enthält Straße/Hausnummer, PLZ, Wohnort und Land eines Kunden.
+ * Durch die Verwendung von {@link Embeddable} werden die Felder direkt in der Tabelle
+ * der übergeordneten Entity gespeichert, es entsteht keine eigene Tabelle.
+ *
+ * @author Max Wildberg
+ */
 @Embeddable
 public class Address {
 

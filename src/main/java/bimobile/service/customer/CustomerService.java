@@ -1,13 +1,10 @@
 package bimobile.service.customer;
 
-import bimobile.dao.CompanyRepository;
 import bimobile.dao.RentalRepository;
 import bimobile.dao.CustomerRepository;
-
 import bimobile.enums.RentalStatus;
 import bimobile.model.Rental;
 import bimobile.model.customer.*;
-
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
@@ -16,21 +13,34 @@ import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service zur Verwaltung von Kundenobjekten.
+ * Bietet Funktionen zum Erstellen, Aktualisieren, Löschen und Abrufen von Kunden.
+ * Validiert Daten und prüft auf Duplikate, Mindestalter und offene Mieten.
+ *
+ * @author Max Wildberg
+ */
 @Service
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
-    private final CompanyRepository companyRepositoriy;
     private final RentalRepository rentalRepository;
 
     public CustomerService(CustomerRepository customerRepository,
-                           CompanyRepository companyRepositoriy,
                            RentalRepository rentalRepository) {
         this.customerRepository = customerRepository;
-        this.companyRepositoriy = companyRepositoriy;
         this.rentalRepository = rentalRepository;
     }
 
+    /**
+     * Legt einen neuen Kunden an.
+     * Prüft auf Duplikate anhand der E-Mail und auf Mindestalter.
+     * @param customer Zu speichernder Kunde
+     * @return Gespeicherter Kunde
+     * @throws DuplicateCustomerException wenn E-Mail bereits existiert
+     * @throws InvalidCustomerDataException wenn Daten unvollständig sind
+     * @throws CustomerTooYoungException wenn Kunde jünger als 18 Jahre ist
+     */
     public Customer registerCustomer(@Valid Customer customer) {
         validateCustomer(customer);
 
@@ -42,7 +52,14 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-
+    /**
+     * Aktualisiert einen bestehenden Kunden.
+     * Prüft auf Mindestalter und BusinessCustomer-Firma.
+     * @param updated Kunde mit aktualisierten Daten
+     * @throws InvalidCustomerDataException wenn Daten unvollständig oder null
+     * @throws CustomerTooYoungException wenn Kunde jünger als 18 Jahre ist
+     * @throws CustomerNotFoundException wenn Kunde nicht existiert
+     */
     public void updateCustomer(@Valid Customer updated) {
         if (updated == null) {
             throw new InvalidCustomerDataException("Zu aktualisierender Kunde darf nicht null sein");
@@ -59,13 +76,11 @@ public class CustomerService {
         Customer existing = customerRepository.findById(updated.getCustomerId())
                 .orElseThrow(() -> new CustomerNotFoundException(updated.getCustomerId()));
 
-        // Value-Objects (Personendaten, Adresse, Kontaktinfo etc.)
         existing.setPersonalData(updated.getPersonalData());
         existing.setAddress(updated.getAddress());
         existing.setContactInfo(updated.getContactInfo());
         existing.setIdentification(updated.getIdentification());
 
-        // Wenn BusinessCustomer → Firma aktualisieren
         if (updated instanceof BusinessCustomer ub &&
                 existing instanceof BusinessCustomer eb) {
             if (ub.getCompany() == null) {
@@ -77,15 +92,28 @@ public class CustomerService {
         customerRepository.save(existing);
     }
 
+    /**
+     * Liefert alle Kunden zurück.
+     * @return Liste aller Kunden
+     */
     public List<Customer> findAllCustomers() {
         return customerRepository.findAll();
     }
 
+    /**
+     * Löscht einen Kunden anhand der ID.
+     * Prüft auf offene Mieten.
+     * @param id ID des zu löschenden Kunden
+     * @throws IllegalArgumentException bei null oder ungültiger ID
+     * @throws IllegalStateException wenn offene Mieten existieren
+     * @throws CustomerNotFoundException wenn Kunde nicht existiert
+     */
     public void deleteCustomer(Long id) {
-        Customer customer = getCustomerByID(id);
-        if (id == null || id <= 0) {
+        if (id == null || id < 0) {
             throw new IllegalArgumentException("Ungültige Kunden-ID");
         }
+
+        Customer customer = getCustomerByID(id);
 
         boolean hasOpenRents = customer.getRents().stream()
                 .filter(r -> r.getStatus() == RentalStatus.ACTIVE)
@@ -94,12 +122,19 @@ public class CustomerService {
         if (hasOpenRents) {
             throw new IllegalStateException("Kunde kann nicht gelöscht werden: offene Mieten vorhanden");
         }
-        Customer existing = customerRepository.findById(id)
-                .orElseThrow(() -> new CustomerNotFoundException(id));
 
-        customerRepository.delete(existing);
+
+
+        customerRepository.delete(customer);
     }
 
+    /**
+     * Liefert einen Kunden anhand der ID.
+     * @param id ID des Kunden
+     * @return Gefundener Kunde
+     * @throws IllegalArgumentException bei null oder ungültiger ID
+     * @throws CustomerNotFoundException wenn Kunde nicht existiert
+     */
     public Customer getCustomerByID(Long id) {
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("Ungültige Kunden-ID");
@@ -108,60 +143,29 @@ public class CustomerService {
         Optional<Customer> optionalCustomer =
                 customerRepository.findByIdWithRentsAndVehicle(id);
 
-        if (!optionalCustomer.isPresent()) {
-            throw new CustomerNotFoundException(id);
-        }
-
-        return optionalCustomer.get();
+        return optionalCustomer.orElseThrow(() -> new CustomerNotFoundException(id));
     }
 
-
-    public Optional<Customer> getCustomerByEmail(String email) {
-        if (email == null) return Optional.empty();
-        return customerRepository.findByContactInfo_Email(email);
-    }
-
-    public List<Company> getAllCompanies() {
-        return companyRepositoriy.findAll();
-    }
-
-    public Company getCompanyById(Long companyId) {
-        if (companyId == null || companyId <= 0) {
-            throw new IllegalArgumentException("Ungültige Firmen-ID");
-        }
-        return companyRepositoriy.findById(companyId)
-                .orElseThrow(() -> new CompanyNotFoundException(companyId));
-    }
-
-    public boolean existsByContactInfoEmail(String email) {
-        return customerRepository.existsByContactInfo_Email(email);
-    }
-
-    public Company saveCompany(Company company) {
-
-        String name = company.getName();
-
-        if (name != null && companyRepositoriy.existsByName(name)) {
-            throw new DuplicateCompanyException(name);
-        }
-
-        return companyRepositoriy.save(company);
-    }
-
+    /**
+     * Liefert alle Mieten inklusive zugehöriger Kunden- und Fahrzeuginformationen.
+     * @return Liste aller Mieten
+     */
     public List<Rental> findAllWithCustomerAndVehicle() {
         return rentalRepository.findAllWithCustomerAndVehicle();
     }
 
     /**
-     *
-     * @param customer Kunde der vor speichern validiert werden soll
+     * Validiert ein Kundenobjekt vor dem Speichern.
+     * Prüft auf Pflichtfelder, Mindestalter und bei {@link BusinessCustomer} auf Firma.
+     * @param customer Kunde zur Validierung
+     * @throws InvalidCustomerDataException bei unvollständigen Daten
+     * @throws CustomerTooYoungException wenn Kunde jünger als 18 Jahre ist
      */
     private void validateCustomer(Customer customer) {
         if (customer == null) {
             throw new InvalidCustomerDataException("Customer unvollständig");
         }
 
-        // --- PersonalData ---
         PersonalData pd = customer.getPersonalData();
         if (pd == null
                 || pd.getFirstname() == null
@@ -170,39 +174,28 @@ public class CustomerService {
             throw new InvalidCustomerDataException("PersonalData unvollständig");
         }
 
-        // Alter prüfen
         int age = Period.between(pd.getBirthday(), LocalDate.now()).getYears();
         if (age < 18) {
             throw new CustomerTooYoungException("Kunde muss mindestens 18 Jahre alt sein. Aktuelles Alter: " + age);
         }
 
-        // --- Address ---
         Address address = customer.getAddress();
-        if (address == null
-                || address.getStreet() == null
-                || address.getCity() == null) {
+        if (address == null || address.getStreet() == null || address.getCity() == null) {
             throw new InvalidCustomerDataException("Address unvollständig");
         }
 
-        // --- ContactInfo ---
         ContactInfo ci = customer.getContactInfo();
-        if (ci == null
-                || ci.getMail() == null) {
+        if (ci == null || ci.getMail() == null) {
             throw new InvalidCustomerDataException("ContactInfo unvollständig");
         }
 
-        // --- Identification ---
         Identification id = customer.getIdentification();
-        if (id == null
-                || id.getIdcard() == null) {
+        if (id == null || id.getIdcard() == null) {
             throw new InvalidCustomerDataException("Identification unvollständig");
         }
 
-        // Optional: BusinessCustomer-Check
         if (customer instanceof BusinessCustomer bc && bc.getCompany() == null) {
             throw new InvalidCustomerDataException("Company unvollständig");
         }
     }
-
-
 }

@@ -1,6 +1,7 @@
 package bimobile.views.customer;
 
 import bimobile.model.customer.Company;
+import bimobile.service.customer.CompanyService;
 import bimobile.service.customer.CustomerService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -9,9 +10,26 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
+/**
+ * Dialog zum Anlegen einer neuen {@link Company}.
+ * Stellt ein Formular zur Eingabe von Firmenname und Adresse bereit
+ * und speichert die Firma nach erfolgreicher Validierung.
+ *
+ * @author Max Wildberg
+ */
 public class AddCompanyDialog extends Dialog {
 
-    public AddCompanyDialog(CustomerService service, ComboBox<Company> companyCombo) {
+    /**
+     * Die gespeicherte Firma nach erfolgreichem Speichervorgang.
+     */
+    private Company savedCompany;
+
+    /**
+     * Erstellt einen Dialog zum Anlegen einer neuen Firma.
+     *
+     * @param service Service zum Speichern der Firma
+     */
+    public AddCompanyDialog(CompanyService service) {
         setHeaderTitle("Neue Firma anlegen");
 
         TextField nameField = new TextField("Firmenname");
@@ -36,11 +54,7 @@ public class AddCompanyDialog extends Dialog {
         Button save = new Button("Speichern", e -> {
             if (binder.validate().isOk()) {
                 binder.writeBeanIfValid(newCompany);
-                Company saved = service.saveCompany(newCompany);
-
-                companyCombo.setItems(service.getAllCompanies());
-                companyCombo.setValue(saved);
-
+                this.savedCompany = service.saveCompany(newCompany);
                 close();
             }
         });
@@ -48,5 +62,15 @@ public class AddCompanyDialog extends Dialog {
         Button cancel = new Button("Abbrechen", e -> close());
         getFooter().add(cancel, save);
         add(form);
+    }
+
+    /**
+     * Liefert die gespeicherte Firma zurück.
+     *
+     * @return die gespeicherte {@link Company} oder null,
+     *         falls nicht gespeichert wurde
+     */
+    public Company getSavedCompany() {
+        return savedCompany;
     }
 }

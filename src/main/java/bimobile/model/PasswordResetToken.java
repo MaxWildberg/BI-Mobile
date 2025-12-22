@@ -4,6 +4,14 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * JPA-Entität für Passwort-Zurücksetz-Tokens,
+ * verknüpft mit einem Benutzer, inklusive Ablaufzeit, „benutzt“-Status und Gültigkeitsprüfung.
+ *
+ * @author Jannick Braun
+ */
+
+
 @Entity
 @Table(name = "password_reset_tokens")
 public class PasswordResetToken {

@@ -1,8 +1,10 @@
 package bimobile.enums;
 
 /**
+ * Enum für Kraftstoffarten.
+ * @author Halil Sentürk
+ */
 
- Mögliche Antriebsarten eines Fahrzeugs.*/
 public enum FuelType {
 	BENZIN,
 	DIESEL,

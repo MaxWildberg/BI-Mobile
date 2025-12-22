@@ -11,7 +11,9 @@ import java.util.List;
 
 /**
  * Implementierung der Geschäftslogik für die Fahrzeugverwaltung.
+ * @author Halil Sentürk
  */
+
 @Service
 @Transactional
 public class VehicleServiceImpl implements VehicleService {

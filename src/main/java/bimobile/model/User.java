@@ -2,12 +2,18 @@ package bimobile.model;
 
 import jakarta.persistence.*;
 
+/**
+ * JPA-Entität für einen Benutzer mit Stammdaten und Login-Informationen
+ * (Name, E-Mail, Passwort, Rolle, aktiv/gesperrt) sowie optionaler Zuordnung
+ * zu einem Standort.
+ *
+ * @author Jannick Braun
+ */
+
+
 @Entity
 @Table(name = "users")
 public class User {
-
-	// Author: Lasse
-	// Description: User entity for login and role assignment.
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

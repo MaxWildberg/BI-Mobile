@@ -3,38 +3,51 @@ package bimobile.model.customer;
 import java.time.LocalDate;
 
 /**
- * Data Transfer Object für Customer Forms
- * Flacht alle Value Objects ab für die UI (Vaadin Binder)
+ * Data Transfer Object (DTO) für Customer Forms in der UI.
+ * Flacht alle Value Objects eines {@link Customer} ab, damit sie direkt
+ * mit Vaadin Binder oder anderen Formularen gebunden werden können.
+ *
+ * Enthält Felder für:
+ * Persönliche Daten (Titel, Vorname, Nachname, Geburtstag)
+ * Adresse (Straße, PLZ, Stadt, Land)
+ * Kontaktinformationen (E-Mail, Telefon)
+ * Dokumente (Führerscheinnummer, Ausweisnummer)
+ * Firmenzuordnung bei BusinessCustomer
+ *
+ * Die statische Methode {@link #fromCustomer(Customer)} erlaubt das einfache
+ * Erstellen eines DTOs aus einer existierenden Customer-Entity.
+ *
+ * @author Max Wildberg
  */
 public class CustomerFormDTO {
 
-    // --- Personal Data ---
     private String title;
     private String firstname;
     private String lastname;
     private LocalDate birthday;
 
-    // --- Address ---
     private String street;
     private String zip;
     private String city;
     private String country;
 
-    // --- Contact Info ---
     private String email;
     private String telephone;
 
-    // --- Documents ---
     private String driversLicense;
     private String idCardNum;
 
-    // --- Business Customer ---
     private Company company;
 
-    // --- Constructors ---
     public CustomerFormDTO() {}
 
-    // Optional: DTO aus Customer erstellen
+    /**
+     * Erstellt ein Customer DataTransferObject aus einer bestehenden Customer-Entity.
+     * Alle relevanten Felder werden kopiert, inklusive Company bei BusinessCustomer.
+     *
+     * @param customer Customer-Entity
+     * @return DTO mit den Werten des Kunden
+     */
     public static CustomerFormDTO fromCustomer(bimobile.model.customer.Customer customer) {
         CustomerFormDTO dto = new CustomerFormDTO();
 
@@ -74,7 +87,8 @@ public class CustomerFormDTO {
         return dto;
     }
 
-    // --- Getter / Setter ---
+    // Getter und Setter
+
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 

@@ -8,7 +8,9 @@ import java.util.List;
 
 /**
  * Service-Schnittstelle für die Fahrzeugverwaltung.
+ * @author Halil Sentürk
  */
+
 public interface VehicleService {
 
 	Vehicle createVehicle(Vehicle vehicle);

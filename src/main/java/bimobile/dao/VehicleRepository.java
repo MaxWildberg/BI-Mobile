@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Datenzugriffsschicht für Fahrzeuge.
- * Spring Data JPA erzeugt die Implementierung automatisch zur Laufzeit.
+ * Repository für Fahrzeuge (Datenbankzugriff).
+ * @author Halil Sentürk
  */
+
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     // Liefert ein Fahrzeug zu einem bestimmten Kennzeichen (falls vorhanden)

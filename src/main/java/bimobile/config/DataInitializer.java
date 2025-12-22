@@ -10,6 +10,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ *
+ * Initialisiert beim Start der Anwendung Testbenutzer,
+ * falls noch keine Benutzer in der Datenbank existieren (Passwörter werden kodiert, Rollen gesetzt).
+ *
+ * @author Jannick Braun
+ */
+
+
 @Configuration
 public class DataInitializer {
 
