@@ -132,6 +132,7 @@ public class RentalsOverviewView extends VerticalLayout {
 		header.setFlexGrow(2, searchField);
 
 		// Grid-Konfiguration
+		grid.setWidthFull();
 		grid.addColumn(Rental::getId).setHeader("ID").setAutoWidth(true);
 		grid.addColumn(r -> r.getCustomer().getFullName()).setHeader("Kunde").setAutoWidth(true);
 		grid.addColumn(r -> r.getVehicle().getLicensePlate()).setHeader("Fahrzeug").setAutoWidth(true);
@@ -160,12 +161,15 @@ public class RentalsOverviewView extends VerticalLayout {
 			zurueckgeben.addClickListener(e -> {
 				openReturnDialog(rental);
 			});
-			return new HorizontalLayout(bearbeiten, info, loeschen, zurueckgeben);
+			HorizontalLayout actions = new HorizontalLayout(bearbeiten, info, loeschen, zurueckgeben);
+			actions.setSpacing(true);
+			return actions;
 
-		}).setHeader("Aktionen");
+		}).setHeader("Aktionen").setAutoWidth(true).setFlexGrow(0);
 
 		// Initiale Datenladung
 		updateGrid();
+
 
 		// Übersicht + Änderungsprotokoll in Layout einbinden
 		add(header, grid, buildChangeLogSection());
