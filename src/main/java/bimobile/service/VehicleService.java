@@ -13,19 +13,22 @@ import java.util.List;
 
 public interface VehicleService {
 
-	Vehicle createVehicle(Vehicle vehicle);
+    Vehicle createVehicle(Vehicle vehicle);
 
-	Vehicle updateVehicle(Vehicle vehicle);
+    Vehicle updateVehicle(Vehicle vehicle);
 
-	Vehicle changeStatus(Long vehicleId, VehicleStatus newStatus, String reason);
+    Vehicle changeStatus(Long vehicleId, VehicleStatus newStatus, String reason);
 
-	List <Vehicle> findAllVehicles();
+    List <Vehicle> findAllVehicles();
 
-	Vehicle save (Vehicle vehicle);
+    // [NEU]
+    List<Vehicle> getVehiclesByFacility(Long facilityId);
 
-	Vehicle findById(Long id);
+    Vehicle save (Vehicle vehicle);
 
-	Vehicle sellVehicle(Long vehicleId, double salePrice, int finalMileage, String buyerName);
+    Vehicle findById(Long id);
 
-	List<VehicleHistoryEntry> getHistoryForVehicle(Long vehicleId);
+    Vehicle sellVehicle(Long vehicleId, double salePrice, int finalMileage, String buyerName);
+
+    List<VehicleHistoryEntry> getHistoryForVehicle(Long vehicleId);
 }

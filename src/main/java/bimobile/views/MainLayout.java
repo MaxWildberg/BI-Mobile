@@ -2,6 +2,7 @@ package bimobile.views;
 
 import bimobile.dao.UserRepository;
 import bimobile.model.User;
+import bimobile.security.AuthorizationUtils;
 import bimobile.views.customer.CustomerOverview;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -25,18 +26,16 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.Optional;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
+import java.util.Optional;
+
 /**
- * Zentrales Vaadin-AppLayout der Anwendung: stellt Topbar und Navigationsmenü bereit, lädt den aktuell
- * angemeldeten Benutzer aus dem SecurityContext, zeigt ein Konto-Menü mit Benutzerinfos und bietet
- * Funktionen zum Passwortwechsel sowie zum Logout.
+ * Zentrales Vaadin-AppLayout der Anwendung: stellt Topbar und Navigationsmenü bereit.
+ * Implementiert nun auch client-seitige Schutzmaßnahmen für URLs.
  *
  * @author Jannick Braun, Ben Berlin
  */
-
-
 @PermitAll
 public class MainLayout extends AppLayout {
 
@@ -45,46 +44,96 @@ public class MainLayout extends AppLayout {
     private User currentUser;
 
     public MainLayout(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-	    this.userRepository = userRepository;
-	    this.passwordEncoder = passwordEncoder;
-	    loadCurrentUser();
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        loadCurrentUser();
 
-	    // TopBar
-	    H3 brand = new H3("BI-Mobile · Verwaltung");
-	    brand.getStyle().set("margin", "0");
+        // 1. URL-Schutz implementieren (Verhindert manuelle Eingabe der URL)
+        registerNavigationGuard();
 
-	    // User Menu Button (oben rechts)
-	    Button userMenuButton = createUserMenuButton();
+        // TopBar
+        H3 brand = new H3("BI-Mobile · Verwaltung");
+        brand.getStyle().set("margin", "0");
 
-	    HorizontalLayout top = new HorizontalLayout(brand, userMenuButton);
-	    top.setWidthFull();
-	    top.setPadding(true);
-	    top.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-	    top.setAlignItems(FlexComponent.Alignment.CENTER);
-	    addToNavbar(top);
+        Button userMenuButton = createUserMenuButton();
 
-	    VerticalLayout nav = new VerticalLayout();
-	    nav.setWidth("240px");
-	    nav.setPadding(true);
-	    nav.setSpacing(false);
-	    nav.setAlignItems(FlexComponent.Alignment.STRETCH);
-	    nav.getStyle().set("background", "#f9fafb");
-	    nav.getStyle().set("border-right", "1px solid #e5e7eb");
-	    nav.getStyle().set("box-shadow", "2px 0 6px rgba(0,0,0,0.05)");
+        HorizontalLayout top = new HorizontalLayout(brand, userMenuButton);
+        top.setWidthFull();
+        top.setPadding(true);
+        top.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        top.setAlignItems(FlexComponent.Alignment.CENTER);
+        addToNavbar(top);
 
-	    H3 navHeader = new H3("Navigation");
-	    navHeader.getStyle().set("margin", "0 0 12px 0");
+        VerticalLayout nav = new VerticalLayout();
+        nav.setWidth("240px");
+        nav.setPadding(true);
+        nav.setSpacing(false);
+        nav.setAlignItems(FlexComponent.Alignment.STRETCH);
+        nav.getStyle().set("background", "#f9fafb");
+        nav.getStyle().set("border-right", "1px solid #e5e7eb");
+        nav.getStyle().set("box-shadow", "2px 0 6px rgba(0,0,0,0.05)");
 
-	    // Navigationseinträge mit Icons & Hover-Effekt
-	    RouterLink dashboard = createNavLink("Dashboard", VaadinIcon.HOME, DashboardView.class);
-	    RouterLink facilities = createNavLink("Standorte", VaadinIcon.OFFICE, LocationsOverviewView.class);
-	    RouterLink vehicles = createNavLink("Fahrzeuge", VaadinIcon.CAR, VehicleView.class);
-	    RouterLink rentals = createNavLink("Ausleihen", VaadinIcon.CLIPBOARD_TEXT, RentalsOverviewView.class);
-	    RouterLink employees = createNavLink("Mitarbeiter", VaadinIcon.GROUP, EmployeeView.class);
-	    RouterLink customers = createNavLink("Kunden", VaadinIcon.USER_CARD, CustomerOverview.class);
+        H3 navHeader = new H3("Navigation");
+        navHeader.getStyle().set("margin", "0 0 12px 0");
 
-	    nav.add(navHeader, dashboard, facilities, vehicles, rentals, employees, customers);
-	    addToDrawer(nav);
+        // Navigationseinträge erstellen
+        RouterLink dashboard = createNavLink("Dashboard", VaadinIcon.HOME, DashboardView.class);
+
+        // Berechtigungsprüfung für Standorte
+        boolean canViewLocations = AuthorizationUtils.canAccessLocations();
+        RouterLink facilities = createNavLink("Standorte", VaadinIcon.OFFICE, LocationsOverviewView.class);
+        facilities.setEnabled(canViewLocations); // Deaktiviert Link (klickbar & visuell)
+        styleDisabledLink(facilities, canViewLocations);
+
+        RouterLink vehicles = createNavLink("Fahrzeuge", VaadinIcon.CAR, VehicleView.class);
+        RouterLink rentals = createNavLink("Ausleihen", VaadinIcon.CLIPBOARD_TEXT, RentalsOverviewView.class);
+
+        // Berechtigungsprüfung für Mitarbeiter
+        boolean canViewEmployees = AuthorizationUtils.canAccessEmployees();
+        RouterLink employees = createNavLink("Mitarbeiter", VaadinIcon.GROUP, EmployeeView.class);
+        employees.setEnabled(canViewEmployees);
+        styleDisabledLink(employees, canViewEmployees);
+
+        RouterLink customers = createNavLink("Kunden", VaadinIcon.USER_CARD, CustomerOverview.class);
+
+        nav.add(navHeader, dashboard, facilities, vehicles, rentals, employees, customers);
+        addToDrawer(nav);
+    }
+
+    /**
+     * Fügt einen Listener hinzu, der bei jedem Seitenwechsel prüft, ob der User die Zielseite sehen darf.
+     * Schützt vor direktem URL-Aufruf (z.B. /employees).
+     */
+    private void registerNavigationGuard() {
+        addAttachListener(attachEvent -> {
+            UI.getCurrent().addBeforeEnterListener(event -> {
+                Class<?> target = event.getNavigationTarget();
+
+                // Schutz für Standorte
+                if (LocationsOverviewView.class.equals(target) && !AuthorizationUtils.canAccessLocations()) {
+                    event.rerouteTo(DashboardView.class);
+                    Notification.show("Zugriff verweigert: Keine Berechtigung für Standorte.", 3000, Notification.Position.BOTTOM_CENTER)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                }
+
+                // Schutz für Mitarbeiter
+                if (EmployeeView.class.equals(target) && !AuthorizationUtils.canAccessEmployees()) {
+                    event.rerouteTo(DashboardView.class);
+                    Notification.show("Zugriff verweigert: Keine Berechtigung für Mitarbeiterverwaltung.", 3000, Notification.Position.BOTTOM_CENTER)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                }
+            });
+        });
+    }
+
+    /**
+     * Hilfsmethode um deaktivierte Links optisch auszugrauen.
+     */
+    private void styleDisabledLink(RouterLink link, boolean enabled) {
+        if (!enabled) {
+            link.getStyle().set("opacity", "0.5");
+            link.getStyle().set("pointer-events", "none"); // Sicherstellen, dass kein Klick möglich ist
+        }
     }
 
     private void loadCurrentUser() {
@@ -156,7 +205,7 @@ public class MainLayout extends AppLayout {
         logoutBtn.setWidthFull();
         logoutBtn.addClickListener(e -> {
             dialog.close();
-	        logout();
+            logout();
         });
 
 
@@ -165,15 +214,15 @@ public class MainLayout extends AppLayout {
         dialog.open();
     }
 
-	private void logout() {
-		UI.getCurrent().getPage().setLocation("/login");
-		SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
-		logoutHandler.logout(
-				VaadinServletRequest.getCurrent().getHttpServletRequest(),
-				null,
-				null
-		);
-	}
+    private void logout() {
+        UI.getCurrent().getPage().setLocation("/login");
+        SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+        logoutHandler.logout(
+                VaadinServletRequest.getCurrent().getHttpServletRequest(),
+                null,
+                null
+        );
+    }
 
     private void openChangePasswordDialog() {
         Dialog dialog = new Dialog();
@@ -250,38 +299,38 @@ public class MainLayout extends AppLayout {
         };
     }
 
-	private RouterLink createNavLink(String label, VaadinIcon iconType, Class<? extends Component> navigationTarget) {
-		RouterLink link = new RouterLink("", navigationTarget);
-		link.getStyle().set("width", "100%");
-		link.getElement().getStyle().set("display", "flex");
-		link.getElement().getStyle().set("align-items", "center");
-		link.getElement().getStyle().set("gap", "10px");
-		link.getElement().getStyle().set("padding", "10px 14px");
-		link.getElement().getStyle().set("margin", "4px 0");
-		link.getElement().getStyle().set("border-radius", "10px");
-		link.getElement().getStyle().set("color", "#1f2937");
-		link.getElement().getStyle().set("text-decoration", "none");
-		link.getElement().getStyle().set("font-weight", "500");
-		link.getElement().getStyle().set("transition", "background-color 120ms ease, color 120ms ease");
+    private RouterLink createNavLink(String label, VaadinIcon iconType, Class<? extends Component> navigationTarget) {
+        RouterLink link = new RouterLink("", navigationTarget);
+        link.getStyle().set("width", "100%");
+        link.getElement().getStyle().set("display", "flex");
+        link.getElement().getStyle().set("align-items", "center");
+        link.getElement().getStyle().set("gap", "10px");
+        link.getElement().getStyle().set("padding", "10px 14px");
+        link.getElement().getStyle().set("margin", "4px 0");
+        link.getElement().getStyle().set("border-radius", "10px");
+        link.getElement().getStyle().set("color", "#1f2937");
+        link.getElement().getStyle().set("text-decoration", "none");
+        link.getElement().getStyle().set("font-weight", "500");
+        link.getElement().getStyle().set("transition", "background-color 120ms ease, color 120ms ease");
 
-		Icon icon = iconType.create();
-		icon.setColor("var(--lumo-primary-color)");
-		icon.getStyle().set("width", "18px").set("height", "18px");
+        Icon icon = iconType.create();
+        icon.setColor("var(--lumo-primary-color)");
+        icon.getStyle().set("width", "18px").set("height", "18px");
 
-		Span text = new Span(label);
+        Span text = new Span(label);
 
-		link.add(icon, text);
+        link.add(icon, text);
 
-		link.getElement().addEventListener("mouseenter", e -> {
-		}).addEventData("event");
-		link.getElement().addEventListener("mouseleave", e -> {
-		}).addEventData("event");
+        link.getElement().addEventListener("mouseenter", e -> {
+        }).addEventData("event");
+        link.getElement().addEventListener("mouseleave", e -> {
+        }).addEventData("event");
 
-		link.getElement().getStyle().set("cursor", "pointer");
-		link.getElement().getStyle().set("background-color", "transparent");
-		link.getElement().setAttribute("onmouseenter", "this.style.backgroundColor='#eef2ff'; this.style.color='#111827';");
-		link.getElement().setAttribute("onmouseleave", "this.style.backgroundColor='transparent'; this.style.color='#1f2937';");
+        link.getElement().getStyle().set("cursor", "pointer");
+        link.getElement().getStyle().set("background-color", "transparent");
+        link.getElement().setAttribute("onmouseenter", "this.style.backgroundColor='#eef2ff'; this.style.color='#111827';");
+        link.getElement().setAttribute("onmouseleave", "this.style.backgroundColor='transparent'; this.style.color='#1f2937';");
 
-		return link;
-	}
+        return link;
+    }
 }

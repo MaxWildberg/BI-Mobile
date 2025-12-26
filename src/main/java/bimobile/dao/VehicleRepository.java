@@ -17,4 +17,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     Optional<Vehicle> findByLicensePlate(String licensePlate);
 
     boolean existsByLicensePlateIgnoreCase(String licensePlate);
+
+    // [NEU] Findet alle Fahrzeuge eines bestimmten Standorts
+    List<Vehicle> findByFacilityId(Long facilityId);
 }

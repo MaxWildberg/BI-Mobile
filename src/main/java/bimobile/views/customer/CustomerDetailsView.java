@@ -1,6 +1,7 @@
 package bimobile.views.customer;
 
 import bimobile.model.customer.*;
+import bimobile.security.AuthorizationUtils; // [Neu] Import für Berechtigung
 import bimobile.service.customer.*;
 import bimobile.model.Invoice;
 import bimobile.model.Rental;
@@ -96,17 +97,26 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
             dialog.open();
         });
 
+        // Löschen Button erstellen
         Button delete = new Button("Löschen", new Icon(VaadinIcon.TRASH));
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
-        delete.addClickListener(e -> {
-            DeleteDialog<Customer> deleteDialog = new DeleteDialog<>(
-                    customer,
-                    Customer::getFullName,
-                    c -> customerService.deleteCustomer(customer.getCustomerId()),
-                    this::navigateBackToOverview
-            );
-            deleteDialog.open();
-        });
+
+        // [Neu] Berechtigungsprüfung: Darf der User löschen?
+        boolean canDelete = AuthorizationUtils.canDeleteCustomers();
+        delete.setEnabled(canDelete); // Deaktiviert den Button visuell (grau)
+
+        // Listener nur hinzufügen, wenn erlaubt
+        if (canDelete) {
+            delete.addClickListener(e -> {
+                DeleteDialog<Customer> deleteDialog = new DeleteDialog<>(
+                        customer,
+                        Customer::getFullName,
+                        c -> customerService.deleteCustomer(customer.getCustomerId()),
+                        this::navigateBackToOverview
+                );
+                deleteDialog.open();
+            });
+        }
 
         HorizontalLayout actions = new HorizontalLayout(edit, delete);
         HorizontalLayout right = new HorizontalLayout(actions);

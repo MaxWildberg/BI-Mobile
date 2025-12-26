@@ -41,6 +41,16 @@ public class EmployeeDAO {
         em.merge(employee);
     }
 
+    /**
+     * Löscht den Mitarbeiter endgültig aus der Datenbank.
+     */
+    public void deleteEmployee(Long id) {
+        Employee employee = em.find(Employee.class, id);
+        if (employee != null) {
+            em.remove(employee);
+        }
+    }
+
     public List<Employee> getEmployeesByFacility(Long facilityId) {
         return em.createQuery(
                         "SELECT e FROM Employee e WHERE e.facility.id = :facilityId",
