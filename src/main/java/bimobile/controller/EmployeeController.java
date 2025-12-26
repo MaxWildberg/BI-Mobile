@@ -2,12 +2,12 @@ package bimobile.controller;
 
 import bimobile.model.Employee;
 import bimobile.service.EmployeeService;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Controller;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
+@Controller
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -24,14 +24,19 @@ public class EmployeeController {
         return employeeService.updateEmployee(id, updatedEmployee);
     }
 
-    public boolean deactivateEmployee(Long id) {
-        Employee employee = employeeService.getEmployeeById(id).orElse(null);
-        if (employee == null) {
-            return false;
-        }
+    // Power-Button Funktion
+    public boolean toggleEmployeeStatus(Long id) {
+        return employeeService.toggleEmployeeStatus(id);
+    }
 
-        employeeService.deactivateEmployee(id);
-        return true;
+    // Mülleimer Funktion
+    public boolean deleteEmployee(Long id) {
+        return employeeService.deleteEmployee(id);
+    }
+
+    // Legacy Support
+    public boolean deactivateEmployee(Long id) {
+        return employeeService.toggleEmployeeStatus(id);
     }
 
     public Optional<Employee> getEmployeeById(Long id) {

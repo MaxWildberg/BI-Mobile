@@ -1,6 +1,7 @@
 package bimobile.views.customer;
 
 import bimobile.model.customer.*;
+import bimobile.security.AuthorizationUtils;
 import bimobile.service.customer.*;
 import bimobile.views.MainLayout;
 import com.vaadin.flow.component.UI;
@@ -171,32 +172,49 @@ public class CustomerOverview extends VerticalLayout {
 
     /**
      * Erstellt die Action-Buttons Bearbeiten, Löschen und Details für das Grid.
+     * Passt Buttons basierend auf Berechtigungen an.
      * @param customer Kunde für die Buttons
      * @return HorizontalLayout mit Buttons
      */
     private HorizontalLayout createGridActions(Customer customer) {
+        // Layout vorbereiten
+        HorizontalLayout actions = new HorizontalLayout();
+
+        // Bearbeiten Button (Dürfen alle)
         Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
         bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         bearbeiten.addClickListener(e -> {
             EditCreateCustomerDialog editCreateCustomerDialog = new EditCreateCustomerDialog(customer, true, customerService, companyService, this::updateGrid);
             editCreateCustomerDialog.open();
         });
+        actions.add(bearbeiten);
 
+        // Löschen Button: Immer erstellen, aber ggf. deaktivieren
         Button loeschen = new Button(new Icon(VaadinIcon.TRASH));
         loeschen.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
-        loeschen.addClickListener(e -> {
-            DeleteDialog<Customer> deleteDialog = new DeleteDialog<>(customer, Customer::getFullName,
-                    c -> customerService.deleteCustomer(customer.getCustomerId()),
-                    this::updateGrid
-            );
-            deleteDialog.open();
-        });
 
+        // Prüfen ob Löschen erlaubt ist
+        boolean darfLoeschen = AuthorizationUtils.canDeleteCustomers();
+        loeschen.setEnabled(darfLoeschen); // Macht den Button grau, wenn false
+
+        if (darfLoeschen) {
+            loeschen.addClickListener(e -> {
+                DeleteDialog<Customer> deleteDialog = new DeleteDialog<>(customer, Customer::getFullName,
+                        c -> customerService.deleteCustomer(customer.getCustomerId()),
+                        this::updateGrid
+                );
+                deleteDialog.open();
+            });
+        }
+        actions.add(loeschen);
+
+        // Details Button (Dürfen alle)
         Button details = new Button(new Icon(VaadinIcon.INFO));
         details.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         details.addClickListener(e -> UI.getCurrent().navigate("kunden/details/" + customer.getCustomerId()));
+        actions.add(details);
 
-        return new HorizontalLayout(bearbeiten, loeschen, details);
+        return actions;
     }
 
     /**

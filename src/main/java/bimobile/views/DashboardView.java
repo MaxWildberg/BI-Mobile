@@ -1,5 +1,6 @@
 package bimobile.views;
 
+import bimobile.security.AuthorizationUtils;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H2;
@@ -23,7 +24,7 @@ import jakarta.annotation.security.PermitAll;
  */
 public class DashboardView extends VerticalLayout {
     /**
-     * Das Dashboard zeigt Navigation zu allen Kernbereichen (Standorte, Fahrzeuge, Ausleihen,
+     * Das Dashboard zeigt Navigation zu allen Kernbereichen (Standorte, Fahrzeuge, Ausleihen).
      */
     public DashboardView() {
         setSpacing(true);
@@ -38,18 +39,22 @@ public class DashboardView extends VerticalLayout {
         overview.setFlexWrap(FlexLayout.FlexWrap.WRAP);
         overview.getStyle().set("gap", "16px");
 
+        // Berechtigungen prüfen
+        boolean canViewLocations = AuthorizationUtils.canAccessLocations();
+        boolean canViewEmployees = AuthorizationUtils.canAccessEmployees();
+
         overview.add(
-                createCard("Standorte", "Verwalten Sie bestehende Standorte und legen Sie neue Niederlassungen an.", "Zur Standortverwaltung", "standorte"),
-                createCard("Fahrzeuge", "Fahrzeuge anlegen, pflegen und für Ausleihen bereitstellen.", "Zur Fahrzeugverwaltung", "vehicles"),
-                createCard("Ausleihen", "Alle laufenden und abgeschlossenen Ausleihen im Blick behalten.", "Zur Ausleihübersicht", "ausleihen"),
-                createCard("Mitarbeiter", "Mitarbeiterdaten und Rollen einfach pflegen.", "Zur Mitarbeiterverwaltung", "employees"),
-                createCard("Kunden", "Kundendaten verwalten und neue Kunden aufnehmen.", "Zur Kundenverwaltung", "kunden")
+                createCard("Standorte", "Verwalten Sie bestehende Standorte und legen Sie neue Niederlassungen an.", "Zur Standortverwaltung", "standorte", canViewLocations),
+                createCard("Fahrzeuge", "Fahrzeuge anlegen, pflegen und für Ausleihen bereitstellen.", "Zur Fahrzeugverwaltung", "vehicles", true),
+                createCard("Ausleihen", "Alle laufenden und abgeschlossenen Ausleihen im Blick behalten.", "Zur Ausleihübersicht", "ausleihen", true),
+                createCard("Mitarbeiter", "Mitarbeiterdaten und Rollen einfach pflegen.", "Zur Mitarbeiterverwaltung", "employees", canViewEmployees),
+                createCard("Kunden", "Kundendaten verwalten und neue Kunden aufnehmen.", "Zur Kundenverwaltung", "kunden", true)
         );
 
         add(title, subtitle, overview);
     }
 
-    private VerticalLayout createCard(String headline, String description, String buttonLabel, String navigationTarget) {
+    private VerticalLayout createCard(String headline, String description, String buttonLabel, String navigationTarget, boolean enabled) {
         H2 heading = new H2(headline);
         heading.getStyle().set("margin", "0");
 
@@ -58,6 +63,7 @@ public class DashboardView extends VerticalLayout {
 
         Button navigateButton = new Button(buttonLabel, e -> getUI().ifPresent(ui -> ui.navigate(navigationTarget)));
         navigateButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        navigateButton.setEnabled(enabled);
 
         VerticalLayout card = new VerticalLayout(heading, text, navigateButton);
         card.setPadding(true);
@@ -67,6 +73,11 @@ public class DashboardView extends VerticalLayout {
                 .set("background", "#ffffff")
                 .set("border-radius", "12px")
                 .set("box-shadow", "0 2px 6px rgba(0,0,0,0.08)");
+
+        if (!enabled) {
+            card.getStyle().set("opacity", "0.5");
+            card.getStyle().set("pointer-events", "none"); // Verhindert Klicks auf die Karte
+        }
 
         return card;
     }
