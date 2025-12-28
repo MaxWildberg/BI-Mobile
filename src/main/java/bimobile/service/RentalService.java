@@ -371,7 +371,7 @@ public class RentalService {
             throw new IllegalArgumentException("Ausleihe konnte nicht gefunden werden.");
         }
 
-        //HU Prüfung nachträglich setzen mit abgeänderter Prüfmethode
+        //HU Prüfung nachträglich setzten
         Vehicle vehicle = managedRental.getVehicle();
         validateVehicleAvailabilityWhileRented(vehicle, start, end);
 
@@ -428,18 +428,6 @@ public class RentalService {
             throw new IllegalStateException(
                     "Fahrzeug ist aufgrund fälliger oder in den Zeitraum fallender HU/Wartung gesperrt."
             );
-        }
-
-        if (vehicle.getStatus() == VehicleStatus.RENTED) {
-            throw new IllegalStateException("Das Fahrzeug ist momentan nicht verfügbar oder bereits vermietet.");
-        }
-
-        if (!vehicle.isAvailable() && vehicle.getStatus() != VehicleStatus.AVAILABLE) {
-            throw new IllegalStateException("Das Fahrzeug ist aktuell blockiert und nicht als verfügbar markiert.");
-        }
-
-        if (rentalRepository.existsByVehicleAndStatusIn(vehicle, ACTIVE_STATES)) {
-            throw new IllegalStateException("Für dieses Fahrzeug existiert bereits eine aktive Ausleihe im System.");
         }
     }
 }
