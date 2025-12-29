@@ -1,18 +1,23 @@
 package bimobile.views;
 
 import bimobile.dao.UserRepository;
+import bimobile.model.customer.BusinessCustomer;
 import bimobile.model.customer.Customer;
 import bimobile.model.Facility;
 import bimobile.model.Rental;
 import bimobile.model.RentalChangeLog;
 import bimobile.model.User;
 import bimobile.model.Vehicle;
+import bimobile.model.customer.PrivateCustomer;
 import bimobile.security.AuthorizationUtils;
+import bimobile.service.customer.CompanyService;
 import bimobile.service.customer.CustomerService;
 import bimobile.service.FacilityService;
 import bimobile.service.RentalChangeLogService;
 import bimobile.service.RentalService;
 import bimobile.service.VehicleService;
+import bimobile.views.customer.CustomerTypeSelectionDialog;
+import bimobile.views.customer.EditCreateCustomerDialog;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -62,6 +67,9 @@ public class RentalsOverviewView extends VerticalLayout {
     private final FacilityService facilityService;
     private final RentalChangeLogService changeLogService;
     private final UserRepository userRepository;
+    private final CompanyService companyService;
+
+    private Customer savedCustomer;
 
     private final Grid<Rental> grid = new Grid<>(Rental.class, false);
     private final Grid<RentalChangeLog> changeLogGrid = new Grid<>(RentalChangeLog.class, false);
@@ -81,7 +89,8 @@ public class RentalsOverviewView extends VerticalLayout {
                                VehicleService vehicleService,
                                FacilityService facilityService,
                                RentalChangeLogService changeLogService,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                               CompanyService companyService) {
 
         this.rentalService = rentalService;
         this.customerService = customerService;
@@ -89,6 +98,7 @@ public class RentalsOverviewView extends VerticalLayout {
         this.facilityService = facilityService;
         this.changeLogService = changeLogService;
         this.userRepository = userRepository;
+        this.companyService = companyService;
 
         setPadding(true);
         setSizeFull();
@@ -203,7 +213,8 @@ public class RentalsOverviewView extends VerticalLayout {
 
         Button createCustomerButton = new Button("Neuen Kunden anlegen", VaadinIcon.USER_CARD.create());
         createCustomerButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        createCustomerButton.addClickListener(click -> UI.getCurrent().navigate("kunden"));
+        //createCustomerButton.addClickListener(click -> UI.getCurrent().navigate("kunden"));
+        createCustomerButton.addClickListener(e -> openCustomerTypeDialog(customerBox));
 
         HorizontalLayout customerSelection = new HorizontalLayout(customerBox, createCustomerButton);
         customerSelection.setAlignItems(Alignment.END);
@@ -343,6 +354,30 @@ public class RentalsOverviewView extends VerticalLayout {
         VerticalLayout layout = new VerticalLayout(dialogTitle, form, actions);
         dialog.add(layout);
         dialog.open();
+    }
+
+    /**
+     * Öffnet den Dialog zur Auswahl des Kundentyps (Privat/B2B) und anschließend den Bearbeitungsdialog.
+     * @author Max Wildberg
+     */
+    private void openCustomerTypeDialog(ComboBox customerBox) {
+        CustomerTypeSelectionDialog typeSelectionDialog = new CustomerTypeSelectionDialog(type -> {
+            Customer customer;
+            switch (type) {
+                case PRIVATE -> customer = new PrivateCustomer();
+                case BUSINESS -> customer = new BusinessCustomer();
+                default -> throw new IllegalStateException("Unexpected value: " + type);
+            }
+
+            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, false, customerService, companyService, this::updateGrid,
+                    savedCustomer -> {
+                            customerBox.getListDataView().addItem(savedCustomer);
+                            customerBox.setValue(savedCustomer);
+            });
+                dialog.open();
+                this.savedCustomer = dialog.getSavedCustomer();
+            });
+        typeSelectionDialog.open();
     }
 
     private void openRentalInfoDialog(Rental rental) {

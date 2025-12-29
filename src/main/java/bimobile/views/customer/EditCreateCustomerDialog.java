@@ -18,7 +18,9 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.function.Consumer;
 
 /**
  * Dialog zur Erstellung oder Bearbeitung eines Kunden.
@@ -34,7 +36,9 @@ public class EditCreateCustomerDialog extends Dialog {
     private final CompanyService companyService;
     private final Runnable onSaveSuccess;
     private Customer customer;
+    private Customer savedCustomer;
     private boolean editMode;
+    private Consumer<Customer> onSave;
 
     private final Binder<CustomerFormDTO> binder = new Binder<>(CustomerFormDTO.class);
 
@@ -75,12 +79,14 @@ public class EditCreateCustomerDialog extends Dialog {
                                     boolean editMode,
                                     CustomerService service,
                                     CompanyService companyService,
-                                    Runnable onSaveSuccess) {
+                                    Runnable onSaveSuccess,
+                                    @Nullable Consumer<Customer> onSave) {
         this.customer = customer;
         this.editMode = editMode;
         this.customerService = service;
         this.companyService = companyService;
         this.onSaveSuccess = onSaveSuccess;
+        this.onSave = onSave;
 
         buildUI();
         configureBinder();
@@ -132,15 +138,15 @@ public class EditCreateCustomerDialog extends Dialog {
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.setText(editMode ? "Speichern" : "Registrieren");
         addCompanyButton.addClickListener(addCompanyEvent -> {
-            EditCreateCompanyDialog addCompanyDialog = new EditCreateCompanyDialog(companyService, false, null);
-            addCompanyDialog.addDetachListener(comboEvent -> {
-                Company saved = addCompanyDialog.getSavedCompany();
+            EditCreateCompanyDialog createCompanyForm = new EditCreateCompanyDialog(companyService, false, null);
+            createCompanyForm.addDetachListener(comboEvent -> {
+                Company saved = createCompanyForm.getSavedCompany();
                 if (saved != null) {
                     companyCombo.setItems(companyService.getAllCompanies());
                     companyCombo.setValue(saved);
                 }
             });
-            addCompanyDialog.open();
+            createCompanyForm.open();
         });
         cancelButton.addClickListener(e -> close());
         saveButton.addClickListener(e -> onSave());
@@ -269,8 +275,12 @@ public class EditCreateCustomerDialog extends Dialog {
                     customerService.updateCustomer(updatedCustomer);
                     Notification.show("Kunde erfolgreich aktualisiert.");
                 } else {
-                    customerService.registerCustomer(updatedCustomer);
+                    this.savedCustomer = customerService.registerCustomer(updatedCustomer);
                     Notification.show("Kunde erfolgreich angelegt.");
+                }
+
+                if (onSave != null) {
+                    onSave.accept(updatedCustomer);
                 }
 
                 onSaveSuccess.run();
@@ -303,5 +313,9 @@ public class EditCreateCustomerDialog extends Dialog {
         }
 
         return customer;
+    }
+
+    public Customer getSavedCustomer() {
+        return savedCustomer;
     }
 }

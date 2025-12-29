@@ -123,7 +123,7 @@ public class CustomerOverview extends VerticalLayout {
                 default -> throw new IllegalStateException("Unexpected value: " + type);
             }
 
-            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, false, customerService, companyService, this::updateGrid);
+            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, false, customerService, companyService, this::updateGrid, null);
             dialog.open();
         });
         typeSelectionDialog.open();
@@ -184,7 +184,7 @@ public class CustomerOverview extends VerticalLayout {
         Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
         bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         bearbeiten.addClickListener(e -> {
-            EditCreateCustomerDialog editCreateCustomerDialog = new EditCreateCustomerDialog(customer, true, customerService, companyService, this::updateGrid);
+            EditCreateCustomerDialog editCreateCustomerDialog = new EditCreateCustomerDialog(customer, true, customerService, companyService, this::updateGrid, null);
             editCreateCustomerDialog.open();
         });
         actions.add(bearbeiten);
