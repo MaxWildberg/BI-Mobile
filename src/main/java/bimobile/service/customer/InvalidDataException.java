@@ -6,8 +6,8 @@ package bimobile.service.customer;
  *
  * @author Max Wildberg
  */
-public class InvalidCustomerDataException extends RuntimeException {
-    public InvalidCustomerDataException(String message) {
+public class InvalidDataException extends RuntimeException {
+    public InvalidDataException(String message) {
         super(message);
     }
 }

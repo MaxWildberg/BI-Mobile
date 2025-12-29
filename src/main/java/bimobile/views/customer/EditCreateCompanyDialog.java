@@ -2,11 +2,10 @@ package bimobile.views.customer;
 
 import bimobile.model.customer.Company;
 import bimobile.service.customer.CompanyService;
-import bimobile.service.customer.CustomerService;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
@@ -17,20 +16,30 @@ import com.vaadin.flow.data.binder.Binder;
  *
  * @author Max Wildberg
  */
-public class AddCompanyDialog extends Dialog {
+public class EditCreateCompanyDialog extends Dialog {
 
     /**
      * Die gespeicherte Firma nach erfolgreichem Speichervorgang.
      */
     private Company savedCompany;
+    private boolean editMode;
+    private Company currentCompany;
 
     /**
      * Erstellt einen Dialog zum Anlegen einer neuen Firma.
      *
      * @param service Service zum Speichern der Firma
      */
-    public AddCompanyDialog(CompanyService service) {
-        setHeaderTitle("Neue Firma anlegen");
+    public EditCreateCompanyDialog(CompanyService service, boolean editMode, Company currentCompany) {
+        this.editMode = editMode;
+
+        if(editMode) {
+            this.currentCompany = currentCompany;
+        } else {
+            this.currentCompany = new Company();
+        }
+
+        setHeaderTitle(editMode ? "Firmen Details bearbeiten" : "Neue Firma anlegen");
 
         TextField nameField = new TextField("Firmenname");
         nameField.setRequired(true);
@@ -38,10 +47,14 @@ public class AddCompanyDialog extends Dialog {
         TextField addressField = new TextField("Adresse");
         addressField.setRequired(true);
 
+        if (editMode) {
+            nameField.setValue(currentCompany.getName());
+            addressField.setValue(currentCompany.getAddress());
+        }
+
         FormLayout form = new FormLayout(nameField, addressField);
 
         Binder<Company> binder = new Binder<>(Company.class);
-        Company newCompany = new Company();
 
         binder.forField(nameField)
                 .asRequired("Name erforderlich")
@@ -53,8 +66,14 @@ public class AddCompanyDialog extends Dialog {
 
         Button save = new Button("Speichern", e -> {
             if (binder.validate().isOk()) {
-                binder.writeBeanIfValid(newCompany);
-                this.savedCompany = service.saveCompany(newCompany);
+                binder.writeBeanIfValid(currentCompany);
+                if (editMode) {
+                    this.savedCompany = service.updateCompany(currentCompany);
+                    Notification.show("Firma erfolgreich aktualisiert.");
+                } else {
+                    this.savedCompany = service.saveCompany(currentCompany);
+                    Notification.show("Firma erfolgreich angelegt.");
+                }
                 close();
             }
         });

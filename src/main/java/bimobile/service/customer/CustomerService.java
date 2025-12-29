@@ -38,7 +38,7 @@ public class CustomerService {
      * @param customer Zu speichernder Kunde
      * @return Gespeicherter Kunde
      * @throws DuplicateCustomerException wenn E-Mail bereits existiert
-     * @throws InvalidCustomerDataException wenn Daten unvollständig sind
+     * @throws InvalidDataException wenn Daten unvollständig sind
      * @throws CustomerTooYoungException wenn Kunde jünger als 18 Jahre ist
      */
     public Customer registerCustomer(@Valid Customer customer) {
@@ -56,16 +56,16 @@ public class CustomerService {
      * Aktualisiert einen bestehenden Kunden.
      * Prüft auf Mindestalter und BusinessCustomer-Firma.
      * @param updated Kunde mit aktualisierten Daten
-     * @throws InvalidCustomerDataException wenn Daten unvollständig oder null
+     * @throws InvalidDataException wenn Daten unvollständig oder null
      * @throws CustomerTooYoungException wenn Kunde jünger als 18 Jahre ist
      * @throws CustomerNotFoundException wenn Kunde nicht existiert
      */
     public void updateCustomer(@Valid Customer updated) {
         if (updated == null) {
-            throw new InvalidCustomerDataException("Zu aktualisierender Kunde darf nicht null sein");
+            throw new InvalidDataException("Zu aktualisierender Kunde darf nicht null sein");
         }
         if (updated.getCustomerId() == null) {
-            throw new InvalidCustomerDataException("Kunde-ID fehlt für update");
+            throw new InvalidDataException("Kunde-ID fehlt für update");
         }
         if (updated.getPersonalData().getBirthday() != null) {
             int age = Period.between(updated.getPersonalData().getBirthday(), LocalDate.now()).getYears();
@@ -84,7 +84,7 @@ public class CustomerService {
         if (updated instanceof BusinessCustomer ub &&
                 existing instanceof BusinessCustomer eb) {
             if (ub.getCompany() == null) {
-                throw new InvalidCustomerDataException("Firma fehlt für update");
+                throw new InvalidDataException("Firma fehlt für update");
             }
             eb.setCompany(ub.getCompany());
         }
@@ -158,12 +158,12 @@ public class CustomerService {
      * Validiert ein Kundenobjekt vor dem Speichern.
      * Prüft auf Pflichtfelder, Mindestalter und bei {@link BusinessCustomer} auf Firma.
      * @param customer Kunde zur Validierung
-     * @throws InvalidCustomerDataException bei unvollständigen Daten
+     * @throws InvalidDataException bei unvollständigen Daten
      * @throws CustomerTooYoungException wenn Kunde jünger als 18 Jahre ist
      */
     private void validateCustomer(Customer customer) {
         if (customer == null) {
-            throw new InvalidCustomerDataException("Customer unvollständig");
+            throw new InvalidDataException("Customer unvollständig");
         }
 
         PersonalData pd = customer.getPersonalData();
@@ -171,7 +171,7 @@ public class CustomerService {
                 || pd.getFirstname() == null
                 || pd.getLastname() == null
                 || pd.getBirthday() == null) {
-            throw new InvalidCustomerDataException("PersonalData unvollständig");
+            throw new InvalidDataException("PersonalData unvollständig");
         }
 
         int age = Period.between(pd.getBirthday(), LocalDate.now()).getYears();
@@ -181,21 +181,21 @@ public class CustomerService {
 
         Address address = customer.getAddress();
         if (address == null || address.getStreet() == null || address.getCity() == null) {
-            throw new InvalidCustomerDataException("Address unvollständig");
+            throw new InvalidDataException("Address unvollständig");
         }
 
         ContactInfo ci = customer.getContactInfo();
         if (ci == null || ci.getMail() == null) {
-            throw new InvalidCustomerDataException("ContactInfo unvollständig");
+            throw new InvalidDataException("ContactInfo unvollständig");
         }
 
         Identification id = customer.getIdentification();
         if (id == null || id.getIdcard() == null) {
-            throw new InvalidCustomerDataException("Identification unvollständig");
+            throw new InvalidDataException("Identification unvollständig");
         }
 
         if (customer instanceof BusinessCustomer bc && bc.getCompany() == null) {
-            throw new InvalidCustomerDataException("Company unvollständig");
+            throw new InvalidDataException("Company unvollständig");
         }
     }
 }

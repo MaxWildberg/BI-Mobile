@@ -132,7 +132,7 @@ public class EditCreateCustomerDialog extends Dialog {
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.setText(editMode ? "Speichern" : "Registrieren");
         addCompanyButton.addClickListener(addCompanyEvent -> {
-            AddCompanyDialog addCompanyDialog = new AddCompanyDialog(companyService);
+            EditCreateCompanyDialog addCompanyDialog = new EditCreateCompanyDialog(companyService, false, null);
             addCompanyDialog.addDetachListener(comboEvent -> {
                 Company saved = addCompanyDialog.getSavedCompany();
                 if (saved != null) {

@@ -88,4 +88,22 @@ public class CompanyService {
 
         companyRepository.delete(company);
     }
+
+    public Company updateCompany(Company updated) {
+        if (updated == null) {
+            throw new InvalidDataException("Zu aktualisierende Firma darf nicht null sein");
+        }
+        if (updated.getCompanyId() == null) {
+            throw new InvalidDataException("Firmen-ID fehlt für update");
+        }
+
+        Company existing = companyRepository.findById(updated.getCompanyId())
+                .orElseThrow(() -> new CompanyNotFoundException(updated.getCompanyId()));
+
+        existing.setName(updated.getName());
+        existing.setAddress(updated.getAddress());
+
+        companyRepository.save(existing);
+        return existing;
+    }
 }
