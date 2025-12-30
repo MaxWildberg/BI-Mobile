@@ -213,7 +213,6 @@ public class RentalsOverviewView extends VerticalLayout {
 
         Button createCustomerButton = new Button("Neuen Kunden anlegen", VaadinIcon.USER_CARD.create());
         createCustomerButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        //createCustomerButton.addClickListener(click -> UI.getCurrent().navigate("kunden"));
         createCustomerButton.addClickListener(e -> openCustomerTypeDialog(customerBox));
 
         HorizontalLayout customerSelection = new HorizontalLayout(customerBox, createCustomerButton);

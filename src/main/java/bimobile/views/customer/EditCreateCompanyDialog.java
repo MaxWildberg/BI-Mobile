@@ -9,6 +9,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
+import javax.annotation.Nullable;
+
 /**
  * Dialog zum Anlegen einer neuen {@link Company}.
  * Stellt ein Formular zur Eingabe von Firmenname und Adresse bereit
@@ -21,6 +23,7 @@ public class EditCreateCompanyDialog extends Dialog {
     /**
      * Die gespeicherte Firma nach erfolgreichem Speichervorgang.
      */
+    private final CompanyService service;
     private Company savedCompany;
     private boolean editMode;
     private Company currentCompany;
@@ -30,11 +33,12 @@ public class EditCreateCompanyDialog extends Dialog {
      *
      * @param service Service zum Speichern der Firma
      */
-    public EditCreateCompanyDialog(CompanyService service, boolean editMode, Company currentCompany) {
+    public EditCreateCompanyDialog(CompanyService service, boolean editMode, Company updateCompany) {
+        this.service = service;
         this.editMode = editMode;
 
-        if(editMode) {
-            this.currentCompany = currentCompany;
+        if(editMode && updateCompany != null) {
+            this.currentCompany = updateCompany;
         } else {
             this.currentCompany = new Company();
         }
@@ -48,13 +52,14 @@ public class EditCreateCompanyDialog extends Dialog {
         addressField.setRequired(true);
 
         if (editMode) {
-            nameField.setValue(currentCompany.getName());
-            addressField.setValue(currentCompany.getAddress());
+            nameField.setValue(updateCompany.getName());
+            addressField.setValue(updateCompany.getAddress());
         }
 
         FormLayout form = new FormLayout(nameField, addressField);
 
         Binder<Company> binder = new Binder<>(Company.class);
+        binder.setBean(this.currentCompany);
 
         binder.forField(nameField)
                 .asRequired("Name erforderlich")
@@ -66,7 +71,7 @@ public class EditCreateCompanyDialog extends Dialog {
 
         Button save = new Button("Speichern", e -> {
             if (binder.validate().isOk()) {
-                binder.writeBeanIfValid(currentCompany);
+                //binder.writeBeanIfValid(currentCompany);
                 if (editMode) {
                     this.savedCompany = service.updateCompany(currentCompany);
                     Notification.show("Firma erfolgreich aktualisiert.");
