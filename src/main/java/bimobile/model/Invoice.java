@@ -134,4 +134,8 @@ public class Invoice {
 
     public void setVehicle(Vehicle vehicle) { this.vehicle = vehicle; }
 
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
 }

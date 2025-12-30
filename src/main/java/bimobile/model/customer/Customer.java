@@ -114,6 +114,10 @@ public abstract class Customer {
         return invoices;
     }
 
+    public void addInvoice(Invoice invoice) {
+        invoices.add(invoice);
+    }
+
 
     // Helfermethoden
 
