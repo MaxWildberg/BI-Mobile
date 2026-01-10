@@ -19,9 +19,6 @@ public class Employee {
     @Column(nullable = false)
     private String birthday;
 
-    @Column(nullable = false, unique = true)
-    private String loginName;
-
     @Column(nullable = false)
     private String passwordHash;
 
@@ -82,14 +79,6 @@ public class Employee {
 
     public void setBirthday(String birthday) {
         this.birthday = birthday;
-    }
-
-    public String getLoginName() {
-        return loginName;
-    }
-
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
     }
 
     public String getPasswordHash() {
