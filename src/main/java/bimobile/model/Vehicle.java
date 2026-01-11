@@ -200,6 +200,7 @@ public class Vehicle {
     }
 
     public double getDailyRate() {
+        this.dailyRate = priceCategory.getBaseRate();
         return dailyRate;
     }
 
@@ -274,5 +275,6 @@ public class Vehicle {
     public void setHasWinterTires(boolean hasWinterTires) {
         this.hasWinterTires = hasWinterTires;
     }
+
 
 }
