@@ -14,6 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+/**
+ * Logik für den "Passwort vergessen"-Ablauf.
+ * Erstellt Reset-Tokens, verschickt E-Mails und setzt das Passwort zurück.
+ *
+ * @author Jannick Braun
+ */
+
 @Service
 public class PasswordResetService {
 
@@ -39,7 +46,7 @@ public class PasswordResetService {
         Optional<User> userOpt = userRepository.findByEmail(email.toLowerCase().trim());
 
         if (userOpt.isEmpty()) {
-            logger.info("Password reset requested for non-existent email: {}", email);
+            logger.info("Password reset requested for non existent email: {}", email);
             return true;
         }
 
@@ -60,7 +67,7 @@ public class PasswordResetService {
     private void sendResetEmail(String toEmail, String firstName, String resetLink) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("leonard.koechling@hsbi.de");  // ANPASSEN an euren SMTP-User
+            message.setFrom("  ");  // Bitte anpassen an SMTP-User
             message.setTo(toEmail);
             message.setSubject("BI-Mobile - Passwort zurücksetzen");
             message.setText(

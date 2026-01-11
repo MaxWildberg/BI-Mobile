@@ -16,9 +16,8 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
- * Vaadin-View für den "Passwort vergessen"-Prozess: stellt ein Formular zur Eingabe der E-Mail-Adresse bereit,
- * stößt über den PasswordResetService das Zurücksetzen an und zeigt anschließend eine Bestätigungsansicht
- * (unabhängig davon, ob ein Konto existiert) inklusive Rücklink zum Login.
+ * "Passwort vergessen"-Seite.
+ * Hier gibt der Nutzer seine E-Mail ein und bekommt einen Reset-Link.
  *
  * @author Jannick Braun
  */
