@@ -1,14 +1,10 @@
 package bimobile.views;
 
 import bimobile.dao.UserRepository;
-import bimobile.model.customer.BusinessCustomer;
-import bimobile.model.customer.Customer;
 import bimobile.model.Facility;
 import bimobile.model.Rental;
 import bimobile.model.RentalChangeLog;
 import bimobile.model.User;
-import bimobile.model.Vehicle;
-import bimobile.model.customer.PrivateCustomer;
 import bimobile.security.AuthorizationUtils;
 import bimobile.service.customer.CompanyService;
 import bimobile.service.customer.CustomerService;
@@ -16,26 +12,19 @@ import bimobile.service.FacilityService;
 import bimobile.service.RentalChangeLogService;
 import bimobile.service.RentalService;
 import bimobile.service.VehicleService;
-import bimobile.views.customer.CustomerTypeSelectionDialog;
-import bimobile.views.customer.EditCreateCustomerDialog;
-import com.vaadin.flow.component.UI;
+import bimobile.views.rentals.dialogs.RentalCreateDialog;
+import bimobile.views.rentals.dialogs.RentalDeleteDialog;
+import bimobile.views.rentals.dialogs.RentalEditDialog;
+import bimobile.views.rentals.dialogs.RentalInfoDialog;
+import bimobile.views.rentals.dialogs.RentalReturnDialog;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -69,16 +58,12 @@ public class RentalsOverviewView extends VerticalLayout {
     private final UserRepository userRepository;
     private final CompanyService companyService;
 
-    private Customer savedCustomer;
-
     private final Grid<Rental> grid = new Grid<>(Rental.class, false);
     private final Grid<RentalChangeLog> changeLogGrid = new Grid<>(RentalChangeLog.class, false);
 
     private final List<Rental> allRentals = new ArrayList<>();
     private TextField searchField;
     private String currentFilter = "";
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     // Security Context
     private final boolean isBranchManager = AuthorizationUtils.isBranchManager();
@@ -200,463 +185,62 @@ public class RentalsOverviewView extends VerticalLayout {
     }
 
     private void openCreateDialog() {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("600px");
-        dialog.setModal(true);
-        dialog.setDraggable(true);
-
-        H3 dialogTitle = new H3("Neue Ausleihe anlegen");
-
-        ComboBox<Customer> customerBox = new ComboBox<>("Kunde");
-        customerBox.setItems(customerService.findAllCustomers());
-        customerBox.setItemLabelGenerator(Customer::getFullName);
-
-        Button createCustomerButton = new Button("Neuen Kunden anlegen", VaadinIcon.USER_CARD.create());
-        createCustomerButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        createCustomerButton.addClickListener(e -> openCustomerTypeDialog(customerBox));
-
-        HorizontalLayout customerSelection = new HorizontalLayout(customerBox, createCustomerButton);
-        customerSelection.setAlignItems(Alignment.END);
-
-        ComboBox<Vehicle> vehicleBox = new ComboBox<>("Fahrzeug");
-        // Initiale Befüllung
-        if (currentFacility != null) {
-            vehicleBox.setItems(vehicleService.getVehiclesByFacility(currentFacility.getId()));
-        } else {
-            vehicleBox.setItems(vehicleService.findAllVehicles());
-        }
-        vehicleBox.setItemLabelGenerator(v -> v.getLicensePlate() + " – " + v.getModel());
-
-        ComboBox<Facility> facilityBox = new ComboBox<>("Standort");
-        facilityBox.setItemLabelGenerator(Facility::getAddress);
-
-        // Standort-Logik Initial
-        if (currentFacility != null) {
-            facilityBox.setItems(currentFacility);
-            facilityBox.setValue(currentFacility);
-            facilityBox.setReadOnly(true);
-        } else {
-            facilityBox.setItems(facilityService.getAllFacilities());
-            facilityBox.setReadOnly(false);
-        }
-
-        // [LOGIK FIX] Interaktive Filterung ohne Ping-Pong
-        if (currentFacility == null) {
-
-            // 1. Standort-Listener
-            facilityBox.addValueChangeListener(event -> {
-                Facility selectedFacility = event.getValue();
-                Vehicle currentlySelectedVehicle = vehicleBox.getValue(); // Das Auto merken!
-
-                if (selectedFacility != null) {
-                    List<Vehicle> filteredVehicles = vehicleService.getVehiclesByFacility(selectedFacility.getId());
-                    vehicleBox.setItems(filteredVehicles); // Das löscht leider die Auswahl
-
-                    // Prüfen, ob das gemerkte Auto noch gültig ist
-                    if (currentlySelectedVehicle != null && currentlySelectedVehicle.getFacility() != null &&
-                            currentlySelectedVehicle.getFacility().getId().equals(selectedFacility.getId())) {
-                        // Ja -> Sofort wieder setzen!
-                        vehicleBox.setValue(currentlySelectedVehicle);
-                    } else {
-                        // Nein -> Auswahl leeren
-                        vehicleBox.clear();
-                        if (currentlySelectedVehicle != null) {
-                            Notification.show("Fahrzeugauswahl zurückgesetzt (passt nicht zum Standort).").addThemeVariants(NotificationVariant.LUMO_CONTRAST);
-                        }
-                    }
-                } else {
-                    // Kein Standort -> Alle Autos
-                    vehicleBox.setItems(vehicleService.findAllVehicles());
-                    vehicleBox.setValue(currentlySelectedVehicle); // Versuch, Auswahl zu behalten
+        RentalCreateDialog dialog = new RentalCreateDialog(
+                rentalService,
+                customerService,
+                vehicleService,
+                facilityService,
+                companyService,
+                currentFacility,
+                this::updateGrid,
+                rental -> {
+                    logChange(rental, "Ausleihe erstellt", "Ausleihe #" + rental.getId() + " angelegt");
+                    updateGrid();
                 }
-            });
-
-            // 2. Auto-Listener
-            vehicleBox.addValueChangeListener(event -> {
-                Vehicle selectedVehicle = event.getValue();
-                if (selectedVehicle != null && selectedVehicle.getFacility() != null) {
-                    // Nur den Standort setzen, wenn er noch nicht passt
-                    if (!selectedVehicle.getFacility().equals(facilityBox.getValue())) {
-                        facilityBox.setValue(selectedVehicle.getFacility());
-                    }
-                }
-            });
-        }
-
-        DatePicker startDate = new DatePicker("Startdatum");
-        DatePicker endDate = new DatePicker("Enddatum");
-
-        TextField totalRateField = new TextField("Gesamtrate (Vorschau) €");
-        totalRateField.setReadOnly(true);
-
-        Runnable recalcTotal = () -> {
-            Vehicle v = vehicleBox.getValue();
-            LocalDate start = startDate.getValue();
-            LocalDate end = endDate.getValue();
-            if (v != null && start != null && end != null) {
-                long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
-                if (days <= 0) days = 1;
-                double dailyRate = v.getPriceCategory().getBaseRate();
-                totalRateField.setValue(String.valueOf(dailyRate * days));
-            } else {
-                totalRateField.clear();
-            }
-        };
-
-        vehicleBox.addValueChangeListener(e -> recalcTotal.run());
-        startDate.addValueChangeListener(e -> recalcTotal.run());
-        endDate.addValueChangeListener(e -> recalcTotal.run());
-
-        enforceDateOrder(startDate, endDate);
-
-        Button save = new Button("Speichern", e -> {
-            try {
-                if (customerBox.isEmpty() || vehicleBox.isEmpty() || startDate.isEmpty() || endDate.isEmpty() || facilityBox.isEmpty()) {
-                    Notification.show("Bitte mindestens Kunde, Fahrzeug, Standort, Start- und Enddatum angeben.")
-                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                    return;
-                }
-
-                Rental rental = rentalService.createRental(
-                        customerBox.getValue(),
-                        vehicleBox.getValue(),
-                        facilityBox.getValue(),
-                        startDate.getValue(),
-                        endDate.getValue()
-                );
-
-                Notification.show("Ausleihe #" + rental.getId() + " erfolgreich erstellt.")
-                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                logChange(rental, "Ausleihe erstellt", "Ausleihe #" + rental.getId() + " angelegt");
-                updateGrid();
-                dialog.close();
-
-            } catch (Exception ex) {
-                Notification.show("Fehler: " + ex.getMessage()).addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
-        });
-        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        Button cancel = new Button("Abbrechen", e -> dialog.close());
-        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-
-        FormLayout form = new FormLayout(customerSelection, vehicleBox, facilityBox, startDate, endDate, totalRateField);
-        form.setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("500px", 2)
         );
-        form.setColspan(customerSelection, 2);
-
-        HorizontalLayout actions = new HorizontalLayout(save, cancel);
-        actions.setJustifyContentMode(JustifyContentMode.END);
-
-        VerticalLayout layout = new VerticalLayout(dialogTitle, form, actions);
-        dialog.add(layout);
         dialog.open();
-    }
-
-    /**
-     * Öffnet den Dialog zur Auswahl des Kundentyps (Privat/B2B) und anschließend den Bearbeitungsdialog.
-     * @author Max Wildberg
-     */
-    private void openCustomerTypeDialog(ComboBox customerBox) {
-        CustomerTypeSelectionDialog typeSelectionDialog = new CustomerTypeSelectionDialog(type -> {
-            Customer customer;
-            switch (type) {
-                case PRIVATE -> customer = new PrivateCustomer();
-                case BUSINESS -> customer = new BusinessCustomer();
-                default -> throw new IllegalStateException("Unexpected value: " + type);
-            }
-
-            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, false, customerService, companyService, this::updateGrid,
-                    savedCustomer -> {
-                            customerBox.getListDataView().addItem(savedCustomer);
-                            customerBox.setValue(savedCustomer);
-            });
-                dialog.open();
-                this.savedCustomer = dialog.getSavedCustomer();
-            });
-        typeSelectionDialog.open();
     }
 
     private void openRentalInfoDialog(Rental rental) {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("540px");
-        dialog.setModal(true);
-        dialog.setDraggable(true);
-
-        H3 dialogTitle = new H3("Übersicht Ausleihe #" + rental.getId());
-
-        FormLayout infoLayout = new FormLayout();
-        infoLayout.setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("450px", 2)
-        );
-
-        infoLayout.add(
-                buildInfoRow("Status", rental.getStatus().name()),
-                buildInfoRow("Kunde", rental.getCustomer() != null ? rental.getCustomer().getFullName() : "-"),
-                buildInfoRow("Fahrzeug", rental.getVehicle() != null ? rental.getVehicle().getLicensePlate() : "-"),
-                buildInfoRow("Standort", rental.getFacility() != null ? rental.getFacility().getAddress() : "–"),
-                buildInfoRow("Startdatum", rental.getStartDate() != null ? rental.getStartDate().format(dateFormatter) : "-"),
-                buildInfoRow("Enddatum", rental.getEndDate() != null ? rental.getEndDate().format(dateFormatter) : "-"),
-                buildInfoRow("Gesamtpreis", rental.getTotalPrice() + " €"),
-                buildInfoRow("Letzte Aktualisierung", rental.getUpdatedAt() != null ? rental.getUpdatedAt().format(dateTimeFormatter) : "-")
-        );
-
-        Button close = new Button("Schließen", e -> dialog.close());
-        close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-
-        VerticalLayout layout = new VerticalLayout(dialogTitle, infoLayout, close);
-        layout.setAlignItems(Alignment.STRETCH);
-        layout.setSpacing(true);
-
-        dialog.add(layout);
+        RentalInfoDialog dialog = new RentalInfoDialog(rental);
         dialog.open();
     }
 
-    private VerticalLayout buildInfoRow(String label, String value) {
-        Span headline = new Span(label);
-        headline.getStyle().set("font-weight", "600");
-        Span content = new Span(value != null ? value : "-");
-        content.getStyle().set("color", "var(--lumo-secondary-text-color)");
-        VerticalLayout row = new VerticalLayout(headline, content);
-        row.setPadding(false);
-        row.setSpacing(false);
-        return row;
-    }
-
     private void openReturnDialog(Rental rental) {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("480px");
-        dialog.setModal(true);
-        dialog.setDraggable(true);
-
-        H3 dialogTitle = new H3("Ausleihe zurückgeben (#" + rental.getId() + ")");
-
-        int currentMileage = rental.getVehicle().getMileage();
-
-        IntegerField endMileageField = new IntegerField("Kilometerstand bei Rückgabe");
-        endMileageField.setRequiredIndicatorVisible(true);
-        endMileageField.setHelperText("Aktueller Stand: " + currentMileage + " km");
-        endMileageField.setMin(currentMileage);
-        endMileageField.setStepButtonsVisible(true);
-        endMileageField.setAutoselect(true);
-
-        Button confirm = new Button("Zurückgeben", event -> {
-            try {
-                if (endMileageField.isEmpty()) {
-                    Notification.show("Bitte einen Kilometerstand angeben.")
-                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                    return;
-                }
-                int endMileage = endMileageField.getValue();
-                rentalService.returnRental(rental, endMileage);
-                Notification.show("Ausleihe #" + rental.getId() + " zurückgegeben.")
-                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                updateGrid();
-                dialog.close();
-            } catch (Exception ex) {
-                Notification.show("Fehler: " + ex.getMessage()).addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
-        });
-        confirm.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
-
-        Button cancel = new Button("Abbrechen", e -> dialog.close());
-        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-
-        HorizontalLayout actions = new HorizontalLayout(confirm, cancel);
-        actions.setWidthFull();
-        actions.setJustifyContentMode(JustifyContentMode.END);
-
-        VerticalLayout dialogLayout = new VerticalLayout(dialogTitle, endMileageField, actions);
-        dialog.add(dialogLayout);
+        RentalReturnDialog dialog = new RentalReturnDialog(
+                rental,
+                rentalService,
+                this::updateGrid
+        );
         dialog.open();
     }
 
     private void openEditDialog(Rental rental) {
-        double oldPrice = rental.calculateTotalPrice();
-        Dialog dialog = new Dialog();
-        dialog.setWidth("600px");
-        dialog.setModal(true);
-        dialog.setDraggable(true);
-
-        H3 dialogTitle = new H3("Ausleihe bearbeiten (#" + rental.getId() + ")");
-
-        ComboBox<Customer> customerBox = new ComboBox<>("Kunde");
-        customerBox.setItems(customerService.findAllCustomers());
-        customerBox.setItemLabelGenerator(Customer::getFullName);
-        customerBox.setValue(rental.getCustomer());
-        customerBox.setReadOnly(true);
-
-        ComboBox<Vehicle> vehicleBox = new ComboBox<>("Fahrzeug");
-        vehicleBox.setItems(vehicleService.findAllVehicles());
-        vehicleBox.setItemLabelGenerator(v -> v.getLicensePlate() + " – " + v.getModel());
-        vehicleBox.setValue(rental.getVehicle());
-        vehicleBox.setReadOnly(true);
-
-        ComboBox<Facility> facilityBox = new ComboBox<>("Standort");
-        facilityBox.setItemLabelGenerator(Facility::getAddress);
-        facilityBox.setValue(rental.getFacility());
-
-        // Standort-Logik beim Bearbeiten
-        if (currentFacility != null) {
-            facilityBox.setItems(currentFacility);
-            facilityBox.setValue(currentFacility);
-            facilityBox.setReadOnly(true);
-        } else {
-            facilityBox.setItems(facilityService.getAllFacilities());
-            facilityBox.setReadOnly(false);
-        }
-
-        // [LOGIK FIX] Interaktive Filterung auch beim Bearbeiten
-        if (currentFacility == null) {
-            facilityBox.addValueChangeListener(event -> {
-                Facility selectedFacility = event.getValue();
-                Vehicle currentVehicle = vehicleBox.getValue(); // Merken!
-
-                if (selectedFacility != null) {
-                    List<Vehicle> filteredVehicles = vehicleService.getVehiclesByFacility(selectedFacility.getId());
-                    vehicleBox.setItems(filteredVehicles); // Löscht Auswahl
-
-                    // Wiederherstellen wenn möglich
-                    if (currentVehicle != null && currentVehicle.getFacility() != null &&
-                            currentVehicle.getFacility().getId().equals(selectedFacility.getId())) {
-                        vehicleBox.setValue(currentVehicle);
-                    } else {
-                        vehicleBox.clear();
-                        if (currentVehicle != null) {
-                            Notification.show("Fahrzeugauswahl zurückgesetzt.").addThemeVariants(NotificationVariant.LUMO_CONTRAST);
-                        }
-                    }
-                } else {
-                    vehicleBox.setItems(vehicleService.findAllVehicles());
-                    vehicleBox.setValue(currentVehicle);
+        RentalEditDialog dialog = new RentalEditDialog(
+                rental,
+                rentalService,
+                vehicleService,
+                facilityService,
+                currentFacility,
+                updated -> {
+                    logChange(updated,
+                            "Ausleihe aktualisiert",
+                            "Ausleihe #" + updated.getId() + " angepasst");
+                    updateGrid();
                 }
-            });
-
-            vehicleBox.addValueChangeListener(event -> {
-                Vehicle selectedVehicle = event.getValue();
-                if (selectedVehicle != null && selectedVehicle.getFacility() != null) {
-                    if (!selectedVehicle.getFacility().equals(facilityBox.getValue())) {
-                        facilityBox.setValue(selectedVehicle.getFacility());
-                    }
-                }
-            });
-        }
-
-        DatePicker startDate = new DatePicker("Startdatum");
-        startDate.setValue(rental.getStartDate());
-
-        DatePicker endDate = new DatePicker("Enddatum");
-        endDate.setValue(rental.getEndDate());
-
-        TextField totalRateField = new TextField("Gesamtrate (Vorschau) €");
-        totalRateField.setReadOnly(true);
-
-        Runnable recalcTotal = () -> {
-            Vehicle v = vehicleBox.getValue();
-            LocalDate start = startDate.getValue();
-            LocalDate end = endDate.getValue();
-            if (v != null && start != null && end != null) {
-                long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
-                if (days <= 0) days = 1;
-                double dailyRate = v.getPriceCategory().getBaseRate();
-                totalRateField.setValue(String.valueOf(dailyRate * days));
-            } else {
-                totalRateField.clear();
-            }
-        };
-        // Initiale Berechnung
-        recalcTotal.run();
-
-        startDate.addValueChangeListener(e -> recalcTotal.run());
-        endDate.addValueChangeListener(e -> recalcTotal.run());
-        vehicleBox.addValueChangeListener(e -> recalcTotal.run());
-
-        enforceDateOrder(startDate, endDate);
-
-        Button save = new Button("Speichern", e -> {
-            try {
-                Rental updated = rentalService.updateRental(
-                        rental,
-                        facilityBox.getValue(),
-                        startDate.getValue(),
-                        endDate.getValue()
-                );
-                double newPrice = updated.calculateTotalPrice();
-
-                Notification.show("Ausleihe #" + updated.getId() + " erfolgreich aktualisiert.")
-                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                logChange(updated,
-                        "Ausleihe aktualisiert",
-                        "Ausleihe #" + updated.getId() + " angepasst (Preis: " + oldPrice + " € -> " + newPrice + " €)"
-                );
-                updateGrid();
-                dialog.close();
-
-            } catch (Exception ex) {
-                Notification.show("Fehler: " + ex.getMessage()).addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
-        });
-        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        Button cancel = new Button("Abbrechen", e -> dialog.close());
-        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-
-        FormLayout form = new FormLayout(customerBox, vehicleBox, facilityBox, startDate, endDate, totalRateField);
-        form.setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("500px", 2)
         );
-
-        HorizontalLayout actions = new HorizontalLayout(save, cancel);
-        actions.setJustifyContentMode(JustifyContentMode.END);
-
-        VerticalLayout layout = new VerticalLayout(dialogTitle, form, actions);
-        dialog.add(layout);
         dialog.open();
     }
 
     private void openDeleteDialog(Rental rental) {
-        Dialog dialog = new Dialog();
-        dialog.setWidth("400px");
-        H3 dialogTitle = new H3("Ausleihe löschen?");
-        VerticalLayout content = new VerticalLayout();
-        content.add(new Paragraph("Möchten Sie die Ausleihe wirklich löschen?"));
-        content.add(new Paragraph("Kunde: " + rental.getCustomer().getFullName()));
-
-        Button confirmButton = new Button("Löschen", e -> {
-            try {
-                logChange(rental, "Ausleihe gelöscht", "Ausleihe #" + rental.getId() + " entfernt");
-                changeLogService.detachRental(rental);
-                rentalService.deleteRental(rental);
-                Notification.show("Ausleihe erfolgreich gelöscht.").addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                updateGrid();
-                dialog.close();
-            } catch (Exception ex) {
-                Notification.show("Fehler beim Löschen.").addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
-        });
-        confirmButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
-        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        HorizontalLayout actions = new HorizontalLayout(confirmButton, cancelButton);
-        actions.setJustifyContentMode(JustifyContentMode.END);
-        VerticalLayout dialogLayout = new VerticalLayout(dialogTitle, content, actions);
-        dialog.add(dialogLayout);
+        RentalDeleteDialog dialog = new RentalDeleteDialog(
+                rental,
+                rentalService,
+                changeLogService,
+                deleted -> logChange(deleted, "Ausleihe gelöscht", "Ausleihe #" + deleted.getId() + " entfernt"),
+                this::updateGrid
+        );
         dialog.open();
-    }
-
-    private void enforceDateOrder(DatePicker startDate, DatePicker endDate) {
-        endDate.setMin(startDate.getValue());
-        startDate.addValueChangeListener(event -> {
-            LocalDate start = event.getValue();
-            endDate.setMin(start);
-            if (start != null && endDate.getValue() != null && endDate.getValue().isBefore(start)) {
-                endDate.clear();
-            }
-        });
     }
 
     private VerticalLayout buildChangeLogSection() {
