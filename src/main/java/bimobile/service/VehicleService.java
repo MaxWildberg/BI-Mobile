@@ -7,7 +7,7 @@ import bimobile.model.VehicleStatus;
 import java.util.List;
 
 /**
- * Service-Schnittstelle für die Fahrzeugverwaltung.
+ * Service Schnittstelle für Fahrzeugverwaltung.
  * @author Halil Sentürk
  */
 

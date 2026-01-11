@@ -10,8 +10,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Konfiguriert Login, Zugriffsrechte und Passwort-Verschlüsselung.
- * Erlaubt auch Zugriff auf die H2-Konsole.
+ * Konfiguriert die Spring/Vaadin-Sicherheit der Anwendung: richtet Authentifizierung mit der Vaadin-LoginView ein,
+ * erlaubt den Zugriff auf die H2-Konsole (inkl. Frame-/CSRF-Anpassungen)
+ * und stellt einen BCrypt-PasswordEncoder als Bean bereit.
  *
  * @author Jannick Braun
  */

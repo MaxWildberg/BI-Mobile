@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Repository für Fahrzeug-Lebenslaufeinträge.
+ * Repository für Fahrzeug Lebenslaufeinträge.
  * @author Halil Sentürk
  */
 @Repository

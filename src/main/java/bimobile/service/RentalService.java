@@ -197,15 +197,8 @@ public class RentalService {
     }
 
     /**
-     * Prüft, ob ein Fahrzeug im angegebenen Zeitraum aufgrund von HU oder Wartung
-     * gesperrt ist.
-     *
+     * Prüft, ob Fahrzeug im angegebenen Zeitraum aufgrund von HU oder Wartung gesperrt ist.
      * @author Halil Sentürk
-     *
-     * @param vehicle     Fahrzeug, das geprüft werden soll
-     * @param rentalStart Startdatum der Ausleihe
-     * @param rentalEnd   Enddatum der Ausleihe
-     * @return true, falls das Fahrzeug gesperrt werden soll, sonst false
      */
     private boolean isVehicleBlockedByMaintenance(Vehicle vehicle,
                                                   LocalDate rentalStart,
@@ -236,16 +229,8 @@ public class RentalService {
     }
 
     /**
-     * Prüft, ob das ausgewählte Fahrzeug für den gewünschten Zeitraum ausgeliehen werden darf.
-     * <p>
-     * Validiert Status, Wartungsfenster, parallele Ausleihen und Verfügbarkeitsflag.
-     * Liefert für jede Verletzung eine sprechende Fehlermeldung.
-     *
+     * Prüft, ob ausgewähltes Fahrzeug für den gewünschten Zeitraum ausgeliehen werden darf.
      * @author Halil Sentürk
-     *
-     * @param vehicle     Fahrzeug, das geprüft werden soll
-     * @param rentalStart Startdatum der geplanten Ausleihe
-     * @param rentalEnd   Enddatum der geplanten Ausleihe
      */
     private void validateVehicleAvailability(Vehicle vehicle, LocalDate rentalStart, LocalDate rentalEnd) {
         if (vehicle.getStatus() == VehicleStatus.SCRAPPED || vehicle.getStatus() == VehicleStatus.SOLD) {
@@ -406,13 +391,13 @@ public class RentalService {
         return rentalRepository.findAllWithCustomerVehicleFacility();
     }
 
-    //Findet Ausleihen für einen bestimmten Standort
+    // Findet Ausleihen für einen bestimmten Standort
     public List<Rental> findRentalsByFacility(Long facilityId) {
         return rentalRepository.findByFacilityId(facilityId);
     }
 
     /**
-     * Validiert die Verfügbarkeit eines Fahrzeugs während der Ausleihe.
+     * Validiert Verfügbarkeit eines Fahrzeugs während Ausleihe.
      * @author Halil Sentürk
      */
     private void validateVehicleAvailabilityWhileRented(Vehicle vehicle, LocalDate rentalStart, LocalDate rentalEnd) {

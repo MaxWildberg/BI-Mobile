@@ -1,8 +1,8 @@
 package bimobile.model;
 
 /**
- * Enum für die verschiedenen Ereignistypen im Fahrzeuglebenslauf.
- * Definiert die Arten von Einträgen wie Anlage, Wartung oder Verkauf.
+ * Enum für verschiedene Ereignistypen im Fahrzeuglebenslauf.
+ * Definiert Arten von Einträgen wie Anlage, Wartung oder Verkauf.
  * * @author Halil Sentürk
  */
 
