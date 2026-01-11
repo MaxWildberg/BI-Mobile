@@ -406,7 +406,7 @@ public class RentalService {
         return rentalRepository.findAllWithCustomerVehicleFacility();
     }
 
-    // [NEU] Findet Ausleihen für einen bestimmten Standort
+    //Findet Ausleihen für einen bestimmten Standort
     public List<Rental> findRentalsByFacility(Long facilityId) {
         return rentalRepository.findByFacilityId(facilityId);
     }

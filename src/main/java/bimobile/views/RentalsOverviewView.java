@@ -509,7 +509,7 @@ public class RentalsOverviewView extends VerticalLayout {
             facilityBox.setReadOnly(false);
         }
 
-        // [LOGIK FIX] Interaktive Filterung auch beim Bearbeiten
+        //Interaktive Filterung auch beim Bearbeiten
         if (currentFacility == null) {
             facilityBox.addValueChangeListener(event -> {
                 Facility selectedFacility = event.getValue();
