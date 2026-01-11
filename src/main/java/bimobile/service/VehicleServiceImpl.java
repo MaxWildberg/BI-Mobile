@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Implementierung der Geschäftslogik für die Fahrzeugverwaltung.
+ * Implementierung der Geschäftslogik für Fahrzeugverwaltung.
  * @author Halil Sentürk
  */
 
@@ -43,7 +43,7 @@ public class VehicleServiceImpl implements VehicleService {
 
         Vehicle saved = vehicleRepository.save(vehicle);
 
-        // Anforderung 1: Kauf mit Preis und Start KM
+        // Kauf mit Preis und Start KM
         String info = String.format("Fahrzeug angelegt. Start-KM: %d, Beschaffungspreis: %.2f €",
                 saved.getMileage(),
                 (saved.getAcquisitionPrice() != null ? saved.getAcquisitionPrice() : 0.0));
@@ -58,21 +58,21 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle existing = vehicleRepository.findById(vehicle.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Fahrzeug wurde nicht gefunden."));
 
-        // --- ANFORDERUNG 2: Wartung/HU nur bei Änderungen protokollieren ---
+        // Wartung/HU nur bei Änderungen protokollieren
 
-        // Check: Hat sich das HU-Datum geändert?
+        // Hat sich HU-Datum geändert?
         if (hasDateChanged(existing.getNextInspectionDate(), vehicle.getNextInspectionDate())) {
             createHistoryEntry(existing, EventType.MAINTENANCE,
                     "HU-Termin aktualisiert auf: " + vehicle.getNextInspectionDate(), null);
         }
 
-        // Check: Hat sich das Service-Datum geändert?
+        // Hat sich Service-Datum geändert?
         if (hasDateChanged(existing.getNextServiceDate(), vehicle.getNextServiceDate())) {
             createHistoryEntry(existing, EventType.MAINTENANCE,
                     "Service-Termin aktualisiert auf: " + vehicle.getNextServiceDate(), null);
         }
 
-        // Check: Wurde Wartungsmodus aktiviert/deaktiviert?
+        // Wurde Wartungsmodus aktiviert/deaktiviert?
         if (existing.isMaintenanceActive() != vehicle.isMaintenanceActive()) {
             String status = vehicle.isMaintenanceActive() ? "aktiviert" : "beendet";
             createHistoryEntry(existing, EventType.MAINTENANCE,
@@ -125,12 +125,12 @@ public class VehicleServiceImpl implements VehicleService {
 
         VehicleStatus oldStatus = vehicle.getStatus();
 
-        // Regeln: Endzustand
+        // Endzustand
         if (oldStatus == VehicleStatus.SCRAPPED || oldStatus == VehicleStatus.SOLD) {
             throw new IllegalStateException("Der Status eines ausgemusterten oder verkauften Fahrzeugs kann nicht mehr geändert werden.");
         }
 
-        // Regel: Verfügbar und verleihbar nur, wenn keine HU fällig und keine Wartung aktiv
+        // Verfügbar und verleihbar nur, wenn keine HU fällig und keine Wartung aktiv
         if (newStatus == VehicleStatus.AVAILABLE || newStatus == VehicleStatus.RENTED) {
             if (vehicle.isInspectionOverdue()) {
                 throw new IllegalStateException("Fahrzeug kann nicht auf '" + newStatus.getDisplayName() + "' gesetzt werden, da die HU fällig ist.");
@@ -173,7 +173,7 @@ public class VehicleServiceImpl implements VehicleService {
                 .orElseThrow(() -> new IllegalArgumentException("Fahrzeug wurde nicht gefunden."));
     }
 
-    // --- ANFORDERUNG 5: Verkauf mit Preis und KM ---
+    // Verkauf mit Preis und KM
     @Override
     public Vehicle sellVehicle(Long vehicleId, double salePrice, int finalMileage, String buyerName) {
         Vehicle vehicle = findById(vehicleId);
@@ -214,7 +214,7 @@ public class VehicleServiceImpl implements VehicleService {
                 (vehicle.getNextInspectionDate() != null && vehicle.getNextInspectionDate().isBefore(today)) ||
                 (vehicle.getNextServiceDate() != null && vehicle.getNextServiceDate().isBefore(today));
 
-        // Sicherheits-Check: Status NICHT ändern, wenn Auto vermietet/verkauft/ausgemustert ist
+        // Sicherheit: Status NICHT ändern, wenn Auto vermietet/verkauft/ausgemustert ist
         if (vehicle.getStatus() != VehicleStatus.RENTED &&
                 vehicle.getStatus() != VehicleStatus.SOLD &&
                 vehicle.getStatus() != VehicleStatus.SCRAPPED) {

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entity für ein Fahrzeug.
+ * Entity für Fahrzeug.
  * @author Halil Sentürk
  */
 @Entity
@@ -68,11 +68,11 @@ public class Vehicle {
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MaintenanceAppointment> maintenanceAppointments = new ArrayList<>();
 
-    // Ein Fahrzeug kann viele History-Einträge haben (Lebenslauf)
+    // Ein Fahrzeug kann viele History-Einträge haben
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VehicleHistoryEntry> historyEntries = new ArrayList<>();
 
-    // --- Konstruktoren ---
+    // Konstruktoren
 
     public Vehicle() {
     }
@@ -85,12 +85,11 @@ public class Vehicle {
         this.status = VehicleStatus.AVAILABLE;
     }
 
-    // --- Methoden ---
+    // Methoden
 
     /**
      * Aktualisiert den Status des Fahrzeugs.
-     * Die eigentliche Fachlogik (z.B. ob der Statuswechsel erlaubt ist)
-     * wird im Service geprüft, hier wird nur gesetzt.
+     * Eigentliche Fachlogik, (z.B. ob Statuswechsel erlaubt ist), wird im Service geprüft, hier wird nur gesetzt.
      */
     public void setStatus(VehicleStatus status) {
         this.status = status;
@@ -106,14 +105,14 @@ public class Vehicle {
     }
 
     /**
-     * Fügt einen neuen History-Eintrag (Lebenslauf) hinzu.
+     * Fügt einen neuen History Eintrag  hinzu.
      */
     public void addHistoryEntry(VehicleHistoryEntry entry) {
         entry.setVehicle(this);
         this.historyEntries.add(entry);
     }
 
-    // --- Getter & Setter ---
+    // Getter & Setter
 
     public Long getId() {
         return id;
