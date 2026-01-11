@@ -2,6 +2,7 @@ package bimobile.service.customer;
 
 import bimobile.dao.CompanyRepository;
 import bimobile.model.customer.Company;
+import com.vaadin.flow.component.notification.Notification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +58,7 @@ public class CompanyService {
         String name = company.getName();
 
         if (name != null && companyRepository.existsByName(name)) {
+            Notification.show("Firma mit dem Namen " + name + " existiert bereits");
             throw new DuplicateCompanyException(name);
         }
 
