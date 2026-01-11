@@ -3,9 +3,7 @@ package bimobile.model;
 import jakarta.persistence.*;
 
 /**
- * JPA-Entität für einen Benutzer mit Stammdaten und Login-Informationen
- * (Name, E-Mail, Passwort, Rolle, aktiv/gesperrt) sowie optionaler Zuordnung
- * zu einem Standort.
+ * Ein Benutzer der Anwendung mit Login-Daten, Rolle und Standort-Zuordnung.
  *
  * @author Jannick Braun
  */

@@ -12,8 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  *
- * Initialisiert beim Start der Anwendung Testbenutzer,
- * falls noch keine Benutzer in der Datenbank existieren (Passwörter werden kodiert, Rollen gesetzt).
+ * Erstellt beim Start der Anwendung Testbenutzer,
+ * falls noch keine Benutzer in der Datenbank existieren.
  *
  * @author Jannick Braun
  */
@@ -27,11 +27,10 @@ public class DataInitializer {
 	@Bean
 	CommandLineRunner initUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
 		return args -> {
-			logger.info("=== Prüfe Benutzer-Initialisierung ===");
-			logger.info("Anzahl User in DB: {}", userRepository.count());
+			logger.info("Aktuelle Anzahl User in DB: {}", userRepository.count());
 
 			if (userRepository.count() == 0) {
-				logger.info("Keine Benutzer gefunden - erstelle Testbenutzer...");
+				logger.info("Keine Benutzer gefunden -> erstelle Testbenutzer...");
 
 				User director = new User(
 						"Max",
@@ -63,7 +62,7 @@ public class DataInitializer {
 				userRepository.save(employee);
 				logger.info("Testbenutzer erstellt: employee@bimobile.de / employee123");
 
-				logger.info("=== Testbenutzer-Initialisierung abgeschlossen ===");
+				logger.info("Testbenutzer erstellt");
 			} else {
 				logger.info("Benutzer existieren bereits, überspringe Initialisierung.");
 			}

@@ -7,8 +7,7 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 
 /**
- * Controller zur Verwaltung von Standorten (Anlegen, Bearbeiten, Löschen, Auflisten)
- * mit grundlegender Eingabevalidierung und Delegation an Service/DAO.
+ * Verwaltet die Standorte (anlegen, bearbeiten, löschen).
  *
  * @author Jannick Braun
  */
@@ -40,7 +39,7 @@ public class FacilityController {
 
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         if (!mail.matches(emailRegex)) {
-            return "Fehler: Ungültiges E-Mail-Format";
+            return "Fehler: Ungültiges E-Mail Format";
         }
 
         if (telephoneNr <= 0) {
@@ -84,7 +83,7 @@ public class FacilityController {
 
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         if (!mail.matches(emailRegex)) {
-            return "Fehler: Ungültiges E-Mail-Format";
+            return "Fehler: Ungültiges E-Mail Format";
         }
 
         if (telephoneNr <= 0) {
@@ -108,7 +107,7 @@ public class FacilityController {
 
     public String standortDeaktivieren(Long id) {
         if (id == null || id <= 0) {
-            return "Fehler: Ungültige Standort-ID";
+            return "Fehler: Ungültige Standort ID";
         }
 
         Facility facility = facilityDAO.getFacilityById(id);

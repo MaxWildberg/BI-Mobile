@@ -12,8 +12,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
- * Vaadin-Login-View der Anwendung: stellt ein lokalisiertes LoginForm bereit, bietet Navigation zur
- * "Passwort vergessen"-Seite und zeigt bei fehlerhafter Anmeldung eine Fehlermeldung über Query-Parameter an.
+ * Login-Seite der Anwendung.
  *
  * @author Jannick Braun
  */
