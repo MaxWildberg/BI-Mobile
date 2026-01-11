@@ -51,7 +51,7 @@ public class FacilityController {
         }
 
         try {
-            Facility facility = new Facility(address.trim(), mail.trim(), telephoneNr);
+            Facility facility = new Facility(address.trim(), mail.trim(), String telephoneNr);
             facilityService.addFacility(facility);
             return "Erfolg: Standort '" + address + "' wurde erfolgreich angelegt";
         } catch (Exception e) {
