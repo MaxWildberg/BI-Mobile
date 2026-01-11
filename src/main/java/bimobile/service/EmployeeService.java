@@ -64,7 +64,6 @@ public class EmployeeService implements EmployeeManagement {
             }
         }
 
-        employee.setPasswordHash(passwordEncoder.encode(employee.getPasswordHash()));
         employeeDAO.addEmployee(employee);
         createUserForEmployee(employee);
         return employee;
@@ -76,7 +75,7 @@ public class EmployeeService implements EmployeeManagement {
                 employee.getName(),
                 employee.getLastname(),
                 employee.getEmail(),
-                employee.getPasswordHash(),
+                passwordEncoder.encode(employee.getPasswordHash()),
                 employee.getRole()
         );
         user.setFacility(employee.getFacility());
@@ -117,9 +116,10 @@ public class EmployeeService implements EmployeeManagement {
         existing.setBirthday(updatedEmployee.getBirthday());
         existing.setEmail(updatedEmployee.getEmail());
         existing.setPhoneNumber(updatedEmployee.getPhoneNumber());
+        existing.setLoginName(updatedEmployee.getLoginName());
 
         if (updatedEmployee.getPasswordHash() != null && !updatedEmployee.getPasswordHash().isEmpty()) {
-            existing.setPasswordHash(passwordEncoder.encode(updatedEmployee.getPasswordHash()));
+            existing.setPasswordHash(updatedEmployee.getPasswordHash());
         }
 
         existing.setRole(updatedEmployee.getRole());
@@ -141,7 +141,7 @@ public class EmployeeService implements EmployeeManagement {
             user.setFacility(employee.getFacility());
             user.setEnabled(employee.isActive());
             if (employee.getPasswordHash() != null && !employee.getPasswordHash().isEmpty()) {
-                user.setPassword(employee.getPasswordHash());
+                user.setPassword(passwordEncoder.encode(employee.getPasswordHash()));
             }
             userRepository.save(user);
         } else {

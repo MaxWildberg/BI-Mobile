@@ -47,6 +47,7 @@ public class EmployeeFormDialog extends Dialog {
     private final DatePicker birthday = new DatePicker("Geburtsdatum");
     private final EmailField email = new EmailField("E-Mail");
     private final TextField phoneNumber = new TextField("Telefon");
+    private final TextField loginName = new TextField("Login-Name");
     private final PasswordField passwordHash = new PasswordField("Passwort");
     private final ComboBox<RoleType> role = new ComboBox<>("Rolle");
     private final ComboBox<Facility> facility = new ComboBox<>("Standort");
@@ -87,10 +88,11 @@ public class EmployeeFormDialog extends Dialog {
         birthday.setPlaceholder("TT.MM.JJJJ");
 
         FormLayout formLayout = new FormLayout();
-        formLayout.add(name, lastname, birthday, phoneNumber, email, passwordHash, role, facility);
+        formLayout.add(name, lastname, birthday, email, phoneNumber, loginName, passwordHash, role, facility);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         formLayout.setColspan(email, 2);
+        formLayout.setColspan(loginName, 2);
         formLayout.setColspan(passwordHash, 2);
         formLayout.setColspan(facility, 2);
 
@@ -138,6 +140,9 @@ public class EmployeeFormDialog extends Dialog {
         binder.forField(lastname).asRequired("Nachname ist Pflicht").bind(Employee::getLastname, Employee::setLastname);
         binder.forField(email).asRequired("E-Mail ist Pflicht").bind(Employee::getEmail, Employee::setEmail);
         binder.forField(role).asRequired("Rolle ist Pflicht").bind(Employee::getRole, Employee::setRole);
+
+        // [UPDATE] Login-Name ist jetzt Pflicht!
+        binder.forField(loginName).asRequired("Login-Name ist Pflicht").bind(Employee::getLoginName, Employee::setLoginName);
 
         binder.forField(birthday)
                 .asRequired("Geburtsdatum ist Pflicht")

@@ -226,6 +226,7 @@ public class EmployeeView extends VerticalLayout {
         layout.add(createDetailRow("Geburtsdatum:", employee.getBirthday()));
         layout.add(createDetailRow("E-Mail:", employee.getEmail()));
         layout.add(createDetailRow("Telefon:", employee.getPhoneNumber()));
+        layout.add(createDetailRow("Login:", employee.getLoginName()));
         layout.add(createDetailRow("Rolle:", formatRole(employee.getRole().name())));
         layout.add(createDetailRow("Standort:", employee.getFacility() != null ? employee.getFacility().getAddress() : "-"));
 
