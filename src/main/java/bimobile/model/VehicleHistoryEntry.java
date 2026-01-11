@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 /**
- * Entity für einen Eintrag im Fahrzeuglebenslauf.
+ * Entity für Eintrag im Fahrzeuglebenslauf.
  * @author Halil Sentürk
  */
 
@@ -26,7 +26,7 @@ public class VehicleHistoryEntry {
     private LocalDate date;
 
     /**
-     * Art des Ereignisses (siehe EventType).
+     * Art des Ereignisses.
      */
     @Enumerated(EnumType.STRING)
     private EventType eventType;
@@ -38,7 +38,7 @@ public class VehicleHistoryEntry {
     private String description;
 
     /**
-     * Optional: z.B. Verkaufspreis bei einem Verkauf.
+     * Verkaufspreis bei Verkauf.
      */
     private Double salePrice;
 
@@ -53,7 +53,7 @@ public class VehicleHistoryEntry {
         this.description = description;
     }
 
-    // Getter/Setter
+    // Getter & Setter
 
     public Long getId() {
         return id;

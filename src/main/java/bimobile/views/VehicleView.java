@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * UI-Komponente für die Fahrzeugverwaltung.
+ * UI Komponente für Fahrzeugverwaltung.
  * @author Halil Sentürk
  */
 @Route(value = "vehicles", layout = MainLayout.class)
@@ -88,7 +88,7 @@ public class VehicleView extends VerticalLayout {
         this.vehicleService = vehicleService;
         this.facilityService = facilityService;
 
-        // Layout-Grundstruktur
+        // Layout Grundstruktur
         setPadding(true);
         setSizeFull();
         getStyle().set("background", "#f9fafb");
@@ -291,7 +291,7 @@ public class VehicleView extends VerticalLayout {
     }
 
     /**
-     * Setzt alle Validierungsfehler (rote Markierung) zurück.
+     * Setzt alle Validierungsfehler zurück.
      */
     private void clearValidation() {
         licensePlateField.setInvalid(false);
@@ -334,9 +334,9 @@ public class VehicleView extends VerticalLayout {
         }
     }
 
-    // ----------------------------------------------------
+    //
     // Formular <-> Entity
-    // ----------------------------------------------------
+    //
 
     private void populateForm(Vehicle vehicle) {
         if (vehicle == null) {
@@ -565,7 +565,7 @@ public class VehicleView extends VerticalLayout {
 
         H3 dialogTitle = new H3(titleText);
 
-        // ===== Abschnitt 1: Basisdaten =====
+        // Basisdaten
         H4 basisTitle = new H4("Basisdaten");
         FormLayout basisForm = new FormLayout(
                 licensePlateField,
@@ -579,7 +579,7 @@ public class VehicleView extends VerticalLayout {
         basisForm.setWidthFull();
         basisForm.setColspan(facilityBox, 2);
 
-        // ===== Abschnitt 2: Technische Daten =====
+        // Technische Daten
         H4 techTitle = new H4("Technische Daten");
         FormLayout techForm = new FormLayout(
                 mileageField,
@@ -587,7 +587,7 @@ public class VehicleView extends VerticalLayout {
         );
         techForm.setWidthFull();
 
-        // ===== Abschnitt 3: Wartung & Termine =====
+        // Wartung & Termine
         H4 maintenanceTitle = new H4("Wartung & Termine");
         FormLayout maintenanceForm = new FormLayout(
                 nextInspectionField,
@@ -596,7 +596,7 @@ public class VehicleView extends VerticalLayout {
         );
         maintenanceForm.setWidthFull();
 
-        // ===== Abschnitt 4: Ausstattung =====
+        // Ausstattung
         H4 featuresTitle = new H4("Ausstattung");
         FormLayout featuresForm = new FormLayout(
                 smokingAllowedField,
