@@ -1,4 +1,4 @@
-spring.mail.host=smtp.hsbi.de
+spring.mail.host=mail.gmx.net
 spring.mail.port=587
-spring.mail.username=bsp@hsbi.de
-spring.mail.password=PASSWORT
+spring.mail.username=pizzateig20251@gmx.de
+spring.mail.password=hsbisoftwareprojekt2526

@@ -2,6 +2,7 @@ package bimobile.service;
 
 import bimobile.model.Invoice;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -21,6 +22,9 @@ import jakarta.mail.internet.MimeMessage;
 @Service
 public class MailService {
 
+    @Value("${spring.mail.username}")
+    private String mailForm;
+
     private final JavaMailSender mailSender;
 
     @Autowired
@@ -33,7 +37,7 @@ public class MailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-            helper.setFrom("leonard.koechling@hsbi.de");
+            helper.setFrom(mailForm);
             helper.setTo(to);
             helper.setSubject("Ihre BI-Mobile Rechnung");
             String htmlText =
