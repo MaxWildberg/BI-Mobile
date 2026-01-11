@@ -68,4 +68,8 @@ public class PersonalData {
     public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
     }
+
+    public String getFullname() {
+        return firstname + " " + lastname;
+    }
 }
