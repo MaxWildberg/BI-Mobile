@@ -264,11 +264,16 @@ public class RentalService {
             throw new IllegalStateException("Das Fahrzeug ist aktuell blockiert und nicht als verfügbar markiert.");
         }
 
-        if (isVehicleBlockedByMaintenance(vehicle, rentalStart, rentalEnd)) {
-            throw new IllegalStateException(
-                    "Fahrzeug ist aufgrund fälliger oder in den Zeitraum fallender HU/Wartung gesperrt."
-            );
-        }
+	    if (isVehicleBlockedByMaintenance(vehicle, rentalStart, rentalEnd)) {
+		    throw new IllegalStateException(
+				    "GESPERRT wegen HU/Wartung. " +
+						    "Mietzeitraum=" + rentalStart + " bis " + rentalEnd +
+						    ", nextInspection=" + vehicle.getNextInspectionDate() +
+						    ", nextService=" + vehicle.getNextServiceDate() +
+						    ", maintenanceActive=" + vehicle.isMaintenanceActive() +
+						    ", status=" + vehicle.getStatus()
+		    );
+	    }
 
         if (rentalRepository.existsByVehicleAndStatusIn(vehicle, ACTIVE_STATES)) {
             throw new IllegalStateException("Für dieses Fahrzeug existiert bereits eine aktive Ausleihe im System.");
