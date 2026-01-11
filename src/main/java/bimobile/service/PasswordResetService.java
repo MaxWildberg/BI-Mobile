@@ -6,6 +6,7 @@ import bimobile.model.PasswordResetToken;
 import bimobile.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +17,8 @@ import java.util.Optional;
 
 @Service
 public class PasswordResetService {
+	@Value("${spring.mail.username}")
+	private String mailForm;
 
     private static final Logger logger = LoggerFactory.getLogger(PasswordResetService.class);
 
@@ -60,7 +63,7 @@ public class PasswordResetService {
     private void sendResetEmail(String toEmail, String firstName, String resetLink) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("leonard.koechling@hsbi.de");  // ANPASSEN an euren SMTP-User
+            message.setFrom(mailForm);  // aus den Properties geladen
             message.setTo(toEmail);
             message.setSubject("BI-Mobile - Passwort zurücksetzen");
             message.setText(
