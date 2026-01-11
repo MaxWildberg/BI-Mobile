@@ -20,13 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * JUnit Tests für den PasswordResetService.
  *
- * Testet die Kernfunktionalitäten:
+ * Testet die Funktionen:
  * - Token-Erstellung für Passwort-Reset
  * - Token-Validierung
  * - Passwort-Zurücksetzung
  *
  * @author Jannick Braun
  */
+
 @SpringBootTest
 @Transactional
 public class PasswordResetServiceTest {
@@ -47,7 +48,7 @@ public class PasswordResetServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Test-User erstellen
+        // Test User erstellen
         testUser = new User(
                 "Test",
                 "User",
@@ -61,10 +62,10 @@ public class PasswordResetServiceTest {
     @Test
     @DisplayName("Token wird erfolgreich erstellt für existierenden User")
     void testInitiatePasswordReset_ExistingUser_CreatesToken() {
-        // Act
+        // Methode ausführen
         boolean result = passwordResetService.initiatePasswordReset("testuser@bimobile.de", "http://localhost:8080");
 
-        // Assert
+        // Prüfen, ob das Ergebnis stimmt
         assertTrue(result);
 
         // Prüfen ob User existiert
@@ -75,24 +76,24 @@ public class PasswordResetServiceTest {
     @Test
     @DisplayName("Kein Fehler bei nicht existierender E-Mail (Sicherheit)")
     void testInitiatePasswordReset_NonExistingUser_ReturnsTrue() {
-        // Act - E-Mail existiert nicht
+        // Ausführen -> E-Mail existiert nicht
         boolean result = passwordResetService.initiatePasswordReset("gibtsNicht@bimobile.de", "http://localhost:8080");
 
-        // Assert - Aus Sicherheitsgründen trotzdem true
+        // Prüfen Aus Sicherheitsgründen trotzdem true
         assertTrue(result);
     }
 
     @Test
     @DisplayName("Gültiger Token wird akzeptiert")
     void testValidateToken_ValidToken_ReturnsToken() {
-        // Arrange - Token erstellen
+        // Vorbereiten -> Token erstellen
         PasswordResetToken token = new PasswordResetToken(testUser);
         tokenRepository.save(token);
 
-        // Act
+        // Ausführen
         Optional<PasswordResetToken> result = passwordResetService.validateToken(token.getToken());
 
-        // Assert
+        // Prüfen
         assertTrue(result.isPresent());
         assertEquals(testUser.getId(), result.get().getUser().getId());
     }
@@ -100,25 +101,25 @@ public class PasswordResetServiceTest {
     @Test
     @DisplayName("Ungültiger Token wird abgelehnt")
     void testValidateToken_InvalidToken_ReturnsEmpty() {
-        // Act
+        // Ausführen
         Optional<PasswordResetToken> result = passwordResetService.validateToken("ungueltigerToken123");
 
-        // Assert
+        // Prüfen
         assertTrue(result.isEmpty());
     }
 
     @Test
     @DisplayName("Passwort wird erfolgreich zurückgesetzt")
     void testResetPassword_ValidToken_ChangesPassword() {
-        // Arrange
+        // Vorbereiten
         PasswordResetToken token = new PasswordResetToken(testUser);
         tokenRepository.save(token);
         String neuesPasswort = "neuesPasswort123";
 
-        // Act
+        // Ausführen
         boolean result = passwordResetService.resetPassword(token.getToken(), neuesPasswort);
 
-        // Assert
+        // Prüfen
         assertTrue(result);
 
         // Prüfen ob Passwort geändert wurde
@@ -129,14 +130,14 @@ public class PasswordResetServiceTest {
     @Test
     @DisplayName("Token wird nach Verwendung als benutzt markiert")
     void testResetPassword_TokenMarkedAsUsed() {
-        // Arrange
+        // Vorbereiten
         PasswordResetToken token = new PasswordResetToken(testUser);
         tokenRepository.save(token);
 
-        // Act
+        // Ausführen
         passwordResetService.resetPassword(token.getToken(), "neuesPasswort123");
 
-        // Assert
+        // Prüfen
         PasswordResetToken usedToken = tokenRepository.findByToken(token.getToken()).orElseThrow();
         assertTrue(usedToken.isUsed());
     }
