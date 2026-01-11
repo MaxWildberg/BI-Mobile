@@ -49,7 +49,6 @@ public class CompanyOverviewDialog extends Dialog {
         companyGrid.addColumn(Company::getCompanyId).setHeader("ID").setWidth("50px").setFlexGrow(0);
         companyGrid.addColumn(Company::getName).setHeader("Name").setSortable(true);
         companyGrid.addColumn(Company::getAddress).setHeader("Adresse");
-        //companyGrid.addColumn(Company::getPhoneNumber).setHeader("Telefon");
         companyGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
     }
 
