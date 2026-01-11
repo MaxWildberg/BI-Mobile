@@ -167,7 +167,7 @@ public class LocationsOverviewView extends VerticalLayout {
 
             try{
                 String tel = phone.getValue().trim();
-                String msg = controller.standortAnlegen(address.getValue(), email.getValue(), Integer.parseInt(tel));
+                String msg = controller.standortAnlegen(address.getValue(), email.getValue(), tel);
 
                 Notification.show(msg);
 
@@ -175,8 +175,8 @@ public class LocationsOverviewView extends VerticalLayout {
                     updateGrid();
                     dialog.close();
                 }
-            } catch (NumberFormatException ex) {
-                Notification.show("Telefonnummer muss eine gültige Zahl sein!");
+            } catch (Exception ex) {
+                Notification.show("Fehler beim Anlegen: " + ex.getMessage());
             }
         });
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -204,7 +204,7 @@ public class LocationsOverviewView extends VerticalLayout {
         emailField.setRequiredIndicatorVisible(true);
         emailField.setClearButtonVisible(true);
         emailField.setErrorMessage("Bitte eine gültige E-Mail eingeben!");
-        TextField phoneField = new TextField("Telefonnummer", String.valueOf(facility.getTelephoneNr()), "");
+        TextField phoneField = new TextField("Telefonnummer", facility.getTelephoneNr(), "");
 
         Button saveButton = new Button("Speichern", e -> {
             if(emailField.isInvalid()){
@@ -217,7 +217,7 @@ public class LocationsOverviewView extends VerticalLayout {
                         facility.getId(),
                         addressField.getValue(),
                         emailField.getValue(),
-                        Integer.parseInt(tel)
+                        tel
                 );
 
                 if (result.startsWith("Erfolg")) {
@@ -227,8 +227,8 @@ public class LocationsOverviewView extends VerticalLayout {
                 } else {
                     Notification.show(result).addThemeVariants(NotificationVariant.LUMO_ERROR);
                 }
-            } catch (NumberFormatException ex) {
-                Notification.show("Telefonnummer muss eine Zahl sein!");
+            } catch (Exception ex) {
+                Notification.show("Fehler beim Speichern: " + ex.getMessage());
             }
         });
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
