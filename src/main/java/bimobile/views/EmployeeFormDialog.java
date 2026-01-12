@@ -244,7 +244,7 @@ public class EmployeeFormDialog extends Dialog {
 
     private String formatRole(RoleType role) {
         return switch (role) {
-            case MANAGING_DIRECTOR -> "Standortleiter";
+            case MANAGING_DIRECTOR -> "Geschäftsleitung";
             case GENERAL_MANAGER -> "Geschäftsführer";
             case EMPLOYEE -> "Mitarbeiter";
         };
