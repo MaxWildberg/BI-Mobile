@@ -200,6 +200,7 @@ public class Vehicle {
     }
 
     public double getDailyRate() {
+        this.dailyRate = priceCategory.getBaseRate();
         return dailyRate;
     }
 

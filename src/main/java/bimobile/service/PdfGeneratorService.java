@@ -34,7 +34,7 @@ public class PdfGeneratorService {
 			document.add(new Paragraph("Rechnung Nr: " + invoice.getId()));
 			document.add(new Paragraph("Datum: " + invoice.getInvoiceDate()));
 			document.add(new Paragraph("----------------------------"));
-			document.add(new Paragraph("Kunde: " + invoice.getRental().getCustomer().getPersonalData().getTitle()));
+			document.add(new Paragraph("Kunde: " + invoice.getRental().getCustomer().getPersonalData().getFullname()));
 			document.add(new Paragraph("Email: " + invoice.getRental().getCustomer().getContactInfo().getMail()));
 
 			document.add(new Paragraph("----------------------------"));
@@ -44,7 +44,7 @@ public class PdfGeneratorService {
 			document.add(new Paragraph("----------------------------"));
 			document.add(new Paragraph("Leihdauer: "
 					+ invoice.getRental().getStartDate() + " bis " + invoice.getRental().getEndDate()));
-			document.add(new Paragraph("Tagespreis: " + invoice.getRental().calculateTotalPrice() + " €"));
+			document.add(new Paragraph("Tagespreis: " + invoice.getRental().pullDailyRateFromVehicle() + " €"));
 			document.add(new Paragraph("gefahrene Kilometer: " + (invoice.getKilometersAfter() - invoice.getKilometersBefore()) + " km "));
 
 			document.add(new Paragraph("----------------------------"));
