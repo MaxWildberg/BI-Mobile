@@ -36,9 +36,8 @@ class VehicleServiceImplTest {
     @InjectMocks
     private VehicleServiceImpl vehicleService;
 
-    /**
-     * Positiver Test: Gültiger Statuswechsel.
-     */
+    
+    
     @Test
     void testChangeStatus_ValidTransition_ToAvailable() {
         
@@ -67,9 +66,8 @@ class VehicleServiceImplTest {
         verify(historyRepository, times(1)).save(any(VehicleHistoryEntry.class));
     }
 
-    /**
-     * Negativer Test: Ungültiger Statuswechsel (HU abgelaufen).
-     */
+    
+    
     @Test
     void testChangeStatus_InvalidTransition_OverdueInspection() {
         
