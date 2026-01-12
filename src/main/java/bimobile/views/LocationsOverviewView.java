@@ -36,14 +36,14 @@ import java.util.List;
  * Übesicht aller Standorte im BI-Mobile System.
  * Diese View stellt ein Grid zur Anzeige aller gespeicherten Standorte bereit und ermöglicht deren Verwaltung.
  *
- * @Author Ben Berlin, Jannick Braun
+ * @Author Ben Berlin, Jannick Braun, Jan Lasse Stegmann
  */
 public class LocationsOverviewView extends VerticalLayout {
 
     private final FacilityController controller;
     private final Grid<Facility> grid = new Grid<>(Facility.class, false);
 
-    // Berechtigungs-Checks cachen
+    // Berechtigungs-Checks
     private final boolean isManagement = AuthorizationUtils.isManagement(); // Director
     private final boolean isBranchManager = AuthorizationUtils.isBranchManager(); // Manager
     private final Facility currentFacility = AuthorizationUtils.getCurrentUserFacility();
@@ -87,7 +87,7 @@ public class LocationsOverviewView extends VerticalLayout {
         header.setAlignItems(Alignment.CENTER);
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        // Button "Neuen Standort anlegen" -> NUR für Director sichtbar
+        // Button "Neuen Standort anlegen" nur für Director sichtbar
         if (isManagement) {
             Button neu = new Button("Neuen Standort anlegen", new Icon(VaadinIcon.PLUS));
             neu.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -101,7 +101,7 @@ public class LocationsOverviewView extends VerticalLayout {
         grid.addColumn(Facility::getMail).setHeader("E-Mail").setAutoWidth(true);
         grid.addColumn(Facility::getTelephoneNr).setHeader("Telefon").setAutoWidth(true);
 
-        // Aktionen-Spalte (Bearbeiten / Löschen) -> NUR für Director sichtbar
+        // Aktionen-Spalte (Bearbeiten / Löschen) nur für Director sichtbar
         if (isManagement) {
             grid.addComponentColumn(facility -> {
                 Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));

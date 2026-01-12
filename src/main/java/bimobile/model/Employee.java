@@ -1,6 +1,9 @@
 package bimobile.model;
 
 import jakarta.persistence.*;
+/**
+* @author Jan Lasse Stegmann
+*/
 
 @Entity
 @Table(name = "employees")
@@ -35,6 +38,7 @@ public class Employee {
     @Column(nullable = false)
     private RoleType role;
 
+    // Steuert den Login-Zugriff (true = darf sich anmelden)
     @Column(nullable = false)
     private boolean active = true;
 
@@ -42,8 +46,8 @@ public class Employee {
     @JoinColumn(name = "facility_id")
     private Facility facility;
 
+    // Leerer Konstruktor ist für JPA zwingend erforderlich
     public Employee() {
-        // JPA requirement
     }
 
     public Employee(String name, String lastname, String birthday) {

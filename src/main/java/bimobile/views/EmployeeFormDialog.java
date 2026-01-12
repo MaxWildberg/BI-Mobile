@@ -27,8 +27,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Modal-Dialog zum Erstellen und Bearbeiten von Mitarbeitern.
- * Jetzt mit Validierung für Passwort und Login-Name.
+ * Dialog zur Erstellung und Bearbeitung von Mitarbeiter-Datensätzen.
+ *
+ * Beinhaltet die Logik zur Validierung, Passwort-Verwaltung und
+ * Berechtigungskonzept (View)
+ *
+ * @author Jan Lasse Stegmann
  */
 public class EmployeeFormDialog extends Dialog {
 
@@ -41,7 +45,6 @@ public class EmployeeFormDialog extends Dialog {
     private Employee employee;
     private final Binder<Employee> binder = new Binder<>(Employee.class);
 
-    // UI Felder
     private final TextField name = new TextField("Vorname");
     private final TextField lastname = new TextField("Nachname");
     private final DatePicker birthday = new DatePicker("Geburtsdatum");
@@ -120,6 +123,21 @@ public class EmployeeFormDialog extends Dialog {
         role.setItems(RoleType.values());
         role.setItemLabelGenerator(this::formatRole);
 
+        // Dynamische Anpassung: Geschäftsführer haben keinen Standort
+        role.addValueChangeListener(event -> {
+            RoleType selected = event.getValue();
+            if (selected == RoleType.MANAGING_DIRECTOR) {
+                facility.clear();
+                facility.setEnabled(false);
+            } else {
+                // Standort wieder freigeben (außer für Branch Manager, die sind fixiert)
+                if (!isBranchManager) {
+                    facility.setEnabled(true);
+                }
+            }
+        });
+
+        // Branch Manager dürfen nur für ihren eigenen Standort anlegen
         if (isBranchManager) {
             facility.setItems(currentFacility);
             facility.setValue(currentFacility);
@@ -140,10 +158,9 @@ public class EmployeeFormDialog extends Dialog {
         binder.forField(lastname).asRequired("Nachname ist Pflicht").bind(Employee::getLastname, Employee::setLastname);
         binder.forField(email).asRequired("E-Mail ist Pflicht").bind(Employee::getEmail, Employee::setEmail);
         binder.forField(role).asRequired("Rolle ist Pflicht").bind(Employee::getRole, Employee::setRole);
-
-        // [UPDATE] Login-Name ist jetzt Pflicht!
         binder.forField(loginName).asRequired("Login-Name ist Pflicht").bind(Employee::getLoginName, Employee::setLoginName);
 
+        // Konverter für Datumsformat
         binder.forField(birthday)
                 .asRequired("Geburtsdatum ist Pflicht")
                 .withConverter(
@@ -159,11 +176,16 @@ public class EmployeeFormDialog extends Dialog {
     private void populateForm() {
         binder.readBean(employee);
 
+        // Passwortfeld aus Sicherheitsgründen leeren
         if (employee.getId() != null) {
             passwordHash.clear();
         }
 
-        if (isBranchManager) {
+        // Initialzustand setzen (falls Rolle schon GF ist)
+        if (employee.getRole() == RoleType.MANAGING_DIRECTOR) {
+            facility.setEnabled(false);
+            facility.clear();
+        } else if (isBranchManager) {
             facility.setValue(currentFacility);
         } else {
             facility.setValue(employee.getFacility());
@@ -172,37 +194,38 @@ public class EmployeeFormDialog extends Dialog {
 
     private void saveClicked() {
         try {
-            // 1. Binder Validierung (Name, Login, Email etc.)
             binder.writeBean(employee);
 
-            // 2. Passwort Validierung
-            // Wenn der User NEU ist (ID == null) UND das Passwortfeld leer ist -> FEHLER
+            // Neue User brauchen zwingend ein Passwort
             if (employee.getId() == null && passwordHash.isEmpty()) {
                 Notification.show("Für neue Mitarbeiter muss ein Passwort vergeben werden.")
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                // Fokus ins Passwortfeld setzen, damit der User es sieht
                 passwordHash.focus();
                 return;
             }
 
-            // Wenn Passwort eingegeben wurde, setzen
             if (!passwordHash.isEmpty()) {
                 employee.setPasswordHash(passwordHash.getValue());
             }
 
-            // 3. Facility (Standort) setzen
-            if (isBranchManager) {
-                employee.setFacility(currentFacility);
+            // Standort-Logik beim Speichern
+            if (employee.getRole() == RoleType.MANAGING_DIRECTOR) {
+                employee.setFacility(null);
             } else {
-                employee.setFacility(facility.getValue());
+                // Standort ist Pflicht für alle außer GF
+                if (isBranchManager) {
+                    employee.setFacility(currentFacility);
+                } else {
+                    employee.setFacility(facility.getValue());
+                }
+
+                if (employee.getFacility() == null) {
+                    Notification.show("Bitte einen Standort auswählen.").addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    return;
+                }
             }
 
-            if (employee.getFacility() == null) {
-                Notification.show("Bitte einen Standort auswählen.").addThemeVariants(NotificationVariant.LUMO_ERROR);
-                return;
-            }
-
-            // 4. Speichern
+            // Speichern über Controller
             if (employee.getId() == null) {
                 controller.createEmployee(employee);
                 Notification.show("Mitarbeiter erfolgreich angelegt.").addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -212,19 +235,23 @@ public class EmployeeFormDialog extends Dialog {
             }
 
             this.close();
-            if (onSaveSuccess != null) {
-                onSaveSuccess.run();
-            }
+            if (onSaveSuccess != null) onSaveSuccess.run();
 
         } catch (ValidationException e) {
             Notification.show("Bitte füllen Sie alle Pflichtfelder aus.").addThemeVariants(NotificationVariant.LUMO_ERROR);
         } catch (Exception e) {
-            // Hier fangen wir ab, falls doch noch was schief geht (z.B. Login-Name schon vergeben)
             String msg = e.getMessage();
-            if (msg.contains("ConstraintViolation") || msg.contains("Duplicate entry")) {
-                Notification.show("Fehler: Dieser Login-Name oder E-Mail existiert bereits.").addThemeVariants(NotificationVariant.LUMO_ERROR);
+
+            // Fehlerbehandlung für spezifische Backend-Constraints (z.B. doppelter Manager)
+            if (msg != null && msg.contains("bereits einen Standortleiter")) {
+                Notification.show("Fehler: In diesem Standort existiert bereits ein Standortleiter.")
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            } else if (msg != null && (msg.contains("ConstraintViolation") || msg.contains("Duplicate entry"))) {
+                Notification.show("Login-Name oder E-Mail bereits vergeben.")
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
             } else {
-                Notification.show("Fehler beim Speichern: " + msg).addThemeVariants(NotificationVariant.LUMO_ERROR);
+                Notification.show("Fehler: " + msg)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         }
     }

@@ -34,7 +34,7 @@ import java.util.Optional;
  * Zentrales Vaadin-AppLayout der Anwendung: stellt Topbar und Navigationsmenü bereit.
  * Implementiert nun auch client-seitige Schutzmaßnahmen für URLs.
  *
- * @author Jannick Braun, Ben Berlin
+ * @author Jannick Braun, Ben Berlin, Jan Lasse Stegmann
  */
 @PermitAll
 public class MainLayout extends AppLayout {
@@ -100,10 +100,6 @@ public class MainLayout extends AppLayout {
         addToDrawer(nav);
     }
 
-    /**
-     * Fügt einen Listener hinzu, der bei jedem Seitenwechsel prüft, ob der User die Zielseite sehen darf.
-     * Schützt vor direktem URL-Aufruf (z.B. /employees).
-     */
     private void registerNavigationGuard() {
         addAttachListener(attachEvent -> {
             UI.getCurrent().addBeforeEnterListener(event -> {
@@ -126,9 +122,6 @@ public class MainLayout extends AppLayout {
         });
     }
 
-    /**
-     * Hilfsmethode um deaktivierte Links optisch auszugrauen.
-     */
     private void styleDisabledLink(RouterLink link, boolean enabled) {
         if (!enabled) {
             link.getStyle().set("opacity", "0.5");

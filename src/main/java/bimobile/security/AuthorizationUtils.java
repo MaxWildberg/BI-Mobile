@@ -13,18 +13,26 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 /**
- * Author: Lasse
- * Description: Role and facility checks.
+ * Hilfsklasse für Sicherheits- und Berechtigungsprüfungen.
+ *
+ * Stellt Methoden bereit, um den aktuell eingeloggten Benutzer,
+ * dessen Rolle und Zugriffsrechte abzufragen.
+ *
+ * @author Jan Lasse Stegmann
  */
 @Component
 public class AuthorizationUtils {
 
     private static UserRepository userRepository;
 
+    // Ermöglicht den Zugriff auf das Repository auch in statischen Methoden
     public AuthorizationUtils(UserRepository repo) {
         userRepository = repo;
     }
 
+    /**
+     * Liest den Benutzernamen (E-Mail) aus dem Spring Security Context.
+     */
     public static String getCurrentUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) return null;
@@ -36,6 +44,9 @@ public class AuthorizationUtils {
         return principal.toString();
     }
 
+    /**
+     * Ermittelt die Rolle (RoleType) des aktuellen Benutzers.
+     */
     public static RoleType getCurrentRoleType() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) return null;
@@ -49,50 +60,48 @@ public class AuthorizationUtils {
         return null;
     }
 
-    // MANAGEMENT
+    // Rollen-Checks
+
     public static boolean isManagement() {
         return getCurrentRoleType() == RoleType.MANAGING_DIRECTOR;
     }
 
-    // BRANCH_MANAGER
     public static boolean isBranchManager() {
         return getCurrentRoleType() == RoleType.GENERAL_MANAGER;
     }
 
-    // EMPLOYEE
     public static boolean isEmployee() {
         return getCurrentRoleType() == RoleType.EMPLOYEE;
     }
 
-    // --- NEU: BERECHTIGUNGSPRÜFUNGEN GEMÄSS TABELLE ---
+    // Berechtigungsprüfungen (Business-Logik)
 
     /**
      * Prüft, ob der User auf die Standortverwaltung zugreifen darf.
-     * Employees dürfen KEINE Standorte sehen.
+     * Regel: Employees dürfen keine Standorte sehen.
      */
     public static boolean canAccessLocations() {
-        // Jeder darf Standorte sehen, AUSSER Mitarbeiter (Employee)
         return !isEmployee();
     }
 
     /**
      * Prüft, ob der User auf die Mitarbeiterverwaltung zugreifen darf.
-     * Employees dürfen KEINE Mitarbeiter sehen/verwalten.
+     * Regel: Employees dürfen keine Mitarbeiter sehen/verwalten.
      */
     public static boolean canAccessEmployees() {
-        // Jeder darf Mitarbeiter sehen, AUSSER Mitarbeiter (Employee)
         return !isEmployee();
     }
 
     /**
      * Prüft, ob der User Kunden löschen darf.
-     * Employees dürfen KEINE Kunden löschen.
+     * Regel: Employees dürfen keine Kunden löschen.
      */
     public static boolean canDeleteCustomers() {
         return !isEmployee();
     }
 
-    // Current User loaded from DB
+    // Datenbank-Zugriff auf aktuellen User
+
     public static Optional<User> getCurrentUser() {
         if (userRepository == null) return Optional.empty();
         String email = getCurrentUsername();
@@ -106,6 +115,7 @@ public class AuthorizationUtils {
                 .orElse(null);
     }
 
+    // Prüft, ob ein übergebener Standort dem des Users entspricht
     public static boolean isSameFacility(Facility facility) {
         Facility current = getCurrentUserFacility();
         return current != null && facility != null &&

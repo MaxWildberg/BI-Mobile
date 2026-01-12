@@ -7,6 +7,15 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Controller-Schicht für die Mitarbeiterverwaltung.
+ *
+ * Dient als Schnittstelle zwischen den Vaadin-Views und dem EmployeeService.
+ * Die Klasse hält die Views sauber, indem sie Datenbank- und Logik-Aufrufe
+ * direkt an den Service delegiert.
+ *
+ * @author Jan Lasse Stegmann
+ */
 @Controller
 public class EmployeeController {
 
@@ -24,17 +33,16 @@ public class EmployeeController {
         return employeeService.updateEmployee(id, updatedEmployee);
     }
 
-    // Power-Button Funktion
+    // Schaltet den Status eines Mitarbeiters um (aktiv <-> inaktiv)
     public boolean toggleEmployeeStatus(Long id) {
         return employeeService.toggleEmployeeStatus(id);
     }
 
-    // Mülleimer Funktion
+    // Löscht den Datensatz permanent (wird über den Mülleimer-Button ausgelöst)
     public boolean deleteEmployee(Long id) {
         return employeeService.deleteEmployee(id);
     }
 
-    // Legacy Support
     public boolean deactivateEmployee(Long id) {
         return employeeService.toggleEmployeeStatus(id);
     }

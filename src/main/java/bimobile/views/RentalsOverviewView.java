@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 
 /**
  * Übersicht aller Ausleihen im BI-Mobile System.
- * @author Ben Berlin
+ * @author Ben Berlin, Jan Lasse Stegmann
  */
 @Route(value = "ausleihen", layout = MainLayout.class)
 @PageTitle("Ausleihübersicht")
@@ -230,7 +230,7 @@ public class RentalsOverviewView extends VerticalLayout {
             facilityBox.setReadOnly(false);
         }
 
-        // [LOGIK FIX] Interaktive Filterung ohne Ping-Pong
+        // Interaktive Filterung ohne Ping-Pong
         if (currentFacility == null) {
 
             // 1. Standort-Listener
@@ -245,17 +245,17 @@ public class RentalsOverviewView extends VerticalLayout {
                     // Prüfen, ob das gemerkte Auto noch gültig ist
                     if (currentlySelectedVehicle != null && currentlySelectedVehicle.getFacility() != null &&
                             currentlySelectedVehicle.getFacility().getId().equals(selectedFacility.getId())) {
-                        // Ja -> Sofort wieder setzen!
+                        // Ja, Sofort wieder setzen!
                         vehicleBox.setValue(currentlySelectedVehicle);
                     } else {
-                        // Nein -> Auswahl leeren
+                        // Nein, Auswahl leeren
                         vehicleBox.clear();
                         if (currentlySelectedVehicle != null) {
                             Notification.show("Fahrzeugauswahl zurückgesetzt (passt nicht zum Standort).").addThemeVariants(NotificationVariant.LUMO_CONTRAST);
                         }
                     }
                 } else {
-                    // Kein Standort -> Alle Autos
+                    // Kein Standort, dann Alle Autos
                     vehicleBox.setItems(vehicleService.findAllVehicles());
                     vehicleBox.setValue(currentlySelectedVehicle); // Versuch, Auswahl zu behalten
                 }
@@ -475,7 +475,7 @@ public class RentalsOverviewView extends VerticalLayout {
             facilityBox.setReadOnly(false);
         }
 
-        // [LOGIK FIX] Interaktive Filterung auch beim Bearbeiten
+        // Interaktive Filterung auch beim Bearbeiten
         if (currentFacility == null) {
             facilityBox.addValueChangeListener(event -> {
                 Facility selectedFacility = event.getValue();
