@@ -20,8 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit-Tests für den VehicleServiceImpl zur Überprüfung der Geschäftsregeln
- * bei Statusänderungen und Fahrzeugverwaltung.
+ * Unit-Tests für VehicleServiceImpl zur Überprüfung der Geschäftsregeln bei Statusänderungen und Fahrzeugverwaltung.
  * * @author Halil Sentürk
  */
 
@@ -42,25 +41,25 @@ class VehicleServiceImplTest {
      */
     @Test
     void testChangeStatus_ValidTransition_ToAvailable() {
-        // ARRANGE
+        
         Long vehicleId = 1L;
 
         Vehicle mockVehicle = new Vehicle("BI-TEST 1", "Audi", "A4", PriceCategory.SALOON);
 
         mockVehicle.setStatus(VehicleStatus.IN_MAINTENANCE);
 
-        // Bedingung: HU in der Zukunft
+        // HU in der Zukunft
         mockVehicle.setNextInspectionDate(LocalDate.now().plusYears(1));
-        // Bedingung: Keine aktive Wartung
+        // Keine aktive Wartung
         mockVehicle.setMaintenanceActive(false);
 
         when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(mockVehicle));
         when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // ACT
+        
         Vehicle result = vehicleService.changeStatus(vehicleId, VehicleStatus.AVAILABLE, "Wartung abgeschlossen");
 
-        // ASSERT
+        
         assertNotNull(result);
         assertEquals(VehicleStatus.AVAILABLE, result.getStatus());
 
@@ -73,7 +72,7 @@ class VehicleServiceImplTest {
      */
     @Test
     void testChangeStatus_InvalidTransition_OverdueInspection() {
-        // ARRANGE
+        
         Long vehicleId = 2L;
 
         Vehicle mockVehicle = new Vehicle("BI-OLD 99", "Opel", "Corsa", PriceCategory.SALOON);
@@ -86,7 +85,7 @@ class VehicleServiceImplTest {
 
         when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(mockVehicle));
 
-        // ACT & ASSERT
+        
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             vehicleService.changeStatus(vehicleId, VehicleStatus.AVAILABLE, "Sollte fehlschlagen");
         });
