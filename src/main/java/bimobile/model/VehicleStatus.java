@@ -1,7 +1,7 @@
 package bimobile.model;
 
 /**
- * Enum für die verschiedenen Zustände eines Fahrzeugs.
+ * Enum für verschiedene Zustände eines Fahrzeugs.
  * @author Halil Sentürk
  */
 

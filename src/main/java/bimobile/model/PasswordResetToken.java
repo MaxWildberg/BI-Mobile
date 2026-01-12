@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * JPA-Entität für Passwort-Zurücksetz-Tokens,
- * verknüpft mit einem Benutzer, inklusive Ablaufzeit, „benutzt“-Status und Gültigkeitsprüfung.
+ * Ein Token zum Zurücksetzen des Passworts.
+ * Hat eine Ablaufzeit und ist an einen Benutzer gebunden.
  *
  * @author Jannick Braun
  */

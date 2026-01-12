@@ -3,7 +3,7 @@ package bimobile.views;
 import bimobile.enums.FuelType;
 import bimobile.model.*;
 import bimobile.security.AuthorizationUtils;
-import bimobile.service.FacilityService;
+import bimobile.service.FacilityService; // NEU
 import bimobile.service.VehicleService;
 
 import java.time.format.DateTimeFormatter;
@@ -39,8 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * UI-Komponente für die Fahrzeugverwaltung.
- * @author Halil Sentürk, Jan Lasse Stegmann
+ * UI Komponente für Fahrzeugverwaltung.
+ * @author Halil Sentürk
  */
 @Route(value = "vehicles", layout = MainLayout.class)
 @PageTitle("Fahrzeugverwaltung")
@@ -49,7 +49,7 @@ public class VehicleView extends VerticalLayout {
 
     private static final Logger log = LoggerFactory.getLogger(VehicleView.class);
     private final VehicleService vehicleService;
-    private final FacilityService facilityService;
+    private final FacilityService facilityService; // NEU
 
     // Tabelle
     private final Grid<Vehicle> grid = new Grid<>(Vehicle.class, false);
@@ -61,7 +61,7 @@ public class VehicleView extends VerticalLayout {
     private final ComboBox<FuelType> fuelTypeField = new ComboBox<>("Antriebsart");
     private final ComboBox<PriceCategory> priceCategoryBox = new ComboBox<>("Preiskategorie");
 
-    //Standort-Auswahl
+    // [NEU] Standort-Auswahl
     private final ComboBox<Facility> facilityBox = new ComboBox<>("Standort");
 
     private final TextField mileageField      = new TextField("Kilometerstand");
@@ -88,13 +88,13 @@ public class VehicleView extends VerticalLayout {
         this.vehicleService = vehicleService;
         this.facilityService = facilityService;
 
-        // Layout-Grundstruktur
+        // Layout Grundstruktur
         setPadding(true);
         setSizeFull();
         getStyle().set("background", "#f9fafb");
         getStyle().set("min-height", "100vh");
 
-        //Anti-Crash für Manager ohne Standort
+        // [NEU] Anti-Crash für Manager ohne Standort
         if (isBranchManager && currentFacility == null) {
             removeAll();
             VerticalLayout errorLayout = new VerticalLayout();
@@ -151,6 +151,10 @@ public class VehicleView extends VerticalLayout {
         setFlexGrow(1, grid);
     }
 
+    // ----------------------------------------------------
+    // Grid / Tabelle
+    // ----------------------------------------------------
+
     private void configureGrid() {
         grid.setWidthFull();
         grid.setHeight("400px");
@@ -158,7 +162,7 @@ public class VehicleView extends VerticalLayout {
         grid.addColumn(Vehicle::getLicensePlate).setHeader("Kennzeichen").setAutoWidth(true);
         grid.addColumn(Vehicle::getBrand).setHeader("Marke").setAutoWidth(true);
         grid.addColumn(Vehicle::getModel).setHeader("Modell").setAutoWidth(true);
-        //Standort-Spalte
+        // [NEU] Standort-Spalte
         grid.addColumn(v -> v.getFacility() != null ? v.getFacility().getAddress() : "-").setHeader("Standort").setAutoWidth(true);
 
         grid.addColumn(v -> v.getFuelType() != null ? v.getFuelType().name() : "")
@@ -202,7 +206,7 @@ public class VehicleView extends VerticalLayout {
                 verkaufen.setEnabled(false);
             }
 
-            // Manager darf nur eigene Fahrzeuge bearbeiten
+            // [NEU] Manager darf nur eigene Fahrzeuge bearbeiten
             if (isBranchManager && (vehicle.getFacility() == null || !vehicle.getFacility().getId().equals(currentFacility.getId()))) {
                 bearbeiten.setEnabled(false);
                 verkaufen.setEnabled(false);
@@ -222,7 +226,7 @@ public class VehicleView extends VerticalLayout {
 
     private void refreshGrid() {
         List<Vehicle> vehicles;
-        // Filterung für Manager
+        // [NEU] Filterung für Manager
         if (isBranchManager && currentFacility != null) {
             vehicles = vehicleService.getVehiclesByFacility(currentFacility.getId());
         } else {
@@ -230,6 +234,10 @@ public class VehicleView extends VerticalLayout {
         }
         grid.setItems(vehicles);
     }
+
+    // ----------------------------------------------------
+    // Formular
+    // ----------------------------------------------------
 
     private void configureForm() {
         // Pflichtindikatoren
@@ -262,7 +270,7 @@ public class VehicleView extends VerticalLayout {
         priceCategoryBox.setItemLabelGenerator(pc -> pc.name() + " (" + pc.getBaseRate() + " €/Tag)");
         priceCategoryBox.setWidthFull();
 
-        //Standort-Auswahl
+        // [NEU] Standort-Auswahl
         facilityBox.setItemLabelGenerator(Facility::getAddress);
         facilityBox.setWidthFull();
         if (isBranchManager) {
@@ -283,7 +291,7 @@ public class VehicleView extends VerticalLayout {
     }
 
     /**
-     * Setzt alle Validierungsfehler (rote Markierung) zurück.
+     * Setzt alle Validierungsfehler zurück.
      */
     private void clearValidation() {
         licensePlateField.setInvalid(false);
@@ -318,13 +326,17 @@ public class VehicleView extends VerticalLayout {
         winterTiresField.setValue(false);
         fuelTypeField.clear();
 
-        // Facility zurücksetzen
+        // [NEU] Facility zurücksetzen
         if (isBranchManager) {
             facilityBox.setValue(currentFacility);
         } else {
             facilityBox.clear();
         }
     }
+
+    //
+    // Formular <-> Entity
+    //
 
     private void populateForm(Vehicle vehicle) {
         if (vehicle == null) {
@@ -349,7 +361,7 @@ public class VehicleView extends VerticalLayout {
         airConditionField.setValue(vehicle.isHasAirCondition());
         winterTiresField.setValue(vehicle.isHasWinterTires());
 
-        //Standort setzen
+        // [NEU] Standort setzen
         if (isBranchManager) {
             facilityBox.setValue(currentFacility);
         } else {
@@ -397,7 +409,7 @@ public class VehicleView extends VerticalLayout {
                 priceCategoryBox.setErrorMessage("Preiskategorie ist ein Pflichtfeld.");
                 valid = false;
             }
-            // Standort ist Pflicht
+            // [NEU] Standort ist Pflicht
             if (facilityBox.isEmpty()) {
                 facilityBox.setInvalid(true);
                 facilityBox.setErrorMessage("Standort ist ein Pflichtfeld.");
@@ -427,7 +439,7 @@ public class VehicleView extends VerticalLayout {
 
                 vehicle.setFuelType(fuelTypeField.getValue());
 
-                // Facility setzen
+                // [NEU] Facility setzen
                 vehicle.setFacility(facilityBox.getValue());
 
                 vehicle.setNextInspectionDate(nextInspectionField.getValue());
@@ -452,7 +464,7 @@ public class VehicleView extends VerticalLayout {
                 selectedVehicle.setPriceCategory(priceCategoryBox.getValue());
                 selectedVehicle.setMileage(mileage);
 
-                //Facility setzen
+                // [NEU] Facility setzen
                 selectedVehicle.setFacility(facilityBox.getValue());
 
                 selectedVehicle.setNextInspectionDate(nextInspectionField.getValue());
@@ -553,7 +565,7 @@ public class VehicleView extends VerticalLayout {
 
         H3 dialogTitle = new H3(titleText);
 
-        //Abschnitt Basisdaten
+        // Basisdaten
         H4 basisTitle = new H4("Basisdaten");
         FormLayout basisForm = new FormLayout(
                 licensePlateField,
@@ -561,12 +573,13 @@ public class VehicleView extends VerticalLayout {
                 modelField,
                 fuelTypeField,
                 priceCategoryBox,
+                // [NEU]
                 facilityBox
         );
         basisForm.setWidthFull();
         basisForm.setColspan(facilityBox, 2);
 
-        // Abschnitt technische Daten
+        // Technische Daten
         H4 techTitle = new H4("Technische Daten");
         FormLayout techForm = new FormLayout(
                 mileageField,
@@ -574,7 +587,7 @@ public class VehicleView extends VerticalLayout {
         );
         techForm.setWidthFull();
 
-        //Abschnitt Wartung und Termine
+        // Wartung & Termine
         H4 maintenanceTitle = new H4("Wartung & Termine");
         FormLayout maintenanceForm = new FormLayout(
                 nextInspectionField,
@@ -583,7 +596,7 @@ public class VehicleView extends VerticalLayout {
         );
         maintenanceForm.setWidthFull();
 
-        // Abschnitt Ausstattung
+        // Ausstattung
         H4 featuresTitle = new H4("Ausstattung");
         FormLayout featuresForm = new FormLayout(
                 smokingAllowedField,
@@ -611,7 +624,7 @@ public class VehicleView extends VerticalLayout {
         });
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        // Wenn keine Edit-Rechte, dann Speichern-Button deaktivieren
+        // Wenn keine Edit-Rechte → Speichern-Button deaktivieren
         if (!canEdit) {
             saveButton.setEnabled(false);
         }
@@ -776,7 +789,7 @@ public class VehicleView extends VerticalLayout {
         });
         sellButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        // falls keine Editrechte, dann Button deaktivieren
+        // falls keine Editrechte → Button deaktivieren
         if (!canEdit) {
             sellButton.setEnabled(false);
         }

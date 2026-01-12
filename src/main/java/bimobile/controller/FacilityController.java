@@ -7,8 +7,7 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 
 /**
- * Controller zur Verwaltung von Standorten (Anlegen, Bearbeiten, Löschen, Auflisten)
- * mit grundlegender Eingabevalidierung und Delegation an Service/DAO.
+ * Verwaltet die Standorte (anlegen, bearbeiten, löschen).
  *
  * @author Jannick Braun
  */
@@ -25,7 +24,7 @@ public class FacilityController {
         this.facilityDAO = facilityDAO;
     }
 
-    public String standortAnlegen(String address, String mail, int telephoneNr) {
+    public String standortAnlegen(String address, String mail, String telephoneNr) {
         if (address == null || address.trim().isEmpty()) {
             return "Fehler: Adresse ist ein Pflichtfeld";
         }
@@ -40,14 +39,14 @@ public class FacilityController {
 
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         if (!mail.matches(emailRegex)) {
-            return "Fehler: Ungültiges E-Mail-Format";
+            return "Fehler: Ungültiges E-Mail Format";
         }
 
-        if (telephoneNr <= 0) {
+        if (telephoneNr.length() <= 0) {
             return "Fehler: Telefonnummer muss eine positive Zahl sein";
         }
 
-        if (String.valueOf(telephoneNr).length() > 15) {
+        if (telephoneNr.length() > 15) {
             return "Fehler: Telefonnummer ist zu lang";
         }
 
@@ -60,7 +59,7 @@ public class FacilityController {
         }
     }
 
-    public String standortBearbeiten(Long id, String address, String mail, int telephoneNr) {
+    public String standortBearbeiten(Long id, String address, String mail, String telephoneNr) {
         if (id == null || id <= 0) {
             return "Fehler: Ungültige Standort-ID";
         }
@@ -84,14 +83,14 @@ public class FacilityController {
 
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         if (!mail.matches(emailRegex)) {
-            return "Fehler: Ungültiges E-Mail-Format";
+            return "Fehler: Ungültiges E-Mail Format";
         }
 
-        if (telephoneNr <= 0) {
+        if (telephoneNr.length() <= 0) {
             return "Fehler: Telefonnummer muss eine positive Zahl sein";
         }
 
-        if (String.valueOf(telephoneNr).length() > 15) {
+        if (telephoneNr.length() > 15) {
             return "Fehler: Telefonnummer ist zu lang";
         }
 
@@ -108,7 +107,7 @@ public class FacilityController {
 
     public String standortDeaktivieren(Long id) {
         if (id == null || id <= 0) {
-            return "Fehler: Ungültige Standort-ID";
+            return "Fehler: Ungültige Standort ID";
         }
 
         Facility facility = facilityDAO.getFacilityById(id);

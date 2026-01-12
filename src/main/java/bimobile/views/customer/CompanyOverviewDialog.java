@@ -49,7 +49,7 @@ public class CompanyOverviewDialog extends Dialog {
         companyGrid.addColumn(Company::getCompanyId).setHeader("ID").setWidth("50px").setFlexGrow(0);
         companyGrid.addColumn(Company::getName).setHeader("Name").setSortable(true);
         companyGrid.addColumn(Company::getAddress).setHeader("Adresse");
-        //companyGrid.addColumn(Company::getPhoneNumber).setHeader("Telefon");
+        companyGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
     }
 
     /**
@@ -58,12 +58,12 @@ public class CompanyOverviewDialog extends Dialog {
      * @return eine {@link HorizontalLayout}-Toolbar mit Aktionsbuttons
      */
     private HorizontalLayout createToolbar() {
-        Button addButton = new Button("Neu", e -> openCompanyForm(new Company()));
+        Button addButton = new Button("Neu", e -> openCreateCompanyForm());
 
         Button editButton = new Button("Bearbeiten", e -> {
             Company selected = companyGrid.asSingleSelect().getValue();
             if (selected != null) {
-                openCompanyForm(selected);
+                openEditCompanyForm(selected);
             } else {
                 Notification.show("Bitte eine Firma auswählen.");
             }
@@ -93,17 +93,28 @@ public class CompanyOverviewDialog extends Dialog {
      * Öffnet den Dialog zum Anlegen oder Bearbeiten einer Firma.
      * Nach dem Schließen des Dialogs wird das Grid aktualisiert, sofern eine Firma gespeichert wurde.
      *
-     * @param company die zu bearbeitende oder neu anzulegende Firma
+     * @param company die zu bearbeitende Firma
      */
-    private void openCompanyForm(Company company) {
-        AddCompanyDialog addCompanyDialog = new AddCompanyDialog(companyService);
-        addCompanyDialog.addDetachListener(e -> {
-            Company saved = addCompanyDialog.getSavedCompany();
+    private void openCreateCompanyForm() {
+        EditCreateCompanyDialog createCompanyDialog = new EditCreateCompanyDialog(companyService, false, null);
+        createCompanyDialog.addDetachListener(e -> {
+            Company saved = createCompanyDialog.getSavedCompany();
             if (saved != null) {
                 updateGrid();
             }
         });
-        addCompanyDialog.open();
+        createCompanyDialog.open();
+    }
+
+    private void openEditCompanyForm(Company company) {
+        EditCreateCompanyDialog editCompanyDialog = new EditCreateCompanyDialog(companyService, true, company);
+        editCompanyDialog.addDetachListener(e -> {
+            Company updated = editCompanyDialog.getSavedCompany();
+            if (updated != null) {
+                updateGrid();
+            }
+        });
+        editCompanyDialog.open();
     }
 
     /**

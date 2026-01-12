@@ -18,7 +18,9 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.function.Consumer;
 
 /**
  * Dialog zur Erstellung oder Bearbeitung eines Kunden.
@@ -34,7 +36,9 @@ public class EditCreateCustomerDialog extends Dialog {
     private final CompanyService companyService;
     private final Runnable onSaveSuccess;
     private Customer customer;
+    private Customer savedCustomer;
     private boolean editMode;
+    private Consumer<Customer> onSave;
 
     private final Binder<CustomerFormDTO> binder = new Binder<>(CustomerFormDTO.class);
 
@@ -75,12 +79,14 @@ public class EditCreateCustomerDialog extends Dialog {
                                     boolean editMode,
                                     CustomerService service,
                                     CompanyService companyService,
-                                    Runnable onSaveSuccess) {
+                                    Runnable onSaveSuccess,
+                                    @Nullable Consumer<Customer> onSave) {
         this.customer = customer;
         this.editMode = editMode;
         this.customerService = service;
         this.companyService = companyService;
         this.onSaveSuccess = onSaveSuccess;
+        this.onSave = onSave;
 
         buildUI();
         configureBinder();
@@ -132,15 +138,15 @@ public class EditCreateCustomerDialog extends Dialog {
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.setText(editMode ? "Speichern" : "Registrieren");
         addCompanyButton.addClickListener(addCompanyEvent -> {
-            AddCompanyDialog addCompanyDialog = new AddCompanyDialog(companyService);
-            addCompanyDialog.addDetachListener(comboEvent -> {
-                Company saved = addCompanyDialog.getSavedCompany();
+            EditCreateCompanyDialog createCompanyForm = new EditCreateCompanyDialog(companyService, false, null);
+            createCompanyForm.addDetachListener(comboEvent -> {
+                Company saved = createCompanyForm.getSavedCompany();
                 if (saved != null) {
                     companyCombo.setItems(companyService.getAllCompanies());
                     companyCombo.setValue(saved);
                 }
             });
-            addCompanyDialog.open();
+            createCompanyForm.open();
         });
         cancelButton.addClickListener(e -> close());
         saveButton.addClickListener(e -> onSave());
@@ -171,24 +177,27 @@ public class EditCreateCustomerDialog extends Dialog {
     /**
      * Konfiguriert den Binder für Validierung und Datenbindung.
      * Bindet alle Formularfelder an die DTO-Felder.
+     * Setzt Validierungslogik für jedes Feld
      */
     private void configureBinder() {
         binder.bindInstanceFields(this);
-        String regex = "^[a-zA-Z0-9 ]+$";
+        String regex = "^(?!\\s+$)[\\p{L}\\p{N} \\-'.]+$";
+        String message = "Bitte korrekte Eingabe tätigen";
 
         binder.forField(title)
+                .asRequired("Angabe erforderlich")
                 .bind(CustomerFormDTO::getTitle, CustomerFormDTO::setTitle);
 
         binder.forField(firstName)
                 .asRequired("Vorname erforderlich")
-                .withValidator(s -> s != null && s.trim().matches("[A-Za-z ]+"),
-                        "Nur Buchstaben ohne Leerzeichen erlaubt")
+                .withValidator(s -> s != null && s.trim().matches(regex),
+                        message)
                 .bind(CustomerFormDTO::getFirstname, CustomerFormDTO::setFirstname);
 
         binder.forField(lastName)
                 .asRequired("Nachname erforderlich")
-                .withValidator(s -> s != null && s.trim().matches("[A-Za-z ]+"),
-                        "Nur Buchstaben ohne Leerzeichen erlaubt")
+                .withValidator(s -> s != null && s.trim().matches(regex),
+                        message)
                 .bind(CustomerFormDTO::getLastname, CustomerFormDTO::setLastname);
 
         binder.forField(birthday)
@@ -198,18 +207,18 @@ public class EditCreateCustomerDialog extends Dialog {
         binder.forField(email)
                 .asRequired("E-Mail erforderlich")
                 .withValidator(new com.vaadin.flow.data.validator.EmailValidator(
-                        "Bitte eine gültige E-Mail-Adresse eingeben"))
+                        "Bitte gültige E-Mail Adresse eingeben"))
                 .bind(CustomerFormDTO::getEmail, CustomerFormDTO::setEmail);
 
         binder.forField(telephone)
                 .asRequired("Telefonnummer erforderlich")
-                .withValidator(tel -> tel.matches("\\d+"), "Nur Zahlen erlaubt")
+                .withValidator(tel -> tel.matches("\\d+"), "Nur Ziffern erlaubt")
                 .bind(CustomerFormDTO::getTelephone, CustomerFormDTO::setTelephone);
 
         binder.forField(street)
                 .asRequired("Straße erforderlich")
                 .withValidator(street -> street.matches(regex),
-                        "Nur Buchstaben, Zahlen und Leerzeichen erlaubt")
+                        message)
                 .bind(CustomerFormDTO::getStreet, CustomerFormDTO::setStreet);
 
         binder.forField(zip)
@@ -221,25 +230,25 @@ public class EditCreateCustomerDialog extends Dialog {
         binder.forField(city)
                 .asRequired("Ort erforderlich")
                 .withValidator(city -> city.matches(regex),
-                        "Nur Buchstaben, Zahlen und Leerzeichen erlaubt")
+                        message)
                 .bind(CustomerFormDTO::getCity, CustomerFormDTO::setCity);
 
         binder.forField(country)
                 .asRequired("Land erforderlich")
-                .withValidator(s -> s != null && s.trim().matches("[A-Za-z]+"),
-                        "Nur Buchstaben ohne Leerzeichen erlaubt")
+                .withValidator(s -> s != null && s.trim().matches(regex),
+                        message)
                 .bind(CustomerFormDTO::getCountry, CustomerFormDTO::setCountry);
 
         binder.forField(driversLicense)
                 .asRequired("Führerscheinnummer erforderlich")
                 .withValidator(s -> s.matches("[A-Z0-9]+"),
-                        "Nur Buchstaben und Zahlen ohne Leerzeichen erlaubt")
+                        "Nur Buchstaben und Ziffern ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getDriversLicense, CustomerFormDTO::setDriversLicense);
 
         binder.forField(idCardNum)
                 .asRequired("Ausweis erforderlich")
                 .withValidator(s -> s.matches("[A-Z0-9]+"),
-                        "Nur Buchstaben und Zahlen ohne Leerzeichen erlaubt")
+                        "Nur Buchstaben und Ziffern ohne Leerzeichen erlaubt")
                 .bind(CustomerFormDTO::getIdCardNum, CustomerFormDTO::setIdCardNum);
 
         if (customer instanceof BusinessCustomer) {
@@ -269,8 +278,12 @@ public class EditCreateCustomerDialog extends Dialog {
                     customerService.updateCustomer(updatedCustomer);
                     Notification.show("Kunde erfolgreich aktualisiert.");
                 } else {
-                    customerService.registerCustomer(updatedCustomer);
+                    this.savedCustomer = customerService.registerCustomer(updatedCustomer);
                     Notification.show("Kunde erfolgreich angelegt.");
+                }
+
+                if (onSave != null) {
+                    onSave.accept(updatedCustomer);
                 }
 
                 onSaveSuccess.run();
@@ -289,7 +302,7 @@ public class EditCreateCustomerDialog extends Dialog {
      *
      * @param dto das Formular-Datenobjekt
      * @param customer das Ziel-Customer-Objekt
-     * @return das aktualisierte Customer-Objekt
+     * @return customer, das aktualisierte Customer-Objekt
      */
     private Customer mapDtoToCustomer(CustomerFormDTO dto, Customer customer) {
         customer.setPersonalData(new PersonalData(dto.getTitle(), dto.getFirstname(), dto.getLastname(), dto.getBirthday()));
@@ -303,5 +316,9 @@ public class EditCreateCustomerDialog extends Dialog {
         }
 
         return customer;
+    }
+
+    public Customer getSavedCustomer() {
+        return savedCustomer;
     }
 }

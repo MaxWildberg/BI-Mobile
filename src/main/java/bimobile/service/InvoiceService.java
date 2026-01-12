@@ -1,9 +1,11 @@
 package bimobile.service;
 
+import bimobile.dao.CustomerRepository;
 import bimobile.dao.InvoiceRepository;
 import bimobile.dao.RentalRepository;
 import bimobile.model.Invoice;
 import bimobile.model.Rental;
+import bimobile.model.customer.Customer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,15 +29,18 @@ public class InvoiceService {
 	private final PdfGeneratorService pdfGeneratorService;
 	private final MailService mailService;
 	private final RentalRepository rentalRepository;
+    private final CustomerRepository customerRepository;
 
 	public InvoiceService(InvoiceRepository invoiceRepository,
 	                      PdfGeneratorService pdfGeneratorService,
 	                      MailService mailService,
-	                      RentalRepository rentalRepository) {
+	                      RentalRepository rentalRepository,
+                          CustomerRepository customerRepository) {
 		this.invoiceRepository = invoiceRepository;
 		this.pdfGeneratorService = pdfGeneratorService;
 		this.mailService = mailService;
 		this.rentalRepository = rentalRepository;
+        this.customerRepository = customerRepository;
 	}
 
 	/**
@@ -76,6 +81,16 @@ public class InvoiceService {
 				"Rechnung-" + invoice.getId() + ".pdf"
 		);
 
-		return invoice;
+        // Invoice Objekt zum entsprechenden Customer Objekt hinzufügen
+        // Wichtig für Später: erneuter Download der Rechnung in CustomerDetailsView
+        Customer customer = customerRepository.findById(loaded.getCustomer().getCustomerId())
+                .orElseThrow();
+        invoice.setCustomer(customer);
+        customer.addInvoice(invoice);
+        customerRepository.save(customer);
+
+
+
+        return invoice;
 	}
 }

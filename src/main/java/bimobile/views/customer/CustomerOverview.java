@@ -7,6 +7,7 @@ import bimobile.views.MainLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
@@ -123,7 +124,7 @@ public class CustomerOverview extends VerticalLayout {
                 default -> throw new IllegalStateException("Unexpected value: " + type);
             }
 
-            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, false, customerService, companyService, this::updateGrid);
+            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, false, customerService, companyService, this::updateGrid, null);
             dialog.open();
         });
         typeSelectionDialog.open();
@@ -144,6 +145,7 @@ public class CustomerOverview extends VerticalLayout {
         grid.addColumn(Customer::getCustomerId)
                 .setHeader("ID")
                 .setAutoWidth(true)
+                .setSortable(true)
                 .setFlexGrow(0);
         grid.addColumn(c -> {
                     if (c instanceof PrivateCustomer) return "Privatkunde";
@@ -154,9 +156,11 @@ public class CustomerOverview extends VerticalLayout {
                 .setFlexGrow(0);
         grid.addColumn(Customer::getFullName)
                 .setHeader("Name")
+                .setSortable(true)
                 .setAutoWidth(true);
         grid.addColumn(c -> c.getContactInfo().getMail())
                 .setHeader("E-Mail")
+                .setSortable(true)
                 .setAutoWidth(true);
         grid.addColumn(c -> c.getContactInfo().getTelephone())
                 .setHeader("Telefonnummer")
@@ -184,7 +188,7 @@ public class CustomerOverview extends VerticalLayout {
         Button bearbeiten = new Button(new Icon(VaadinIcon.EDIT));
         bearbeiten.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         bearbeiten.addClickListener(e -> {
-            EditCreateCustomerDialog editCreateCustomerDialog = new EditCreateCustomerDialog(customer, true, customerService, companyService, this::updateGrid);
+            EditCreateCustomerDialog editCreateCustomerDialog = new EditCreateCustomerDialog(customer, true, customerService, companyService, this::updateGrid, null);
             editCreateCustomerDialog.open();
         });
         actions.add(bearbeiten);

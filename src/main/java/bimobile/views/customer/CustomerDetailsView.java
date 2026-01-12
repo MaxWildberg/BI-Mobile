@@ -93,7 +93,7 @@ public class CustomerDetailsView extends VerticalLayout implements BeforeEnterOb
         Button edit = new Button("Bearbeiten", new Icon(VaadinIcon.EDIT));
         edit.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         edit.addClickListener(event -> {
-            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, true, customerService, companyService, this::reloadCustomerData);
+            EditCreateCustomerDialog dialog = new EditCreateCustomerDialog(customer, true, customerService, companyService, this::reloadCustomerData, null);
             dialog.open();
         });
 

@@ -51,7 +51,7 @@ public class RentalServiceEquivalenceTest {
 	private RentalService rentalService;
 
 	// ÄQUIVALENZKLASSE 1: Enddatum < Startdatum → ungültig
-	// Erwartung: IllegalArgumentException
+// Erwartung: IllegalArgumentException
 	@Test
 	void ek_invalidDateRange_throwsIllegalArgumentException() {
 		Customer customer = mock(Customer.class);
@@ -70,7 +70,7 @@ public class RentalServiceEquivalenceTest {
 
 
 	// ÄQUIVALENZKLASSE 2: Fahrzeug bereits aktiv ausgeliehen → ungültig
-	// Erwartung: IllegalStateException
+// Erwartung: IllegalStateException
 	@Test
 	void ek_vehicleAlreadyActive_throwsIllegalStateException() {
 		Customer customer = mock(Customer.class);
@@ -97,7 +97,7 @@ public class RentalServiceEquivalenceTest {
 
 
 	// JUNIT-TEST 1: Gültige Ausleihe erzeugt korrektes Rental-Objekt
-	// (Repräsentiert die gültige Äquivalenzklasse)
+// (Ausleihe korrekt angelegt)
 	@Test
 	void validRental_createsRentalSuccessfully() {
 		Customer customer = mock(Customer.class);
@@ -138,27 +138,37 @@ public class RentalServiceEquivalenceTest {
 	}
 
 
-	// JUNIT-TEST 2: Fahrzeug gesperrt wegen Inspektion/HU
-	// → IllegalStateException
-	// (Weitere ungültige Äquivalenzklasse)
+	// JUNIT-TEST 2: Ausleihe mit gleichem Start- und Enddatum
+// → Mindestdauer 1 Tag, korrekter Gesamtpreis
 	@Test
-	void vehicleBlockedDueToInspection_throwsIllegalStateException() {
+	void sameDayRental_chargesOneDay() {
 		Customer customer = mock(Customer.class);
+		when(customer.getFullName()).thenReturn("Max Mustermann");
 		Vehicle vehicle = mock(Vehicle.class);
 		Facility facility = new Facility();
 
 		LocalDate start = LocalDate.of(2025, 4, 1);
-		LocalDate end = LocalDate.of(2025, 4, 5);
+		LocalDate end = LocalDate.of(2025, 4, 1);
 
 		when(vehicle.getStatus()).thenReturn(VehicleStatus.AVAILABLE);
 		when(vehicle.isAvailable()).thenReturn(true);
 		when(vehicle.isMaintenanceActive()).thenReturn(false);
+		when(vehicle.getNextInspectionDate()).thenReturn(null);
+		when(vehicle.getNextServiceDate()).thenReturn(null);
+		when(vehicle.getDailyRate()).thenReturn(75.0);
 
-		// HU steht genau am Startdatum an → Fahrzeug darf nicht verliehen werden
-		when(vehicle.getNextInspectionDate()).thenReturn(LocalDate.of(2025, 4, 1));
+		when(rentalRepository.existsByVehicleAndStatusIn(eq(vehicle), anySet()))
+				.thenReturn(false);
 
-		assertThrows(IllegalStateException.class, () ->
-				rentalService.createRental(customer, vehicle, facility, start, end)
-		);
+		when(rentalRepository.save(any(Rental.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		when(historyRepository.save(any(VehicleHistoryEntry.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		Rental rental = rentalService.createRental(customer, vehicle, facility, start, end);
+
+		assertNotNull(rental);
+		assertEquals(75.0, rental.getTotalPrice());
 	}
 }

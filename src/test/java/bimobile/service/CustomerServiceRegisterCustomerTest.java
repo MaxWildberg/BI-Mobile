@@ -5,7 +5,7 @@ import bimobile.model.customer.*;
 
 import bimobile.service.customer.CustomerService;
 import bimobile.service.customer.DuplicateCustomerException;
-import bimobile.service.customer.InvalidCustomerDataException;
+import bimobile.service.customer.InvalidDataException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -41,7 +41,7 @@ public class CustomerServiceRegisterCustomerTest {
         Customer customer = createValidCustomer();
         customer.setContactInfo(null);
 
-        assertThrows(InvalidCustomerDataException.class,
+        assertThrows(InvalidDataException.class,
                 () -> customerService.registerCustomer(customer)
         );
 
