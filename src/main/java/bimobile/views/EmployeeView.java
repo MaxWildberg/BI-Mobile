@@ -276,8 +276,8 @@ public class EmployeeView extends VerticalLayout {
 
     private String formatRole(String role) {
         return switch (role) {
-            case "MANAGING_DIRECTOR" -> "Geschäftsführer";
-            case "GENERAL_MANAGER" -> "Standortleiter";
+            case "MANAGING_DIRECTOR" -> "Standortleiter";
+            case "GENERAL_MANAGER" -> "Geschäftsführer";
             case "EMPLOYEE" -> "Mitarbeiter";
             default -> role;
         };
