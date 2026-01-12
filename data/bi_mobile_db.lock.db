@@ -1,0 +1,6 @@
+#FileLock
+#Mon Jan 12 18:46:21 CET 2026
+hostName=macbookpro.local
+id=19bb350e20f31cd6ff2ec6f9814444ee6f785e08dc2
+method=file
+server=192.168.2.110\:56490
