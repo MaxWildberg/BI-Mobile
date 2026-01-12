@@ -14,10 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Service-Schicht für die Mitarbeiterverwaltung.
- *
- * Beinhaltet die Logik zum Erstellen, Aktualisieren und Löschen von Mitarbeitern.
- * Setzt Berechtigungsprüfungen um
+ * Service fuer die Mitarbeiter-Logik.
+ * Regelt Zugriffsberechtigungen
  *
  * @author Jan Lasse Stegmann
  */
@@ -39,7 +37,6 @@ public class EmployeeService implements EmployeeManagement {
         this.changeLogService = changeLogService;
     }
 
-    //Lädt den aktuell eingeloggten Benutzer als Employee-Objekt
     private Employee getActingUser() {
         Optional<User> userOpt = AuthorizationUtils.getCurrentUser();
         if (userOpt.isPresent()) {
@@ -61,28 +58,29 @@ public class EmployeeService implements EmployeeManagement {
     public Employee createEmployee(Employee employee) {
         Employee actingUser = getActingUser();
 
-        //Berechtigungsprüfung
+        // Berechtigungen pruefen
         if (actingUser != null) {
-            // Normale Mitarbeiter dürfen nichts anlegen
             if (actingUser.getRole() == RoleType.EMPLOYEE) {
                 return null;
             }
 
-            // Standortleiter dürfen nur im eigenen Standort und nur "Employees" anlegen
+            // Standortleiter-Logik
             if (actingUser.getRole() == RoleType.GENERAL_MANAGER) {
+
+
+                if (employee.getRole() != RoleType.EMPLOYEE) {
+                    throw new IllegalArgumentException("Standortleiter dürfen nur Mitarbeiter anlegen.");
+                }
+
                 if (employee.getFacility() == null ||
                         actingUser.getFacility() == null ||
                         !actingUser.getFacility().getId().equals(employee.getFacility().getId())) {
                     throw new IllegalArgumentException("Keine Berechtigung für fremden Standort.");
                 }
-
-                if (employee.getRole() != RoleType.EMPLOYEE) {
-                    throw new IllegalArgumentException("Standortleiter dürfen nur Mitarbeiter (Employees) anlegen, keine Vorgesetzten.");
-                }
             }
         }
 
-        //Sicherstellen, dass pro Standort nur ein Manager existiert
+        // Check: Nur ein Manager pro Standort erlaubt
         if (employee.getRole() == RoleType.GENERAL_MANAGER && employee.getFacility() != null) {
             validateUniqueManager(employee.getFacility().getId(), null);
         }
@@ -104,33 +102,36 @@ public class EmployeeService implements EmployeeManagement {
 
         Employee actingUser = getActingUser();
 
+        // Berechtigungen Update pruefen
         if (actingUser != null) {
             if (actingUser.getRole() == RoleType.EMPLOYEE) return null;
 
             if (actingUser.getRole() == RoleType.GENERAL_MANAGER) {
-                // Darf nur eigenen Standort bearbeiten
+
+                //  Rollen-Check
+                if (existing.getRole() != RoleType.EMPLOYEE) {
+                    throw new IllegalArgumentException("Sie dürfen nur Datensätze von Mitarbeitern bearbeiten.");
+                }
+                //
+                if (updatedEmployee.getRole() != RoleType.EMPLOYEE) {
+                    throw new IllegalArgumentException("Sie können keine Manager oder Geschäftsführer ernennen.");
+                }
+
+                // Standort-Check
                 if (existing.getFacility() == null ||
                         actingUser.getFacility() == null ||
                         !existing.getFacility().getId().equals(actingUser.getFacility().getId())) {
                     return null;
                 }
-
-                // Darf keine Vorgesetzten bearbeiten oder jemanden befördern
-                if (existing.getRole() != RoleType.EMPLOYEE) {
-                    throw new IllegalArgumentException("Sie dürfen nur Datensätze von Mitarbeitern (Employees) bearbeiten.");
-                }
-                if (updatedEmployee.getRole() != RoleType.EMPLOYEE) {
-                    throw new IllegalArgumentException("Sie können keine Manager oder Geschäftsführer ernennen.");
-                }
             }
         }
 
-        //Unique Manager Check auch beim Update
+        // Check: Nur ein Manager pro Standort
         if (updatedEmployee.getRole() == RoleType.GENERAL_MANAGER && updatedEmployee.getFacility() != null) {
             validateUniqueManager(updatedEmployee.getFacility().getId(), existing.getId());
         }
 
-        // Datenübernahme
+        // Werte uebernehmen
         existing.setName(updatedEmployee.getName());
         existing.setLastname(updatedEmployee.getLastname());
         existing.setBirthday(updatedEmployee.getBirthday());
@@ -158,13 +159,13 @@ public class EmployeeService implements EmployeeManagement {
         return existing;
     }
 
-    // Prüft, ob es im Standort schon einen aktiven Manager gibt
+    // Prueft ob es im Standort schon einen Manager gibt (ausser dem aktuellen User)
     private void validateUniqueManager(Long facilityId, Long excludeEmployeeId) {
         List<Employee> facilityEmployees = employeeDAO.getEmployeesByFacility(facilityId);
         for (Employee e : facilityEmployees) {
             if (e.isActive() && e.getRole() == RoleType.GENERAL_MANAGER) {
                 if (excludeEmployeeId == null || !e.getId().equals(excludeEmployeeId)) {
-                    throw new IllegalStateException("Dieser Standort hat bereits einen Standortleiter (General Manager).");
+                    throw new IllegalStateException("Dieser Standort hat bereits einen Standortleiter.");
                 }
             }
         }
@@ -209,18 +210,19 @@ public class EmployeeService implements EmployeeManagement {
 
         Employee actingUser = getActingUser();
 
-        // Manager dürfen keine Vorgesetzten deaktivieren
+        // Manager duerfen keine Vorgesetzten deaktivieren
         if (actingUser != null && actingUser.getRole() == RoleType.GENERAL_MANAGER) {
-            if (existing.getFacility() == null || !existing.getFacility().getId().equals(actingUser.getFacility().getId())) return false;
+            // Auch hier erst Rolle pruefen
             if (existing.getRole() != RoleType.EMPLOYEE) {
                 return false;
             }
+            if (existing.getFacility() == null || !existing.getFacility().getId().equals(actingUser.getFacility().getId())) return false;
         }
 
         boolean newStatus = !existing.isActive();
         existing.setActive(newStatus);
 
-        // Beim Reaktivieren prüfen, ob dadurch ein zweiter Manager entsteht
+        // Beim Reaktivieren pruefen ob dadurch ein zweiter Manager entsteht
         if (newStatus && existing.getRole() == RoleType.GENERAL_MANAGER) {
             try {
                 validateUniqueManager(existing.getFacility().getId(), existing.getId());
@@ -231,7 +233,6 @@ public class EmployeeService implements EmployeeManagement {
 
         employeeDAO.updateEmployee(existing);
 
-        // Login-User synchronisieren
         Optional<User> userOpt = userRepository.findByEmail(existing.getEmail());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
@@ -251,12 +252,12 @@ public class EmployeeService implements EmployeeManagement {
         if (existing == null) return false;
 
         Employee actingUser = getActingUser();
+        // Manager duerfen nur Employees loeschen
         if (actingUser != null && actingUser.getRole() == RoleType.GENERAL_MANAGER) {
             if (existing.getRole() != RoleType.EMPLOYEE) return false;
             if (existing.getFacility() == null || !existing.getFacility().getId().equals(actingUser.getFacility().getId())) return false;
         }
 
-        // Protokoll-Referenz lösen, damit Löschung möglich ist
         changeLogService.logChange(existing, getCurrentUserIdentifier(), "Gelöscht", "Endgültig entfernt");
         changeLogService.detachEmployee(existing);
 

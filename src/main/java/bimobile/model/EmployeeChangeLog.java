@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * Speichert Änderungen an Mitarbeiter-Datensätzen.
- * Orientiert sich an der Struktur von RentalChangeLog.
+ * Entity fuer das Mitarbeiter-Aenderungsprotokoll.
+ * Speichert neben der Referenz auch Snapshots von ID und Name,
+ * damit die Daten auch nach Loeschung des Mitarbeiters lesbar bleiben.
+ *
  * @author Jan Lasse Stegmann
  */
 @Entity
@@ -20,14 +22,17 @@ public class EmployeeChangeLog {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
-    // Falls der Mitarbeiter gelöscht wird, behalten wir die ID hier
+    // Snapshot der ID fuer geloeschte User
     private Long employeeIdSnapshot;
+
+    // Snapshot des Namens fuer geloeschte User
+    private String employeeNameSnapshot;
 
     private LocalDateTime timestamp;
 
-    private String userIdentifier; // Wer hat es gemacht? (E-Mail oder Name)
-    private String action;         // Was wurde gemacht? (Erstellt, Update, Status)
-    private String details;        // Details (z.B. "Rolle geändert")
+    private String userIdentifier;
+    private String action;
+    private String details;
 
     public EmployeeChangeLog() {}
 
@@ -35,6 +40,8 @@ public class EmployeeChangeLog {
         this.employee = employee;
         if (employee != null) {
             this.employeeIdSnapshot = employee.getId();
+            // Namen direkt mitspeichern, falls spaeter geloescht wird
+            this.employeeNameSnapshot = employee.getLastname() + ", " + employee.getName();
         }
         this.userIdentifier = userIdentifier;
         this.action = action;
@@ -42,17 +49,25 @@ public class EmployeeChangeLog {
         this.timestamp = LocalDateTime.now();
     }
 
+    /**
+     * Entfernt die Verknuepfung zum Employee-Objekt (fuer Loeschvorgang).
+     * Sichert vorher den Namen, falls noch nicht geschehen.
+     */
     public void detachEmployee() {
         if (this.employee != null) {
             this.employeeIdSnapshot = this.employee.getId();
+
+            if (this.employeeNameSnapshot == null) {
+                this.employeeNameSnapshot = this.employee.getLastname() + ", " + this.employee.getName();
+            }
             this.employee = null;
         }
     }
 
-    // Getter
     public Long getId() { return id; }
     public Employee getEmployee() { return employee; }
     public Long getEmployeeIdSnapshot() { return employeeIdSnapshot; }
+    public String getEmployeeNameSnapshot() { return employeeNameSnapshot; }
     public LocalDateTime getTimestamp() { return timestamp; }
     public String getUserIdentifier() { return userIdentifier; }
     public String getAction() { return action; }

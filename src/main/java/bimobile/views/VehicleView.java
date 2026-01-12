@@ -49,7 +49,7 @@ public class VehicleView extends VerticalLayout {
 
     private static final Logger log = LoggerFactory.getLogger(VehicleView.class);
     private final VehicleService vehicleService;
-    private final FacilityService facilityService; // NEU
+    private final FacilityService facilityService;
 
     // Tabelle
     private final Grid<Vehicle> grid = new Grid<>(Vehicle.class, false);
@@ -61,7 +61,7 @@ public class VehicleView extends VerticalLayout {
     private final ComboBox<FuelType> fuelTypeField = new ComboBox<>("Antriebsart");
     private final ComboBox<PriceCategory> priceCategoryBox = new ComboBox<>("Preiskategorie");
 
-    // [NEU] Standort-Auswahl
+    // Standort-Auswahl
     private final ComboBox<Facility> facilityBox = new ComboBox<>("Standort");
 
     private final TextField mileageField      = new TextField("Kilometerstand");
@@ -94,7 +94,7 @@ public class VehicleView extends VerticalLayout {
         getStyle().set("background", "#f9fafb");
         getStyle().set("min-height", "100vh");
 
-        // [NEU] Anti-Crash für Manager ohne Standort
+        // Anti-Crash für Manager ohne Standort
         if (isBranchManager && currentFacility == null) {
             removeAll();
             VerticalLayout errorLayout = new VerticalLayout();
@@ -150,10 +150,6 @@ public class VehicleView extends VerticalLayout {
         add(header, grid);
         setFlexGrow(1, grid);
     }
-
-    // ----------------------------------------------------
-    // Grid / Tabelle
-    // ----------------------------------------------------
 
     private void configureGrid() {
         grid.setWidthFull();
@@ -226,7 +222,7 @@ public class VehicleView extends VerticalLayout {
 
     private void refreshGrid() {
         List<Vehicle> vehicles;
-        // [NEU] Filterung für Manager
+        // Filterung für Manager
         if (isBranchManager && currentFacility != null) {
             vehicles = vehicleService.getVehiclesByFacility(currentFacility.getId());
         } else {
@@ -234,10 +230,6 @@ public class VehicleView extends VerticalLayout {
         }
         grid.setItems(vehicles);
     }
-
-    // ----------------------------------------------------
-    // Formular
-    // ----------------------------------------------------
 
     private void configureForm() {
         // Pflichtindikatoren
@@ -270,7 +262,7 @@ public class VehicleView extends VerticalLayout {
         priceCategoryBox.setItemLabelGenerator(pc -> pc.name() + " (" + pc.getBaseRate() + " €/Tag)");
         priceCategoryBox.setWidthFull();
 
-        // [NEU] Standort-Auswahl
+        // Standort-Auswahl
         facilityBox.setItemLabelGenerator(Facility::getAddress);
         facilityBox.setWidthFull();
         if (isBranchManager) {
@@ -326,17 +318,13 @@ public class VehicleView extends VerticalLayout {
         winterTiresField.setValue(false);
         fuelTypeField.clear();
 
-        // [NEU] Facility zurücksetzen
+        // Facility zurücksetzen
         if (isBranchManager) {
             facilityBox.setValue(currentFacility);
         } else {
             facilityBox.clear();
         }
     }
-
-    //
-    // Formular <-> Entity
-    //
 
     private void populateForm(Vehicle vehicle) {
         if (vehicle == null) {
@@ -361,7 +349,7 @@ public class VehicleView extends VerticalLayout {
         airConditionField.setValue(vehicle.isHasAirCondition());
         winterTiresField.setValue(vehicle.isHasWinterTires());
 
-        // [NEU] Standort setzen
+        // Standort setzen
         if (isBranchManager) {
             facilityBox.setValue(currentFacility);
         } else {
@@ -409,7 +397,7 @@ public class VehicleView extends VerticalLayout {
                 priceCategoryBox.setErrorMessage("Preiskategorie ist ein Pflichtfeld.");
                 valid = false;
             }
-            // [NEU] Standort ist Pflicht
+            //Standort ist Pflicht
             if (facilityBox.isEmpty()) {
                 facilityBox.setInvalid(true);
                 facilityBox.setErrorMessage("Standort ist ein Pflichtfeld.");
@@ -439,7 +427,7 @@ public class VehicleView extends VerticalLayout {
 
                 vehicle.setFuelType(fuelTypeField.getValue());
 
-                // [NEU] Facility setzen
+                //Facility setzen
                 vehicle.setFacility(facilityBox.getValue());
 
                 vehicle.setNextInspectionDate(nextInspectionField.getValue());
@@ -464,7 +452,7 @@ public class VehicleView extends VerticalLayout {
                 selectedVehicle.setPriceCategory(priceCategoryBox.getValue());
                 selectedVehicle.setMileage(mileage);
 
-                // [NEU] Facility setzen
+                //Facility setzen
                 selectedVehicle.setFacility(facilityBox.getValue());
 
                 selectedVehicle.setNextInspectionDate(nextInspectionField.getValue());

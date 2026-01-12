@@ -20,7 +20,7 @@ import jakarta.annotation.security.PermitAll;
  *
  * Von hier aus können Benutzer direkt zur Standortsicht wechseln und könnte weitere Verwaltungsfunktionen aufrufen.
  *
- * @Author Ben Berlin
+ * @Author Ben Berlin, Jan Lasse Stegmann
  */
 public class DashboardView extends VerticalLayout {
     /**
