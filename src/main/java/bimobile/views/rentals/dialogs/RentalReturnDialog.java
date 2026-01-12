@@ -4,6 +4,7 @@ import bimobile.model.Rental;
 import bimobile.service.RentalService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
@@ -15,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.TextArea;
 
 import java.time.format.DateTimeFormatter;
 
@@ -97,7 +99,21 @@ public class RentalReturnDialog extends Dialog {
 		endMileageField.setMin(currentMileage);
 		endMileageField.setStepButtonsVisible(true);
 		endMileageField.setAutoselect(true);
+		Checkbox maintenanceRequiredField = new Checkbox("Fahrzeug sperren (Wartung/Schaden)");
+		Span maintenanceHelperText = new Span("Sperrt das Fahrzeug und setzt den Status auf Wartung.");
+		maintenanceHelperText.getStyle().set("color", "var(--lumo-secondary-text-color)");
+		maintenanceHelperText.getStyle().set("font-size", "var(--lumo-font-size-s)");
 
+		TextArea maintenanceNoteField = new TextArea("Wartungs-/Schadensnotiz");
+		maintenanceNoteField.setPlaceholder("Kurze Beschreibung, z. B. Kratzer Stoßstange, Inspektion fällig...");
+		maintenanceNoteField.setMaxLength(500);
+		maintenanceNoteField.setWidthFull();
+		maintenanceNoteField.setEnabled(false);
+
+		maintenanceRequiredField.addValueChangeListener(event -> {
+			boolean enabled = Boolean.TRUE.equals(event.getValue());
+			maintenanceNoteField.setEnabled(enabled);
+		});
 		Button confirm = new Button("Zurückgeben", event -> {
 			try {
 				if (endMileageField.isEmpty()) {
@@ -105,9 +121,21 @@ public class RentalReturnDialog extends Dialog {
 							.addThemeVariants(NotificationVariant.LUMO_ERROR);
 					return;
 				}
+				if (maintenanceRequiredField.getValue()
+						&& (maintenanceNoteField.getValue() == null
+						|| maintenanceNoteField.getValue().isBlank())) {
+					Notification.show("Bitte eine Wartungs-/Schadensnotiz angeben.")
+							.addThemeVariants(NotificationVariant.LUMO_ERROR);
+					return;
+				}
 				int endMileage = endMileageField.getValue();
 				//Abschluss der Ausleihe
-				rentalService.returnRental(rental, endMileage);
+				rentalService.returnRental(
+						rental,
+						endMileage,
+						maintenanceNoteField.getValue(),
+						maintenanceRequiredField.getValue()
+				);
 				Notification.show("Ausleihe #" + rental.getId() + " zurückgegeben.")
 						.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 				onReturnSuccess.run();
@@ -125,7 +153,15 @@ public class RentalReturnDialog extends Dialog {
 		actions.setWidthFull();
 		actions.setJustifyContentMode(JustifyContentMode.END);
 
-		VerticalLayout dialogLayout = new VerticalLayout(dialogTitle, infoLayout, endMileageField, actions);
+		VerticalLayout dialogLayout = new VerticalLayout(
+				dialogTitle,
+				infoLayout,
+				endMileageField,
+				maintenanceRequiredField,
+				maintenanceHelperText,
+				maintenanceNoteField,
+				actions
+		);
 		dialogLayout.setAlignItems(Alignment.STRETCH);
 		add(dialogLayout);
 	}

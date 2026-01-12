@@ -293,6 +293,14 @@ public class RentalService {
     }
 
     public Rental returnRental(Rental rental, int endMileage) {
+	    return returnRental(rental, endMileage, null, false);
+    }
+
+	public Rental returnRental(Rental rental,
+	                           int endMileage,
+	                           String maintenanceNote,
+	                           boolean maintenanceRequired) {
+
         Rental loaded = rentalRepository.findByIdWithAllAttributes(rental.getId());
 
         // Fahrzeug wieder freigeben
@@ -309,7 +317,13 @@ public class RentalService {
         loaded.setStatus(RentalStatus.COMPLETED);
 
         // 2. Fahrzeug Status & Kilometer updaten
-        v.setStatus(VehicleStatus.AVAILABLE);
+		if (maintenanceRequired) {
+			v.setStatus(VehicleStatus.IN_MAINTENANCE);
+			v.setMaintenanceActive(true);
+		} else {
+			v.setStatus(VehicleStatus.AVAILABLE);
+			v.setMaintenanceActive(false);
+		}
         v.setMileage(endMileage); // Kilometer setzen
         vehicleService.save(v);
 
@@ -322,7 +336,18 @@ public class RentalService {
                         ". Gefahren: " + (endMileage - startMileage) + " km. (Stand: " + endMileage + ")"
         );
         historyRepository.save(entry);
-
+		if (maintenanceRequired) {
+			String noteText = maintenanceNote != null && !maintenanceNote.isBlank()
+					? maintenanceNote
+					: "Wartung/Schadensmeldung bei Rückgabe.";
+			VehicleHistoryEntry maintenanceEntry = new VehicleHistoryEntry(
+					v,
+					LocalDate.now(),
+					EventType.MAINTENANCE,
+					"Fahrzeug bei Rückgabe gesperrt. Notiz: " + noteText
+			);
+			historyRepository.save(maintenanceEntry);
+		}
         Rental saved = rentalRepository.save(loaded);
 
         // Rechnung erzeugen
